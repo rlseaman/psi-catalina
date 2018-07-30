@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model
+    href="http://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_1A00.sch"
+    schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<Ingest_LDD xmlns="http://pds.nasa.gov/pds4/pds/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://pds.nasa.gov/pds4/pds/v1 https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_1A00.xsd">
+    <name>Catalina Sky Survey</name>
+    <ldd_version_id>1.0.0.0</ldd_version_id>
+    <full_name>J. Stone</full_name>
+    <steward_id>sbn</steward_id>
+    <namespace_id>css</namespace_id>
+    <comment>
+        This dictionary contains additional metadata for the Catalina Sky Survey.
+    </comment>
+    <last_modification_date_time>2018-07-30</last_modification_date_time>
+
+    <!-- Attribute: Corner idenfication -->
+    <DD_Attribute>
+        <name>corner_identification</name>
+        <version_id>1.0</version_id>
+        <local_identifier>corner_identification</local_identifier>
+        <nillable_flag>false</nillable_flag>
+        <submitter_name>Jesse Stone</submitter_name>
+        <definition>Identifies which corner of the image is being located.</definition>
+        <DD_Value_Domain>
+            <enumeration_flag>true</enumeration_flag>
+            <value_data_type>ASCII_Short_String_Collapsed</value_data_type>
+            <DD_Permissible_Value>
+                <value>Top Left</value>
+                <value_meaning>The top-left corner</value_meaning>
+            </DD_Permissible_Value>
+            <DD_Permissible_Value>
+                <value>Top Right</value>
+                <value_meaning>The top-left corner</value_meaning>
+            </DD_Permissible_Value>
+            <DD_Permissible_Value>
+                <value>Bottom Left</value>
+                <value_meaning>The bottom-left corner</value_meaning>
+            </DD_Permissible_Value>
+            <DD_Permissible_Value>
+                <value>Bottom Right</value>
+                <value_meaning>The bottom-right corner</value_meaning>
+            </DD_Permissible_Value>
+        </DD_Value_Domain>
+    </DD_Attribute>
+
+    <!-- Attribute: Right ascension -->
+    <DD_Attribute>
+        <name>right_ascension</name>
+        <version_id>1.0</version_id>
+        <local_identifier>right_ascension</local_identifier>
+        <nillable_flag>false</nillable_flag>
+        <submitter_name>Jesse Stone</submitter_name>
+        <definition>The right ascension component of a coordinate, in J2000 decimal degrees</definition>
+        <DD_Value_Domain>
+            <enumeration_flag>false</enumeration_flag>
+            <value_data_type>ASCII_Real</value_data_type>
+            <minimum_value>0</minimum_value>
+            <maximum_value>360</maximum_value>
+            <unit_of_measure_type>Units_of_Angle</unit_of_measure_type>
+            <specified_unit_id>deg</specified_unit_id>
+        </DD_Value_Domain>
+    </DD_Attribute>
+
+    <!-- Attribute: Declination -->
+    <DD_Attribute>
+        <name>declination</name>
+        <version_id>1.0</version_id>
+        <local_identifier>declination</local_identifier>
+        <nillable_flag>false</nillable_flag>
+        <submitter_name>Jesse Stone</submitter_name>
+        <definition>The declination component of a coordinate, in J2000 decimal degrees</definition>
+        <DD_Value_Domain>
+            <enumeration_flag>false</enumeration_flag>
+            <value_data_type>ASCII_Real</value_data_type>
+            <minimum_value>-90</minimum_value>
+            <maximum_value>90</maximum_value>
+            <unit_of_measure_type>Units_of_Angle</unit_of_measure_type>
+            <specified_unit_id>deg</specified_unit_id>
+        </DD_Value_Domain>
+    </DD_Attribute>
+
+    <!-- Attribute: Field identification -->
+    <DD_Attribute>
+        <name>field_id</name>
+        <version_id>1.0</version_id>
+        <local_identifier>field_id</local_identifier>
+        <nillable_flag>false</nillable_flag>
+        <submitter_name>Jesse Stone</submitter_name>
+        <definition>The id code for the field being observed</definition>
+        <DD_Value_Domain>
+            <enumeration_flag>false</enumeration_flag>
+            <value_data_type>ASCII_Short_String_Collapsed</value_data_type>
+        </DD_Value_Domain>
+    </DD_Attribute>
+
+    <!-- Class: Coordinate -->
+    <DD_Class>
+        <name>Coordinate</name>
+        <version_id>1.0</version_id>
+        <local_identifier>Coordinate</local_identifier>
+        <submitter_name>Jesse Stone</submitter_name>
+        <definition>A location on the celestial sphere, consisting of right ascension and declination.</definition>
+        <DD_Association>
+            <identifier_reference>right_ascension</identifier_reference>
+            <reference_type>attribute_of</reference_type>
+            <minimum_occurrences>1</minimum_occurrences>
+            <maximum_occurrences>1</maximum_occurrences>
+        </DD_Association>
+        <DD_Association>
+            <identifier_reference>declination</identifier_reference>
+            <reference_type>attribute_of</reference_type>
+            <minimum_occurrences>1</minimum_occurrences>
+            <maximum_occurrences>1</maximum_occurrences>
+        </DD_Association>
+    </DD_Class>
+
+    <!-- Class: Corner Position -->
+    <DD_Class>
+        <name>Corner_Position</name>
+        <version_id>1.0</version_id>
+        <local_identifier>Corner_Position</local_identifier>
+        <submitter_name>Jesse Stone</submitter_name>
+        <definition>The position of one corner of an image</definition>
+        <DD_Association>
+            <identifier_reference>corner_identification</identifier_reference>
+            <reference_type>attribute_of</reference_type>
+            <minimum_occurrences>1</minimum_occurrences>
+            <maximum_occurrences>1</maximum_occurrences>
+        </DD_Association>
+        <DD_Association>
+            <identifier_reference>Coordinate</identifier_reference>
+            <reference_type>component_of</reference_type>
+            <minimum_occurrences>1</minimum_occurrences>
+            <maximum_occurrences>1</maximum_occurrences>
+        </DD_Association>
+    </DD_Class>
+
+    <!-- Class: Footprint -->
+    <DD_Class>
+        <name>Footprint</name>
+        <version_id>1.0</version_id>
+        <local_identifier>Footprint</local_identifier>
+        <submitter_name>Jesse Stone</submitter_name>
+        <definition>The portion of the sky contained within an image, identified by its four corners</definition>
+        <DD_Association>
+            <identifier_reference>Corner_Position</identifier_reference>
+            <reference_type>component_of</reference_type>
+            <minimum_occurrences>4</minimum_occurrences>
+            <maximum_occurrences>4</maximum_occurrences>
+        </DD_Association>
+    </DD_Class>
+
+    <!-- Class: Catalina Parameter -->
+    <DD_Class>
+        <name>Catalina_Parameters</name>
+        <version_id>1.0</version_id>
+        <local_identifier>Catalina_Parameters</local_identifier>
+        <submitter_name>Jesse Stone</submitter_name>
+        <definition>Catalina-related observational parameters that are not yet defined in other dictionaries.</definition>
+        <element_flag>true</element_flag>
+        <DD_Association>
+            <identifier_reference>Footprint</identifier_reference>
+            <reference_type>component_of</reference_type>
+            <minimum_occurrences>1</minimum_occurrences>
+            <maximum_occurrences>1</maximum_occurrences>
+        </DD_Association>
+        <DD_Association>
+            <identifier_reference>field_id</identifier_reference>
+            <reference_type>attribute_of</reference_type>
+            <minimum_occurrences>1</minimum_occurrences>
+            <maximum_occurrences>1</maximum_occurrences>
+        </DD_Association>
+    </DD_Class>
+
+    <!-- 
+
+        Schematron Rules 
+
+        * Ensure that each corner is identified. 
+        * Ensure that corner is identified only once. Given the existing 
+        restrictions on Footprint, this is satisfied when every corner is identified.
+
+    -->
+    <DD_Rule>
+        <local_identifier>rule_all_corners</local_identifier>
+        <rule_context>css:Catalina_Parameters/css:Footprint</rule_context>
+        <DD_Rule_Statement>
+            <rule_type>Assert</rule_type>
+            <rule_test>css:Corner_Position/css:corner_identification = 'Top Left'</rule_test>
+            <rule_message>A top-left corner must be provided</rule_message>
+        </DD_Rule_Statement>
+        <DD_Rule_Statement>
+            <rule_type>Assert</rule_type>
+            <rule_test>css:Corner_Position/css:corner_identification = 'Top Right'</rule_test>
+            <rule_message>A top-right corner must be provided</rule_message>
+        </DD_Rule_Statement>
+        <DD_Rule_Statement>
+            <rule_type>Assert</rule_type>
+            <rule_test>css:Corner_Position/css:corner_identification = 'Bottom Left'</rule_test>
+            <rule_message>A bottom-left corner must be provided</rule_message>
+        </DD_Rule_Statement>
+        <DD_Rule_Statement>
+            <rule_type>Assert</rule_type>
+            <rule_test>css:Corner_Position/css:corner_identification = 'Bottom Right'</rule_test>
+            <rule_message>A bottom-right corner must be provided</rule_message>
+        </DD_Rule_Statement>
+    </DD_Rule>
+</Ingest_LDD>
+
