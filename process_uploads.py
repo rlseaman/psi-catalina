@@ -6,55 +6,82 @@ import os.path
 import itertools
 from bs4 import BeautifulSoup
 
+INSTRUMENTS=['G96']
 IGNORE_FILES=['signature.md5', '.autoxfer']
+IGNORE_DATES=['pds4']
 
 def main(argv=None):
     if argv == None:
         argv = sys.argv
 
-    dirname = argv[1]
-    process_directory(dirname)
+    basedir = argv[1]
+
+    # if lockfile exists
+    #   create lockfile
+    #   process everything
+    #   finally
+    #      delete lockfile
+
+    for instrument in INSTRUMENTS:
+        process_inst_directory(basedir, instrument)
 
     return 0
 
-def process_directory(dirname)
-    files = [x for x in find_files(dirname)]
-    if semaphore_exists(dirname, files):
-        process_uploads(dirname, files,'')
+def process_inst_directory(basedir, instrument):
+    instdir = os.path.join(basedir, instrument)
+
+    years = [x.name for x in os.scandir(instdir) if x.is_dir()]
+
+    for year in years:
+        yeardir = os.path.join(instdir, year)
+        process_year_directory(yeardir, instrument, year)
+
+def process_year_directory(yeardir, instrument, year):
+    dates = [x.name for x in os.scandir(yeardir) if x.is_dir() and x not in IGNORE_DATES]
+    for date in dates:
+        datadir = os.path.join(yeardir, date)
+        labeldir = os.path.join(yeardir, "pds4", date)
+        process_data(datadir, labeldir, instrument, year, date)
+    
+
+
+
+def process_data(datadir, labeldir, instrument, year, date):
+    if semaphore_exists(datadir) and semaphore_exists(labeldir):
+        process_uploads(datadir, labeldir, instrument, year, date)
 
         #update_archive(archive_dir, changes)
 
 def update_archive(archive_dir, changes):
     pass
 
-def semaphore_exists(dirname, files):
-    return os.path.join(dirname, '.autoxfer') in files
+def semaphore_exists(dirname):
+    semaphore_file = os.path.join(dirname, '.autoxfer')
+    return os.path.exists(semaphore_file)
 
-def process_uploads(dirname, files, archive_dir):
+def process_uploads(datadir, labeldir, instrument, year, date):
+    print (labeldir)
     #for each label in label directory:
     #   parse the label, yielding product id and file name
     #   move label and file to destination directory
     #   add an entry to the change list for that product
-    labels = parselabels(dirname, files)
+    files = [os.path.join(labeldir, x.name) for x in os.scandir(labeldir) if x.name.endswith('.xml')]
+    print (files)
+    labels = parselabels(files)
 
-    label_files = [l['label_file_name'] for l in labels]
-    data_files = [l['file_name'] for l in labels]
-
-    unaccounted = [f for f in files if f not in label_files and f not in data_files and not ignore(f)]
-
-    if unaccounted:
-       raise (Exception('Some files were not recognized as products: ' + ','.join(unaccounted)))
-
+    #label_file_names = [l['label_file_name'] for l in labels]
+    #data_file_names = [l['file_name'] for l in labels]
+    #unaccounted = [f for f in files if f not in label_file_names and f not in data_file_names and not ignore(f)]
+    #if unaccounted:
+    #   raise (Exception('Some files were not recognized as products: ' + ','.join(unaccounted)))
 
     # move the files to the archive directory
     for l in labels:
         collection_id = l['collection_id']
-        dest_directory = os.path.join(dirname, collection_id)
-        # move file
-
+        #dest_directory = os.path.join(DEST_BASE, collection_id, instrument, year, date)
+        # move_file(dest_directory, label_file, data_file)
 
     lids = [(l['collection_id'], l['logical_id']) for l in labels]
-
 
     collection_products = {}
     for collection_id, logical_id in lids:
@@ -76,7 +103,7 @@ def process_uploads(dirname, files, archive_dir):
     #    increment the version number
     #    need bundle template
 
-def parselabels(dirname, files):
+def parselabels(files):
     # find all .xml files
     xmlfiles = [x for x in files if x.endswith('.xml')]
     return [extractlabel(parselabel(x), x) for x in xmlfiles]
@@ -99,8 +126,6 @@ def extractlabel(label, labelfilename):
 
         f = p.File_Area_Observational
         result ['file_name'] = f.File.file_name.string
-        
-        
         return result
     else:
         return None
