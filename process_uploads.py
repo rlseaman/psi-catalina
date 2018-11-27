@@ -17,12 +17,18 @@ def main(argv=None):
 
     basedir = argv[1]
 
-    # if lockfile exists
-    #   create lockfile
-    #   process everything
-    #   finally
-    #      delete lockfile
+    lockfile = os.path.join(basedir, ".lockfile")
+    if not os.path.exists(lockfile):
+        with open(lockfile, "w") as lock:
+            lock.write(".")
+        try:
+            run(basedir)
+        finally:
+            os.remove(lockfile)
 
+    return 0
+
+def run(basedir):
     lidvids = []
     for instrument in INSTRUMENTS:
         lidvids.extend(process_inst_directory(basedir, instrument))
@@ -40,9 +46,7 @@ def main(argv=None):
         newminor = 0
         write_inventory(newmajor, newminor, inventory, collection_id, collection_path)
         write_collection(newmajor, newminor, collection_path, collection_path)
-    
 
-    return 0
 
 def get_last_version_number(collection_id, collection_path):
     collection_files = [x for x in os.scandir() if x.name.startswith('collection') and x.name.endswith('.xml')]
