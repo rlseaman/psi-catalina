@@ -31,13 +31,13 @@ def main(argv=None):
 
     for collection_id in collection_lids.keys():
         collection_lidvids = collection_lids[collection_id]
-        collection_path = ''
+        collection_path = '.'
         major, minor = get_last_version_number(collection_id, collection_path)
         inventory = read_inventory(major, minor,collection_id, collection_path)
         inventory.extend(['P,' + x for x in collection_lidvids])
         newmajor = major + 1
         newminor = 0
-        write_inventory(newmajor, newminor, collection_id, collection_path)
+        write_inventory(newmajor, newminor, inventory, collection_id, collection_path)
         write_collection(newmajor, newminor, collection_path, collection_path)
     
     # update the bundle - may be able to skip be referencing only collection lids
@@ -49,13 +49,25 @@ def main(argv=None):
     return 0
 
 def get_last_version_number(collection_id, collection_path):
+    collection_files = [x for x in os.scandir() if x.name.startswith('collection') and x.name.endswith('.xml')]
+    if collection_files:
+        collection_labels = [parselabel(x) for x in collection_files]
+        collection_versions = [extract_version(x) for x in collection_labels]
+        return max(collection_versions)
     return (0,0)
 
-def read_inventory(major, minor, collection_id, collection_path):
+def read_inventory(major, minor, collection_id, collection_dir):
+    if major:
+        collection_filename = 'collection_%s_%s.%s.csv' % (collection_id, major, minor)
+        collection_path = os.path.join(collection_dir, collection_filename)
+        return open(collection_path).readlines()
     return []
 
-def write_inventory(major, minor, collection_id, collection_path):
-    pass
+def write_inventory(major, minor, inventory, collection_id, collection_dir):
+    collection_filename = 'collection_%s_%s.%s.csv' % (collection_id, major, minor)
+    collection_path = os.path.join(collection_dir, collection_filename)
+    print (collection_path)
+    print (inventory)
 
 def write_collection(major, minor, collection_id, collection_path):
     pass
@@ -72,7 +84,7 @@ def process_inst_directory(basedir, instrument):
     return result
 
 def process_year_directory(yeardir, instrument, year):
-    dates = [x.name for x in os.scandir(yeardir) if x.is_dir() and x not in IGNORE_DATES]
+    dates = [x.name for x in os.scandir(yeardir) if x.is_dir() and x.name not in IGNORE_DATES]
     result = []
     for date in dates:
         datadir = os.path.join(yeardir, date)
@@ -97,37 +109,21 @@ def semaphore_exists(dirname):
     return os.path.exists(semaphore_file)
 
 def process_uploads(datadir, labeldir, instrument, year, date):
-    print (labeldir)
-    #for each label in label directory:
-    #   parse the label, yielding product id and file name
-    #   move label and file to destination directory
-    #   add an entry to the change list for that product
-    print ("Directories", datadir, labeldir)
     files = [os.path.join(labeldir, x.name) for x in os.scandir(labeldir) if x.name.endswith('.xml')]
     labels = parselabels(files)
-
-    #label_file_names = [l['label_file_name'] for l in labels]
-    #data_file_names = [l['file_name'] for l in labels]
-    #unaccounted = [f for f in files if f not in label_file_names and f not in data_file_names and not ignore(f)]
-    #if unaccounted:
-    #   raise (Exception('Some files were not recognized as products: ' + ','.join(unaccounted)))
-    
 
     # move the files to the archive directory
     for l in labels:
         collection_id = l['collection_id']
         dest_directory = os.path.join(DEST_BASE, collection_id, instrument, year, date)
-        print (dest_directory)
         #os.makedirs(dest_directory, exist_ok=True)
         
         src_data = os.path.join(datadir, l['file_name'])
         dest_data = os.path.join(dest_directory, l['file_name'])
-        print(src_data, dest_data)
         #os.rename(src_data, dest_data)
         
         src_label = os.path.join(labeldir, l['label_file_name'])
         dest_label = os.path.join(dest_directory, l['label_file_name'])
-        print(src_label, dest_label)
         #os.rename(src_label, dest_label)
 
     lids = [(l['collection_id'], l['logical_id']) for l in labels]
@@ -139,8 +135,6 @@ def process_uploads(datadir, labeldir, instrument, year, date):
     lidvids = [l['logical_id'] + "::" + l['version_id'] for l in labels]
 
     return lidvids
-
-
 
 
 def parselabels(files):
@@ -169,6 +163,15 @@ def extractlabel(label, labelfilename):
         return result
     else:
         return None
+
+def extract_version(label):
+    p = label.Product_Collection
+    if p:
+        i = p.Identification_Area
+        version = i.version_id.string
+        return [int(x) for x in version.split(".")]
+    else:
+        return (0,0)
 
 def parselabel(filename):
     with open(filename) as f:
