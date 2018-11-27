@@ -31,7 +31,8 @@ def main(argv=None):
 
     for collection_id in collection_lids.keys():
         collection_lidvids = collection_lids[collection_id]
-        collection_path = '.'
+        collection_path = os.path.join(DEST_BASE, collection_id)
+        os.makedirs(collection_path, exist_ok=True)
         major, minor = get_last_version_number(collection_id, collection_path)
         inventory = read_inventory(major, minor,collection_id, collection_path)
         inventory.extend(['P,' + x for x in collection_lidvids])
@@ -40,11 +41,6 @@ def main(argv=None):
         write_inventory(newmajor, newminor, inventory, collection_id, collection_path)
         write_collection(newmajor, newminor, collection_path, collection_path)
     
-    # update the bundle - may be able to skip be referencing only collection lids
-    #    increment the version number
-    #    need bundle template    
-
-    # rsync updates to archive server
 
     return 0
 
@@ -66,8 +62,8 @@ def read_inventory(major, minor, collection_id, collection_dir):
 def write_inventory(major, minor, inventory, collection_id, collection_dir):
     collection_filename = 'collection_%s_%s.%s.csv' % (collection_id, major, minor)
     collection_path = os.path.join(collection_dir, collection_filename)
-    print (collection_path)
-    print (inventory)
+    with open(collection_path, 'w') as file:
+        file.write('\r\n'.join(inventory) + '\r\n')
 
 def write_collection(major, minor, collection_id, collection_path):
     pass
