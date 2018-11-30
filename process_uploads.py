@@ -38,6 +38,7 @@ def run(basedir):
     for collection_id in collection_lids.keys():
         collection_lidvids = collection_lids[collection_id]
         collection_path = os.path.join(DEST_BASE, collection_id)
+        print (collection_path)
         os.makedirs(collection_path, exist_ok=True)
         major, minor = get_last_version_number(collection_id, collection_path)
         inventory = read_inventory(major, minor,collection_id, collection_path)
@@ -45,7 +46,9 @@ def run(basedir):
         newmajor = major + 1
         newminor = 0
         write_inventory(newmajor, newminor, inventory, collection_id, collection_path)
-        write_collection(newmajor, newminor, collection_path, collection_path)
+
+        template_filename = "collection_template.xml"
+        write_collection(newmajor, newminor, template_filename, collection_id, collection_path)
 
 
 def get_last_version_number(collection_id, collection_path):
@@ -66,11 +69,14 @@ def read_inventory(major, minor, collection_id, collection_dir):
 def write_inventory(major, minor, inventory, collection_id, collection_dir):
     collection_filename = 'collection_%s_%s.%s.csv' % (collection_id, major, minor)
     collection_path = os.path.join(collection_dir, collection_filename)
-    with open(collection_path, 'w') as file:
-        file.write('\r\n'.join(inventory) + '\r\n')
+    write_file(collection_path, '\r\n'.join(inventory) + '\r\n')
 
-def write_collection(major, minor, collection_id, collection_path):
-    pass
+def write_collection(major, minor, template_filename, collection_id, collection_dir):
+    template = read_file(template_filename)
+    contents = template % (collection_id, major, minor)
+    collection_filename = 'collection_%s_%s.%s.xml' % (collection_id, major, minor)
+    collection_path = os.path.join(collection_dir, collection_filename)
+    write_file(collection_path, contents)
 
 def process_inst_directory(basedir, instrument):
     instdir = os.path.join(basedir, instrument)
@@ -193,6 +199,16 @@ def index(list, indexfunc):
         key = indexfunc(item)
         d.setdefault(key, []).append(item)
     return d
+
+def read_file(filename):
+    with open(filename) as f:
+        return f.read()
+
+def write_file(filename, contents):
+    path = os.path.dirname(filename)
+    os.makedirs(path, exist_ok=True)
+    with open(filename, "w") as f:
+        f.write(contents)
 
 
 if __name__ == '__main__':
