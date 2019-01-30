@@ -36,20 +36,21 @@ def run(basedir):
     collection_lids = index(lidvids, extract_collection_id)
 
     for collection_id in collection_lids.keys():
-        collection_lidvids = collection_lids[collection_id]
-        collection_path = os.path.join(DEST_BASE, collection_id)
-        print (collection_path)
-        os.makedirs(collection_path, exist_ok=True)
-        major, minor = get_last_version_number(collection_id, collection_path)
-        inventory = read_inventory(major, minor,collection_id, collection_path)
-        inventory.extend(['P,' + x for x in collection_lidvids])
-        newmajor = major + 1
-        newminor = 0
-        write_inventory(newmajor, newminor, inventory, collection_id, collection_path)
+        process_collection(collection_lids, collection_id)
 
-        template_filename = "collection_template.xml"
-        write_collection(newmajor, newminor, template_filename, collection_id, collection_path)
+def process_collection(collection_lids, collection_id):
+    collection_lidvids = collection_lids[collection_id]
+    collection_path = os.path.join(DEST_BASE, collection_id)
+    os.makedirs(collection_path, exist_ok=True)
+    major, minor = get_last_version_number(collection_id, collection_path)
+    inventory = read_inventory(major, minor,collection_id, collection_path)
+    inventory.extend(['P,' + x for x in collection_lidvids])
+    newmajor = major + 1
+    newminor = 0
+    write_inventory(newmajor, newminor, inventory, collection_id, collection_path)
 
+    template_filename = "collection_template.xml"
+    write_collection(newmajor, newminor, template_filename, collection_id, collection_path)
 
 def get_last_version_number(collection_id, collection_path):
     collection_files = [x for x in os.scandir() if x.name.startswith('collection') and x.name.endswith('.xml')]
@@ -212,4 +213,4 @@ def write_file(filename, contents):
 
 
 if __name__ == '__main__':
-    sys.exit(main())    .exte
+    sys.exit(main())
