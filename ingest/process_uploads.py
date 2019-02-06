@@ -65,12 +65,15 @@ def get_last_version_number(collection_id, collection_path):
     '''
     Gets the most recent known version number for a collection
     '''
-    collection_files = [x for x in os.scandir() if x.name.startswith('collection') and x.name.endswith('.xml')]
+    collection_files = [x for x in os.scandir() if is_collection_file(x)]
     if collection_files:
         collection_labels = [parselabel(x) for x in collection_files]
         collection_versions = [extract_version(x) for x in collection_labels]
         return max(collection_versions)
     return (0,0)
+
+def is_collection_file(x):
+    return x.name.startswith('collection') and x.name.endswith('.xml')
 
 def read_inventory(major, minor, collection_id, collection_dir):
     '''
@@ -158,7 +161,7 @@ def process_uploads(datadir, labeldir, instrument, year, date):
     '''
     Processes the data in a given data directory and label directory pair.
     '''
-    files = [os.path.join(labeldir, x.name) for x in os.scandir(labeldir) if x.name.endswith('.xml')]
+    files = [os.path.join(labeldir, x.name) for x in os.scandir(labeldir) if is_label(x)]
     labels = parselabels(files)
 
     # move the files to the archive directory
@@ -184,6 +187,9 @@ def process_uploads(datadir, labeldir, instrument, year, date):
     lidvids = [l['logical_id'] + "::" + l['version_id'] for l in labels]
 
     return lidvids
+
+def is_label(x):
+    return x.name.endswith('.xml')
 
 
 def parselabels(files):
