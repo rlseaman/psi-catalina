@@ -1,4 +1,9 @@
 #! /usr/bin/env python3
+'''
+Python script to process submissions from Catalina Sky Survey and convert them
+to PDS4 format.
+'''
+
 import sys
 
 import os
@@ -6,33 +11,37 @@ import os.path
 import itertools
 from bs4 import BeautifulSoup
 
-INSTRUMENTS=['G96']
-IGNORE_FILES=['signature.md5', '.autoxfer']
-IGNORE_DATES=['pds4']
-DEST_BASE='.'
+INSTRUMENTS = ['G96']
+IGNORE_FILES = ['signature.md5', '.autoxfer']
+IGNORE_DATES = ['pds4']
+DEST_BASE = '.'
 
 def main(argv=None):
-    if argv == None:
+    '''
+    Extract command line arguments, ensure that the script is not already running,
+    and process the current upload directory.
+    '''
+    if argv is None:
         argv = sys.argv
 
     basedir = argv[1]
 
     lockfile = os.path.join(basedir, ".lockfile")
     if not os.path.exists(lockfile):
-        with process_uploads(lockfile, "w") as lock:
+        with open(lockfile, "w") as lock:
             lock.write(".")
         try:
-            run(basedir)
+            process_upload_dir(basedir)
         finally:
             os.remove(lockfile)
 
     return 0
 
-def process_uploads(basedir):
+def process_upload_dir(basedir):
     '''
     Process the given submission directory.
 
-    The format of a submission directory is inst\year\date,
+    The format of a submission directory is inst/year/date,
     so we will process each instrument first.
     '''
     lidvids = []
@@ -41,7 +50,7 @@ def process_uploads(basedir):
 
     collection_lids = index(lidvids, extract_collection_id)
 
-    for collection_id in collection_lids.keys():
+    for collection_id in collection_lids:
         process_collection(collection_lids, collection_id)
 
 def process_collection(collection_lids, collection_id):
@@ -51,8 +60,8 @@ def process_collection(collection_lids, collection_id):
     collection_lidvids = collection_lids[collection_id]
     collection_path = os.path.join(DEST_BASE, collection_id)
     os.makedirs(collection_path, exist_ok=True)
-    major, minor = get_last_version_number(collection_id, collection_path)
-    inventory = read_inventory(major, minor,collection_id, collection_path)
+    major, minor = get_last_version_number(collection_path)
+    inventory = read_inventory(major, minor, collection_id, collection_path)
     inventory.extend(['P,' + x for x in collection_lidvids])
     newmajor = major + 1
     newminor = 0
@@ -61,19 +70,22 @@ def process_collection(collection_lids, collection_id):
     template_filename = "collection_template.xml"
     write_collection(newmajor, newminor, template_filename, collection_id, collection_path)
 
-def get_last_version_number(collection_id, collection_path):
+def get_last_version_number(collection_path):
     '''
     Gets the most recent known version number for a collection
     '''
-    collection_files = [x for x in os.scandir() if is_collection_file(x)]
+    collection_files = [x for x in os.scandir(collection_path) if is_collection_file(x)]
     if collection_files:
         collection_labels = [parselabel(x) for x in collection_files]
         collection_versions = [extract_version(x) for x in collection_labels]
         return max(collection_versions)
-    return (0,0)
+    return (0, 0)
 
-def is_collection_file(x):
-    return x.name.startswith('collection') and x.name.endswith('.xml')
+def is_collection_file(candidate):
+    '''
+    Determine if the passed in file is a collection file.
+    '''
+    return candidate.name.startswith('collection') and candidate.name.endswith('.xml')
 
 def read_inventory(major, minor, collection_id, collection_dir):
     '''
@@ -130,9 +142,8 @@ def process_year_directory(yeardir, instrument, year):
     for date in dates:
         datadir = os.path.join(yeardir, date)
         labeldir = os.path.join(yeardir, "pds4", date)
-        print (datadir, labeldir)
         result.extend(process_data(datadir, labeldir, instrument, year, date))
-    return result    
+    return result
 
 
 
@@ -148,7 +159,9 @@ def process_data(datadir, labeldir, instrument, year, date):
     #update_archive(archive_dir, changes)
 
 def update_archive(archive_dir, changes):
-    pass
+    '''
+    Placeholder for code to actually upload data to the archive site
+    '''
 
 def semaphore_exists(dirname):
     '''
@@ -165,18 +178,18 @@ def process_uploads(datadir, labeldir, instrument, year, date):
     labels = parselabels(files)
 
     # move the files to the archive directory
-    for l in labels:
-        collection_id = l['collection_id']
+    for label in labels:
+        collection_id = label['collection_id']
         dest_directory = os.path.join(DEST_BASE, collection_id, instrument, year, date)
-        #os.makedirs(dest_directory, exist_ok=True)
-        
-        src_data = os.path.join(datadir, l['file_name'])
-        dest_data = os.path.join(dest_directory, l['file_name'])
-        #os.rename(src_data, dest_data)
-        
-        src_label = os.path.join(labeldir, l['label_file_name'])
-        dest_label = os.path.join(dest_directory, l['label_file_name'])
-        #os.rename(src_label, dest_label)
+        os.makedirs(dest_directory, exist_ok=True)
+
+        src_data = os.path.join(datadir, label['file_name'])
+        dest_data = os.path.join(dest_directory, label['file_name'])
+        os.rename(src_data, dest_data)
+
+        src_label = os.path.join(labeldir, label['label_file_name'])
+        dest_label = os.path.join(dest_directory, label['label_file_name'])
+        os.rename(src_label, dest_label)
 
     lids = [(l['collection_id'], l['logical_id']) for l in labels]
 
@@ -188,8 +201,11 @@ def process_uploads(datadir, labeldir, instrument, year, date):
 
     return lidvids
 
-def is_label(x):
-    return x.name.endswith('.xml')
+def is_label(candidate):
+    '''
+    Determines if the given file is a label file.
+    '''
+    return candidate.name.endswith('.xml')
 
 
 def parselabels(files):
@@ -204,53 +220,49 @@ def find_files(dirname):
     '''
     Gets all of the files in a directory.
     '''
-    filelists = [[os.path.join(subdir,f) for f in files] for subdir, _, files in os.walk(dirname)]
+    filelists = [[os.path.join(subdir, f) for f in files] for subdir, _, files in os.walk(dirname)]
     return itertools.chain.from_iterable(filelists)
 
 def extractlabel(label, labelfilename):
     '''
     Extracts keywords from a label file.
     '''
-    p = label.Product_Observational
-    if p:
+    product_element = label.Product_Observational
+    if product_element:
         result = {}
         result['label_file_name'] = os.path.basename(labelfilename)
 
-        i = p.Identification_Area
-        lid = i.logical_identifier.string
+        idenfication_area = product_element.Identification_Area
+        lid = idenfication_area.logical_identifier.string
         result['logical_id'] = lid
         result['collection_id'] = extract_collection_id(lid)
-        result['version_id'] = i.version_id.string
+        result['version_id'] = idenfication_area.version_id.string
 
-        f = p.File_Area_Observational
-        result ['file_name'] = os.path.basename(f.File.file_name.string)
+        file_area = product_element.File_Area_Observational
+        result['file_name'] = os.path.basename(file_area.File.file_name.string)
         return result
-    else:
-        return None
+
+    return None
 
 
 def extract_version(label):
     '''
     Extracts the version number from a collection label.
     '''
-    p = label.Product_Collection
-    if p:
-        i = p.Identification_Area
-        version = i.version_id.string
+    product_element = label.Product_Collection
+    if product_element:
+        identification_area = product_element.Identification_Area
+        version = identification_area.version_id.string
         return [int(x) for x in version.split(".")]
-    else:
-        return (0,0)
+
+    return (0, 0)
 
 def parselabel(filename):
     '''
     Parses a label file into an xml document.
     '''
-    with open(filename) as f:
-        return BeautifulSoup(f, 'lxml-xml')
-
-def get_sibling(fq_file, f):
-    dirname = os.path.dirname(fq_file)
-    return os.path.join(dirname, f)
+    with open(filename) as infile:
+        return BeautifulSoup(infile, 'lxml-xml')
 
 def ignore(file):
     '''
@@ -259,24 +271,36 @@ def ignore(file):
     return any((file.endswith(name) for name in IGNORE_FILES))
 
 def extract_collection_id(lid):
+    '''
+    Extracts the collection id component from a LID
+    '''
     return lid.split(':')[4]
 
-def index(list, indexfunc):
-    d = {}
-    for item in list:
+def index(items, indexfunc):
+    '''
+    Indexes a list of objects based on the output of a supplied function
+    '''
+    dictionary = {}
+    for item in items:
         key = indexfunc(item)
-        d.setdefault(key, []).append(item)
-    return d
+        dictionary.setdefault(key, []).append(item)
+    return dictionary
 
 def read_file(filename):
-    with open(filename) as f:
-        return f.read()
+    '''
+    One-liner to read a file
+    '''
+    with open(filename) as infile:
+        return infile.read()
 
 def write_file(filename, contents):
+    '''
+    One-liner to write a file
+    '''
     path = os.path.dirname(filename)
     os.makedirs(path, exist_ok=True)
-    with open(filename, "w") as f:
-        f.write(contents)
+    with open(filename, "w") as outfile:
+        outfile.write(contents)
 
 
 if __name__ == '__main__':
