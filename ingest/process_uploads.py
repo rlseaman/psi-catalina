@@ -19,7 +19,7 @@ def main(argv=None):
 
     lockfile = os.path.join(basedir, ".lockfile")
     if not os.path.exists(lockfile):
-        with open(lockfile, "w") as lock:
+        with process_uploads(lockfile, "w") as lock:
             lock.write(".")
         try:
             run(basedir)
@@ -28,13 +28,13 @@ def main(argv=None):
 
     return 0
 
-def run(basedir):
-'''
-Process the given submission directory.
+def process_uploads(basedir):
+    '''
+    Process the given submission directory.
 
-The format of a submission directory is inst\year\date,
-so we will process each instrument first.
-'''
+    The format of a submission directory is inst\year\date,
+    so we will process each instrument first.
+    '''
     lidvids = []
     for instrument in INSTRUMENTS:
         lidvids.extend(process_inst_directory(basedir, instrument))
@@ -45,9 +45,9 @@ so we will process each instrument first.
         process_collection(collection_lids, collection_id)
 
 def process_collection(collection_lids, collection_id):
-'''
-Create the collection inventory and label.
-'''
+    '''
+    Create the collection inventory and label.
+    '''
     collection_lidvids = collection_lids[collection_id]
     collection_path = os.path.join(DEST_BASE, collection_id)
     os.makedirs(collection_path, exist_ok=True)
@@ -62,9 +62,9 @@ Create the collection inventory and label.
     write_collection(newmajor, newminor, template_filename, collection_id, collection_path)
 
 def get_last_version_number(collection_id, collection_path):
-'''
-Gets the most recent known version number for a collection
-'''
+    '''
+    Gets the most recent known version number for a collection
+    '''
     collection_files = [x for x in os.scandir() if x.name.startswith('collection') and x.name.endswith('.xml')]
     if collection_files:
         collection_labels = [parselabel(x) for x in collection_files]
@@ -73,9 +73,9 @@ Gets the most recent known version number for a collection
     return (0,0)
 
 def read_inventory(major, minor, collection_id, collection_dir):
-'''
-Reads in the inventory for the most recent collection update before this one
-'''
+    '''
+    Reads in the inventory for the most recent collection update before this one
+    '''
     if major:
         collection_filename = 'collection_%s_%s.%s.csv' % (collection_id, major, minor)
         collection_path = os.path.join(collection_dir, collection_filename)
@@ -83,17 +83,17 @@ Reads in the inventory for the most recent collection update before this one
     return []
 
 def write_inventory(major, minor, inventory, collection_id, collection_dir):
-'''
-Writes the collection inventory to a file
-'''
+    '''
+    Writes the collection inventory to a file
+    '''
     collection_filename = 'collection_%s_%s.%s.csv' % (collection_id, major, minor)
     collection_path = os.path.join(collection_dir, collection_filename)
     write_file(collection_path, '\r\n'.join(inventory) + '\r\n')
 
 def write_collection(major, minor, template_filename, collection_id, collection_dir):
-'''
-Writes the collection label to a file.
-'''
+    '''
+    Writes the collection label to a file.
+    '''
     template = read_file(template_filename)
     contents = template % (collection_id, major, minor)
     collection_filename = 'collection_%s_%s.%s.xml' % (collection_id, major, minor)
@@ -101,11 +101,11 @@ Writes the collection label to a file.
     write_file(collection_path, contents)
 
 def process_inst_directory(basedir, instrument):
-'''
-Processes the given instrument directory
+    '''
+    Processes the given instrument directory
 
-Inside of an instrument directory, the labels are organized in subdirectories by year.
-'''
+    Inside of an instrument directory, the labels are organized in subdirectories by year.
+    '''
     instdir = os.path.join(basedir, instrument)
 
     years = [x.name for x in os.scandir(instdir) if x.is_dir()]
@@ -117,11 +117,11 @@ Inside of an instrument directory, the labels are organized in subdirectories by
     return result
 
 def process_year_directory(yeardir, instrument, year):
-'''
-Processes the given year directory.
+    '''
+    Processes the given year directory.
 
-Inside of a year directory, the labels are organized in subdirectories by date.
-'''
+    Inside of a year directory, the labels are organized in subdirectories by date.
+    '''
     dates = [x.name for x in os.scandir(yeardir) if x.is_dir() and x.name not in IGNORE_DATES]
     result = []
     for date in dates:
@@ -134,11 +134,11 @@ Inside of a year directory, the labels are organized in subdirectories by date.
 
 
 def process_data(datadir, labeldir, instrument, year, date):
-'''
-Processes the data in a given data directory and label directory pair.
+    '''
+    Processes the data in a given data directory and label directory pair.
 
-This checks for a semaphore file before actually doing the processing.
-'''
+    This checks for a semaphore file before actually doing the processing.
+    '''
     if semaphore_exists(datadir) and semaphore_exists(labeldir):
         return process_uploads(datadir, labeldir, instrument, year, date)
     return []
@@ -148,16 +148,16 @@ def update_archive(archive_dir, changes):
     pass
 
 def semaphore_exists(dirname):
-'''
-Verifies that a semaphore file exists in the given directory.
-'''
+    '''
+    Verifies that a semaphore file exists in the given directory.
+    '''
     semaphore_file = os.path.join(dirname, '.autoxfer')
     return os.path.exists(semaphore_file)
 
 def process_uploads(datadir, labeldir, instrument, year, date):
-'''
-Processes the data in a given data directory and label directory pair.
-'''
+    '''
+    Processes the data in a given data directory and label directory pair.
+    '''
     files = [os.path.join(labeldir, x.name) for x in os.scandir(labeldir) if x.name.endswith('.xml')]
     labels = parselabels(files)
 
@@ -187,24 +187,24 @@ Processes the data in a given data directory and label directory pair.
 
 
 def parselabels(files):
-'''
-Extracts the keywords from a list of label files.
-'''
+    '''
+    Extracts the keywords from a list of label files.
+    '''
     # find all .xml files
     xmlfiles = [x for x in files if x.endswith('.xml')]
     return [extractlabel(parselabel(x), x) for x in xmlfiles]
 
 def find_files(dirname):
-'''
-Gets all of the files in a directory.
-'''
+    '''
+    Gets all of the files in a directory.
+    '''
     filelists = [[os.path.join(subdir,f) for f in files] for subdir, _, files in os.walk(dirname)]
     return itertools.chain.from_iterable(filelists)
 
 def extractlabel(label, labelfilename):
-'''
-Extracts keywords from a label file.
-'''
+    '''
+    Extracts keywords from a label file.
+    '''
     p = label.Product_Observational
     if p:
         result = {}
@@ -224,9 +224,9 @@ Extracts keywords from a label file.
 
 
 def extract_version(label):
-'''
-Extracts the version number from a collection label.
-'''
+    '''
+    Extracts the version number from a collection label.
+    '''
     p = label.Product_Collection
     if p:
         i = p.Identification_Area
@@ -236,9 +236,9 @@ Extracts the version number from a collection label.
         return (0,0)
 
 def parselabel(filename):
-'''
-Parses a label file into an xml document.
-'''
+    '''
+    Parses a label file into an xml document.
+    '''
     with open(filename) as f:
         return BeautifulSoup(f, 'lxml-xml')
 
@@ -247,9 +247,9 @@ def get_sibling(fq_file, f):
     return os.path.join(dirname, f)
 
 def ignore(file):
-'''
-Determines if a file should be ignored when processing.
-'''
+    '''
+    Determines if a file should be ignored when processing.
+    '''
     return any((file.endswith(name) for name in IGNORE_FILES))
 
 def extract_collection_id(lid):
