@@ -32,6 +32,8 @@ walk down each date directory
 
 parse the label file for each data file, and get the file name of the data file and the logical identifier
 
+get the software versions for the label, and validate against a whitelist
+
 move the label and data file to an archive staging directory
 
 generate a new collection inventory based on the files just ingested
