@@ -49,13 +49,13 @@ def process_upload_dir(basedir):
     lidvids = [product.keywords['lidvid'] for product in products]
     collection_lids = index(lidvids, extract_collection_id)
 
-    for collection_id in collection_lids:
-        process_collection(collection_lids, collection_id)
+    #for collection_id in collection_lids:
+    #    process_collection(collection_lids, collection_id)
 
     for product in products:
-        datadir = os.path.join(basedir, find_data_dir(product.inst, product.year, product.date))
-        labeldir = os.path.join(basedir, find_label_dir(product.inst, product.year, product.date))
-        move_file(product, datadir, labeldir)
+        datadir = find_data_dir(product.inst, product.year, product.date)
+        labeldir = find_label_dir(product.inst, product.year, product.date)
+        move_file(product, basedir, datadir, labeldir)
 
 def discover_products(basedir):
     '''
@@ -112,8 +112,8 @@ def process_labels(labeldir, instrument, year, date):
     '''
     Processes the data in a given data directory and label directory pair.
     '''
-    files = [os.path.join(labeldir, x.name) for x in os.scandir(labeldir) if is_label(x)]
-    products = [Product(infile, instrument, year, date) for infile in files]
+    files = [x.name for x in os.scandir(labeldir) if is_label(x)]
+    products = [Product(labeldir, infile, instrument, year, date) for infile in files]
     return products
 
 def find_data_dir(inst, year, date):
@@ -128,7 +128,7 @@ def find_label_dir(inst, year, date):
     '''
     return os.path.join(inst, year, "pds4", date)
 
-def move_file(product, datadir, labeldir):
+def move_file(product, basedir, datadir, labeldir):
     '''
     move a product to the archive directory
     '''
@@ -137,13 +137,15 @@ def move_file(product, datadir, labeldir):
     dest_directory = os.path.join(DEST_BASE, collection_id, product_directory)
     os.makedirs(dest_directory, exist_ok=True)
 
-    src_data = os.path.join(datadir, product.keywords['file_name'])
-    dest_data = os.path.join(dest_directory, product.keywords['file_name'])
-    os.rename(src_data, dest_data)
+    src_data = os.path.join(basedir, datadir, product.keywords['file_name'])
+    dest_data = os.path.join(dest_directory, datadir, product.keywords['file_name'])
+    print('Moved from %s to %s' % (src_data, dest_data))
+    #os.rename(src_data, dest_data)
 
-    src_label = os.path.join(labeldir, product.keywords['label_file_name'])
-    dest_label = os.path.join(dest_directory, product.keywords['label_file_name'])
-    os.rename(src_label, dest_label)
+    src_label = os.path.join(basedir, labeldir, product.labelfilename)
+    dest_label = os.path.join(dest_directory, datadir, product.labelfilename)
+    print('Moved from %s to %s' % (src_label, dest_label))
+    #os.rename(src_label, dest_label)
 
 
 def process_collection(collection_lids, collection_id):
@@ -168,9 +170,9 @@ def get_last_version_number(collection_path):
     Gets the most recent known version number for a collection
     '''
     collection_files = [x for x in os.scandir(collection_path) if is_collection_file(x)]
-    if collection_files:
-        collection_labels = [Collection(x) for x in collection_files]
-        collection_versions = [(x.major, x.minor) for x in collection_labels]
+    if collection_files:    
+        collection_labels = [Collection(collection_path, x.name) for x in collection_files]
+        collection_versions = [(x.keywords['major'], x.keywords['minor']) for x in collection_labels]
         return max(collection_versions)
     return (0, 0)
 
@@ -212,6 +214,9 @@ def update_archive(archive_dir, changes):
     '''
     Placeholder for code to actually upload data to the archive site
     '''
+    print('updating %s' % archive_dir)
+    for change in changes:
+        print(change)
 
 def semaphore_exists(dirname):
     '''

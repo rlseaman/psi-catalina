@@ -4,6 +4,7 @@ attributes for running through the pipeline.
 '''
 from bs4 import BeautifulSoup
 import label
+import os
 
 def extract_label(xmldoc):
     '''
@@ -17,11 +18,12 @@ class Collection:
     '''
     Represents the collection itself
     '''
-    def __init__(self, filename):
+    def __init__(self, collection_path, filename):
         '''
         Parses a label file into a Collection
         '''
-        with open(filename) as infile:
+        filepath = os.path.join(collection_path, filename)
+        with open(filepath) as infile:
             xmldoc = BeautifulSoup(infile, 'lxml-xml')
             if xmldoc:
                 self.keywords = extract_label(xmldoc)

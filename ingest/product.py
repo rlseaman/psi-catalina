@@ -4,6 +4,7 @@ attributes for running through the pipeline.
 '''
 from bs4 import BeautifulSoup
 import label
+import os
 
 def extract_label(xmldoc):
     '''
@@ -18,11 +19,12 @@ class Product:
     Represents the product itself.
     '''
 
-    def __init__(self, filename, inst, year, date):
+    def __init__(self, datapath, filename, inst, year, date):
         '''
         Parses a label file into a Product
         '''
-        with open(filename) as infile:
+        filepath = os.path.join(datapath, filename)
+        with open(filepath) as infile:
             xmldoc = BeautifulSoup(infile, 'lxml-xml')
             if xmldoc:
                 self.keywords = extract_label(xmldoc)
