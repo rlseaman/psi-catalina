@@ -2,9 +2,9 @@
 This class represents a product, and contains the necessary
 attributes for running through the pipeline.
 '''
+import os
 from bs4 import BeautifulSoup
 import label
-import os
 
 def extract_label(xmldoc):
     '''
