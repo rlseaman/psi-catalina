@@ -116,24 +116,12 @@ def process_labels(labeldir, instrument, year, date):
     products = [Product(labeldir, infile, instrument, year, date) for infile in files]
     return products
 
-def find_data_dir(inst, year, date):
-    '''
-    Convert the instrument name, year, and date into a data subdirectory
-    '''
-    return os.path.join(inst, year, date)
-
-def find_label_dir(inst, year, date):
-    '''
-    Convert the instrument name, year, and date into a label subdirectory
-    '''
-    return os.path.join(inst, year, "pds4", date)
-
 def move_product(product, basedir):
     '''
     move a product to the archive directory
     '''
-    datadir = find_data_dir(product.inst, product.year, product.date)
-    labeldir = find_label_dir(product.inst, product.year, product.date)
+    datadir = os.path.join(product.inst, product.year, product.date)
+    labeldir = os.path.join(product.inst, product.year, "pds4", product.date)
 
     collection_id = product.keywords['collection_id']
     product_directory = os.path.join(product.inst, product.year, product.date)
