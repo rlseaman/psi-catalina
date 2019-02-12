@@ -7,7 +7,6 @@ def extract_collection(collection):
     '''
     Extracts keywords from the Product_Observational element
     '''
-    print (collection.identification_area)
     result = {}
     result.update(extract_identification_area(collection.Identification_Area))
     return result
