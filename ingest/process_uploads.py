@@ -50,12 +50,10 @@ def process_upload_dir(basedir):
     collection_lids = index(lidvids, extract_collection_id)
     
     for product in products:
-        datadir = find_data_dir(product.inst, product.year, product.date)
-        labeldir = find_label_dir(product.inst, product.year, product.date)
-        move_file(product, basedir, datadir, labeldir)
+        move_product(product, basedir)
 
     for collection_id in collection_lids:
-        if [x for x in products if x.collection_id == collection_id]:
+        if [x for x in products if x.keywords['collection_id'] == collection_id]:
             process_collection(collection_lids, collection_id)
 
 
@@ -130,10 +128,13 @@ def find_label_dir(inst, year, date):
     '''
     return os.path.join(inst, year, "pds4", date)
 
-def move_file(product, basedir, datadir, labeldir):
+def move_product(product, basedir):
     '''
     move a product to the archive directory
     '''
+    datadir = find_data_dir(product.inst, product.year, product.date)
+    labeldir = find_label_dir(product.inst, product.year, product.date)
+
     collection_id = product.keywords['collection_id']
     product_directory = os.path.join(product.inst, product.year, product.date)
     dest_directory = os.path.join(DEST_BASE, collection_id, product_directory)
