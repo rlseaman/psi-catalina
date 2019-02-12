@@ -48,7 +48,7 @@ def process_upload_dir(basedir):
     products = discover_products(basedir)
     lidvids = [product.keywords['lidvid'] for product in products]
     collection_lids = index(lidvids, extract_collection_id)
-    
+
     for product in products:
         move_product(product, basedir)
 
@@ -161,9 +161,11 @@ def get_last_version_number(collection_path):
     Gets the most recent known version number for a collection
     '''
     collection_files = [x for x in os.scandir(collection_path) if is_collection_file(x)]
-    if collection_files:    
+    if collection_files:
         collection_labels = [Collection(collection_path, x.name) for x in collection_files]
-        collection_versions = [(x.keywords['major'], x.keywords['minor']) for x in collection_labels]
+        collection_versions = [
+            (x.keywords['major'], x.keywords['minor'])
+            for x in collection_labels]
         return max(collection_versions)
     return (0, 0)
 
