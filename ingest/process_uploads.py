@@ -48,14 +48,16 @@ def process_upload_dir(basedir):
     products = discover_products(basedir)
     lidvids = [product.keywords['lidvid'] for product in products]
     collection_lids = index(lidvids, extract_collection_id)
-
-    #for collection_id in collection_lids:
-    #    process_collection(collection_lids, collection_id)
-
+    
     for product in products:
         datadir = find_data_dir(product.inst, product.year, product.date)
         labeldir = find_label_dir(product.inst, product.year, product.date)
         move_file(product, basedir, datadir, labeldir)
+
+    for collection_id in collection_lids:
+        if [x for x in products if x.collection_id == collection_id]:
+            process_collection(collection_lids, collection_id)
+
 
 def discover_products(basedir):
     '''
