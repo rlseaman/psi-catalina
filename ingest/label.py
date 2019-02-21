@@ -18,6 +18,7 @@ def extract_product_observational(product_observational):
     result = {}
     result.update(extract_identification_area(product_observational.Identification_Area))
     result.update(extract_file_area(product_observational.File_Area_Observational))
+    result.update(extract_observation_area(product_observational.Observation_Area))
     return result
 
 def extract_identification_area(identification_area):
@@ -35,6 +36,15 @@ def extract_identification_area(identification_area):
         "lidvid": lid + "::" + vid,
         "major": major,
         "minor": minor
+    }
+
+def extract_observation_area(context_area):
+    return extract_time_coordinates(context_area.Time_Coordinates)
+
+def extract_time_coordinates(time_coordinates):
+    return {
+        "start_date": time_coordinates.start_date_time.string,
+        "stop_date": time_coordinates.stop_date_time.string
     }
 
 def extract_file_area(file_area):

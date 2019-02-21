@@ -53,8 +53,9 @@ def process_upload_dir(basedir):
         move_product(product, basedir)
 
     for collection_id in collection_lids:
-        if [x for x in products if x.keywords['collection_id'] == collection_id]:
-            process_collection(collection_lids, collection_id)
+        collection_products = [x for x in products if x.keywords['collection_id'] == collection_id]
+        if collection_products:
+            process_collection(collection_products, collection_id)
 
 
 def discover_products(basedir):
@@ -139,11 +140,13 @@ def move_product(product, basedir):
     #os.rename(src_label, dest_label)
 
 
-def process_collection(collection_lids, collection_id):
+def process_collection(collection_products, collection_id):
     '''
     Create the collection inventory and label.
     '''
-    collection_lidvids = collection_lids[collection_id]
+    collection_lidvids = [x.keywords['lidvid'] for x in collection_products]
+    start_date = min([x.keywords['start_date'] for x in collection_products])
+    stop_date = max([x.keywords['stop_date'] for x in collection_products])
     collection_path = os.path.join(DEST_BASE, collection_id)
     os.makedirs(collection_path, exist_ok=True)
     major, minor = get_last_version_number(collection_path)
@@ -154,7 +157,7 @@ def process_collection(collection_lids, collection_id):
     write_inventory(newmajor, newminor, inventory, collection_id, collection_path)
 
     template_filename = "collection_template.xml"
-    write_collection(newmajor, newminor, template_filename, collection_id, collection_path)
+    write_collection(newmajor, newminor, template_filename, collection_id, collection_path, start_date, stop_date)
 
 def get_last_version_number(collection_path):
     '''
@@ -193,7 +196,7 @@ def write_inventory(major, minor, inventory, collection_id, collection_dir):
     collection_path = os.path.join(collection_dir, collection_filename)
     write_file(collection_path, '\r\n'.join(inventory) + '\r\n')
 
-def write_collection(major, minor, template_filename, collection_id, collection_dir):
+def write_collection(major, minor, template_filename, collection_id, collection_dir, start_date, stop_date):
     '''
     Writes the collection label to a file.
     '''
@@ -202,8 +205,8 @@ def write_collection(major, minor, template_filename, collection_id, collection_
         'collection_id': collection_id,
         'major': major,
         'minor': minor,
-        'start_date': '',
-        'stop_date': '',
+        'start_date': start_date,
+        'stop_date': stop_date,
         'file_size': 0,
         'record_count': 0})
     collection_filename = 'collection_%s_%s.%s.xml' % (collection_id, major, minor)
