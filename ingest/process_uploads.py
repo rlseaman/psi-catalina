@@ -198,7 +198,14 @@ def write_collection(major, minor, template_filename, collection_id, collection_
     Writes the collection label to a file.
     '''
     template = read_file(template_filename)
-    contents = template % (collection_id, major, minor)
+    contents = template.format(**{
+        'collection_id': collection_id,
+        'major': major,
+        'minor': minor,
+        'start_date': '',
+        'stop_date': '',
+        'file_size': 0,
+        'record_count': 0})
     collection_filename = 'collection_%s_%s.%s.xml' % (collection_id, major, minor)
     collection_path = os.path.join(collection_dir, collection_filename)
     write_file(collection_path, contents)
