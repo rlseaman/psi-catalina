@@ -49,6 +49,9 @@ def process_upload_dir(basedir):
     lidvids = [product.keywords['lidvid'] for product in products]
     collection_lids = index(lidvids, extract_collection_id)
 
+    # run validate_tool on files here
+    # check whitelist here
+
     for product in products:
         move_product(product, basedir)
 
@@ -56,6 +59,8 @@ def process_upload_dir(basedir):
         collection_products = [x for x in products if x.keywords['collection_id'] == collection_id]
         if collection_products:
             process_collection(collection_products, collection_id)
+
+    # move files to the archive here
 
 
 def discover_products(basedir):
