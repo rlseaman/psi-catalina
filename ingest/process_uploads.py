@@ -11,6 +11,7 @@ import os.path
 import itertools
 from product import Product
 from collection import Collection
+from va
 
 INSTRUMENTS = ['G96']
 IGNORE_FILES = ['signature.md5', '.autoxfer']
@@ -45,20 +46,25 @@ def process_upload_dir(basedir):
     The format of a submission directory is inst/year/date,
     so we will process each instrument first.
     '''
-    products = discover_products(basedir)
-    lidvids = [product.keywords['lidvid'] for product in products]
-    collection_lids = index(lidvids, extract_collection_id)
 
     # run validate_tool on files here
-    # check whitelist here
+    validation_result = validation.Validation(basedir)
+    if not validation_result.failures:
+        products = discover_products(basedir)
+        lidvids = [product.keywords['lidvid'] for product in products]
+        collection_lids = index(lidvids, extract_collection_id)
 
-    for product in products:
-        move_product(product, basedir)
+        # check whitelist here
 
-    for collection_id in collection_lids:
-        collection_products = [x for x in products if x.keywords['collection_id'] == collection_id]
-        if collection_products:
-            process_collection(collection_products, collection_id)
+        for product in products:
+            move_product(product, basedir)
+
+        for collection_id in collection_lids:
+            collection_products = [x for x in products if x.keywords['collection_id'] == collection_id]
+            if collection_products:
+                process_collection(collection_products, collection_id)
+    else:
+        raise(Exception('There were validation errors'))
 
     # move files to the archive here
 
