@@ -25,7 +25,6 @@ def run_validator(file_name):
         '-S', IMAGING_SCHEMATRON, DISP_SCHEMATRON, GEOM_SCHEMATRON, CATALINA_SCHEMATRON,
         '-t', file_name], stdout=subprocess.PIPE)
     stdout = p.stdout
-    print (stdout)
     return json.loads(stdout)
 
 class Validation:
