@@ -11,7 +11,7 @@ import os.path
 import itertools
 from product import Product
 from collection import Collection
-from validation import Validation
+import validation
 
 INSTRUMENTS = ['G96']
 IGNORE_FILES = ['signature.md5', '.autoxfer']
@@ -48,7 +48,7 @@ def process_upload_dir(basedir):
     '''
 
     # run validate_tool on files here
-    validation_result = Validation(basedir)
+    validation_result = validation.Validation(basedir)
     if not validation_result.failures:
         products = discover_products(basedir)
         lidvids = [product.keywords['lidvid'] for product in products]
