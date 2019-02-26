@@ -135,7 +135,7 @@ def product_whitelisted(product):
     '''
     determines if all of the software for the product has been approved
     '''
-    if product.keywords['software']:
+    if 'software' in product.keywords:
         return all([software_whitelisted(x) for x in product.keywords['software']])
     return True
 
