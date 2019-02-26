@@ -11,7 +11,7 @@ import os.path
 import itertools
 from product import Product
 from collection import Collection
-from va
+from validation import Validation
 
 INSTRUMENTS = ['G96']
 IGNORE_FILES = ['signature.md5', '.autoxfer']
@@ -48,7 +48,7 @@ def process_upload_dir(basedir):
     '''
 
     # run validate_tool on files here
-    validation_result = validation.Validation(basedir)
+    validation_result = Validation(basedir)
     if not validation_result.failures:
         products = discover_products(basedir)
         lidvids = [product.keywords['lidvid'] for product in products]
@@ -56,8 +56,8 @@ def process_upload_dir(basedir):
 
         # check whitelist here
         for product in products:
-            if not on_software_whitelist(product)
-                raise(Exception('Some products used software not on the whitelist'))
+            if not product_whitelisted(product):
+                raise Exception('Some products used software not on the whitelist')
 
         for product in products:
             move_product(product, basedir)
@@ -67,7 +67,7 @@ def process_upload_dir(basedir):
             if collection_products:
                 process_collection(collection_products, collection_id)
     else:
-        raise(Exception('There were validation errors'))
+        raise Exception('There were validation errors')
 
     # move files to the archive here
 
@@ -131,9 +131,17 @@ def process_labels(labeldir, instrument, year, date):
     products = [Product(labeldir, infile, instrument, year, date) for infile in files]
     return products
 
-def on_software_whitelist(product)
+def product_whitelisted(product):
     '''
     determines if all of the software for the product has been approved
+    '''
+    if product.keywords['software']:
+        return all([software_whitelisted(x) for x in product.keywords['software']])
+    return True
+
+def software_whitelisted(software):
+    '''
+    determines if a single piece of software has been approved
     '''
     return True
 
