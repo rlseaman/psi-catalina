@@ -9,9 +9,11 @@ import sys
 import os
 import os.path
 import itertools
+import subprocess
 from product import Product
 from collection import Collection
 import validation
+
 
 INSTRUMENTS = ['G96']
 IGNORE_FILES = ['signature.md5', '.autoxfer']
@@ -70,6 +72,7 @@ def process_upload_dir(basedir):
         raise Exception('There were validation errors')
 
     # move files to the archive here
+    #subprocess.run(['rsync', './', 'sbnarchive:/dsk1/archive/pds4/non-mission/css'], cwd=DEST_BASE)
 
 
 def discover_products(basedir):
