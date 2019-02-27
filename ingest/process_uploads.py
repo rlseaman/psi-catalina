@@ -48,28 +48,34 @@ def process_upload_dir(basedir):
     The format of a submission directory is inst/year/date,
     so we will process each instrument first.
     '''
-
     # run validate_tool on files here
     validation_result = validation.Validation(basedir)
     if not validation_result.failures:
-        products = discover_products(basedir)
-        lidvids = [product.keywords['lidvid'] for product in products]
-        collection_lids = index(lidvids, extract_collection_id)
-
-        # check whitelist here
-        for product in products:
-            if not product_whitelisted(product):
-                raise Exception('Some products used software not on the whitelist')
-
-        for product in products:
-            move_product(product, basedir)
-
-        for collection_id in collection_lids:
-            collection_products = [x for x in products if x.keywords['collection_id'] == collection_id]
-            if collection_products:
-                process_collection(collection_products, collection_id)
+        process_validated_upload_dir(basedir)
     else:
         raise Exception('There were validation errors')
+
+
+def process_validated_upload_dir(basedir):
+    '''
+    process an upload directory, assuming it has been validated.
+    '''
+    products = discover_products(basedir)
+    lidvids = [product.keywords['lidvid'] for product in products]
+    collection_lids = index(lidvids, extract_collection_id)
+
+    # check whitelist here
+    for product in products:
+        if not product_whitelisted(product):
+            raise Exception('Some products used software not on the whitelist')
+
+    for product in products:
+        move_product(product, basedir)
+
+    for collection_id in collection_lids:
+        collection_products = [x for x in products if x.keywords['collection_id'] == collection_id]
+        if collection_products:
+            process_collection(collection_products, collection_id)
 
     # move files to the archive here
     #subprocess.run(['rsync', './', 'sbnarchive:/dsk1/archive/pds4/non-mission/css'], cwd=DEST_BASE)
