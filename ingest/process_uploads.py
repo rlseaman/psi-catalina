@@ -30,33 +30,28 @@ def main(argv=None):
 
     basedir = argv[1]
 
+    lockfile_run(basedir, validate_run, basedir, process_upload_dir, basedir)
+
+    return 0
+
+def lockfile_run(basedir, func, *args):
     lockfile = os.path.join(basedir, ".lockfile")
     if not os.path.exists(lockfile):
         with open(lockfile, "w") as lock:
             lock.write(".")
         try:
-            process_upload_dir(basedir)
+            func(*args)
         finally:
             os.remove(lockfile)
 
-    return 0
-
-def process_upload_dir(basedir):
-    '''
-    Process the given submission directory.
-
-    The format of a submission directory is inst/year/date,
-    so we will process each instrument first.
-    '''
-    # run validate_tool on files here
+def validate_run(basedir, func, *args):
     validation_result = validation.Validation(basedir)
     if not validation_result.failures:
-        process_validated_upload_dir(basedir)
+        func(*args)
     else:
         raise Exception('There were validation errors')
 
-
-def process_validated_upload_dir(basedir):
+def process_upload_dir(basedir):
     '''
     process an upload directory, assuming it has been validated.
     '''
