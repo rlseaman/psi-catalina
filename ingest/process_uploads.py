@@ -35,6 +35,10 @@ def main(argv=None):
     return 0
 
 def lockfile_run(basedir, func, *args):
+    '''
+    Run a function on this directory if one isn't already running. This is
+    enforced with a lockfile.
+    '''
     lockfile = os.path.join(basedir, ".lockfile")
     if not os.path.exists(lockfile):
         with open(lockfile, "w") as lock:
@@ -45,6 +49,9 @@ def lockfile_run(basedir, func, *args):
             os.remove(lockfile)
 
 def validate_run(basedir, func, *args):
+    '''
+    Run a function on this directory if the files in it are valid.
+    '''
     validation_result = validation.Validation(basedir)
     if not validation_result.failures:
         func(*args)
