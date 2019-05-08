@@ -62,8 +62,8 @@ def process_upload_dir(basedir):
     '''
     process an upload directory, assuming it has been validated.
     '''
-    products = discover_products(basedir)
-    lidvids = [product.keywords['lidvid'] for product in products]
+    products = list(discover_products(basedir))
+    lidvids = (product.keywords['lidvid'] for product in products)
     collection_lids = index(lidvids, extract_collection_id)
 
     # check whitelist here
@@ -88,10 +88,9 @@ def discover_products(basedir):
     Find all of the product labels in the directory and convert them
     to product objects
     '''
-    products = []
-    for instrument in INSTRUMENTS:
-        products.extend(process_inst_directory(basedir, instrument))
-    return products
+    return itertools.chain.from_iterable(process_inst_directory(basedir, instrument)
+                                         for instrument in INSTRUMENTS)
+
 
 def process_inst_directory(basedir, instrument):
     '''
@@ -100,14 +99,12 @@ def process_inst_directory(basedir, instrument):
     Inside of an instrument directory, the labels are organized in subdirectories by year.
     '''
     instdir = os.path.join(basedir, instrument)
+    yeardir = lambda year: os.path.join(instdir, year)
+    years = (x.name for x in os.scandir(instdir) if x.is_dir())
 
-    years = [x.name for x in os.scandir(instdir) if x.is_dir()]
+    return itertools.chain.from_iterable(process_year_directory(yeardir(year), instrument, year)
+                                         for year in years)
 
-    result = []
-    for year in years:
-        yeardir = os.path.join(instdir, year)
-        result.extend(process_year_directory(yeardir, instrument, year))
-    return result
 
 def process_year_directory(yeardir, instrument, year):
     '''
@@ -115,13 +112,13 @@ def process_year_directory(yeardir, instrument, year):
 
     Inside of a year directory, the labels are organized in subdirectories by date.
     '''
-    dates = [x.name for x in os.scandir(yeardir) if x.is_dir() and x.name not in IGNORE_DATES]
-    result = []
-    for date in dates:
-        datadir = os.path.join(yeardir, date)
-        labeldir = os.path.join(yeardir, "pds4", date)
-        result.extend(process_data(datadir, labeldir, instrument, year, date))
-    return result
+    dates = (x.name for x in os.scandir(yeardir) if x.is_dir() and x.name not in IGNORE_DATES)
+    datadir = lambda date: os.path.join(yeardir, date)
+    labeldir = lambda date: os.path.join(yeardir, "pds4", date)
+
+    return itertools.chain.from_iterable(
+        process_data(datadir(date), labeldir(date), instrument, year, date)
+        for date in dates)
 
 def process_data(datadir, labeldir, instrument, year, date):
     '''
@@ -138,7 +135,7 @@ def process_labels(labeldir, instrument, year, date):
     '''
     Processes the data in a given data directory and label directory pair.
     '''
-    files = [x.name for x in os.scandir(labeldir) if is_label(x)]
+    files = (x.name for x in os.scandir(labeldir) if is_label(x))
     products = [Product(labeldir, infile, instrument, year, date) for infile in files]
     return products
 
@@ -196,7 +193,13 @@ def process_collection(collection_products, collection_id):
     write_inventory(newmajor, newminor, inventory, collection_id, collection_path)
 
     template_filename = "collection_template.xml"
-    write_collection(newmajor, newminor, template_filename, collection_id, collection_path, start_date, stop_date)
+    write_collection(newmajor,
+                     newminor,
+                     template_filename,
+                     collection_id,
+                     collection_path,
+                     start_date,
+                     stop_date)
 
 def get_last_version_number(collection_path):
     '''
@@ -235,7 +238,13 @@ def write_inventory(major, minor, inventory, collection_id, collection_dir):
     collection_path = os.path.join(collection_dir, collection_filename)
     write_file(collection_path, '\r\n'.join(inventory) + '\r\n')
 
-def write_collection(major, minor, template_filename, collection_id, collection_dir, start_date, stop_date):
+def write_collection(major,
+                     minor,
+                     template_filename,
+                     collection_id,
+                     collection_dir,
+                     start_date,
+                     stop_date):
     '''
     Writes the collection label to a file.
     '''
