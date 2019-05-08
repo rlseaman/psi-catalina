@@ -1,0 +1,6 @@
+https://pds.nasa.gov/datastandards/schema/released/geom/v1/PDS4_GEOM_1A10.xsd
+https://pds.nasa.gov/datastandards/schema/released/geom/v1/PDS4_GEOM_1A10.sch
+https://pds.nasa.gov/datastandards/schema/released/disp/v1/PDS4_DISP_1B00.xsd
+https://pds.nasa.gov/datastandards/schema/released/disp/v1/PDS4_DISP_1B00.sch
+https://pds.nasa.gov/datastandards/schema/released/img/v1/PDS4_IMG_1A10_1510.xsd
+https://pds.nasa.gov/datastandards/schema/released/img/v1/PDS4_IMG_1A10_1510.sch
