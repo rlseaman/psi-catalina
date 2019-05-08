@@ -69,9 +69,8 @@ def process_upload_dir(basedir):
     collection_lids = index(lidvids, extract_collection_id)
 
     # check whitelist here
-    for product in products:
-        if not product_whitelisted(product):
-            raise Exception('Some products used software not on the whitelist')
+    if not all(product_whitelisted(x) for x in products):
+        raise Exception('Some products used software not on the whitelist')
 
     for product in products:
         move_product(product, basedir)
