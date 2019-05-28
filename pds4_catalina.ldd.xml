@@ -7,7 +7,7 @@
     <ldd_version_id>1.0.0.0</ldd_version_id>
     <full_name>J. Stone</full_name>
     <steward_id>sbn</steward_id>
-    <namespace_id>css</namespace_id>
+    <namespace_id>catalina</namespace_id>
     <comment>
         This dictionary contains additional metadata for the Catalina Sky Survey.
     </comment>
@@ -183,25 +183,25 @@
     -->
     <DD_Rule>
         <local_identifier>rule_all_corners</local_identifier>
-        <rule_context>css:Catalina_Parameters/css:Footprint</rule_context>
+        <rule_context>catalina:Catalina_Parameters/catalina:Footprint</rule_context>
         <DD_Rule_Statement>
             <rule_type>Assert</rule_type>
-            <rule_test>css:Corner_Position/css:corner_identification = 'Top Left'</rule_test>
+            <rule_test>catalina:Corner_Position/catalina:corner_identification = 'Top Left'</rule_test>
             <rule_message>A top-left corner must be provided</rule_message>
         </DD_Rule_Statement>
         <DD_Rule_Statement>
             <rule_type>Assert</rule_type>
-            <rule_test>css:Corner_Position/css:corner_identification = 'Top Right'</rule_test>
+            <rule_test>catalina:Corner_Position/catalina:corner_identification = 'Top Right'</rule_test>
             <rule_message>A top-right corner must be provided</rule_message>
         </DD_Rule_Statement>
         <DD_Rule_Statement>
             <rule_type>Assert</rule_type>
-            <rule_test>css:Corner_Position/css:corner_identification = 'Bottom Left'</rule_test>
+            <rule_test>catalina:Corner_Position/catalina:corner_identification = 'Bottom Left'</rule_test>
             <rule_message>A bottom-left corner must be provided</rule_message>
         </DD_Rule_Statement>
         <DD_Rule_Statement>
             <rule_type>Assert</rule_type>
-            <rule_test>css:Corner_Position/css:corner_identification = 'Bottom Right'</rule_test>
+            <rule_test>catalina:Corner_Position/catalina:corner_identification = 'Bottom Right'</rule_test>
             <rule_message>A bottom-right corner must be provided</rule_message>
         </DD_Rule_Statement>
     </DD_Rule>
