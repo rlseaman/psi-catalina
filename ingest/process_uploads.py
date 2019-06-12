@@ -12,9 +12,10 @@ import itertools
 import subprocess
 from product import Product
 from collection import Collection
+import iotools
 import validation
+import inventory
 
-INVENTORY_FILENAME_TEMPLATE = 'collection_{collection_id}_{major}.{minor}.csv'
 LABEL_FILENAME_TEMPLATE = 'collection_{collection_id}_{major}.{minor}.xml'
 INSTRUMENTS = ['G96']
 IGNORE_FILES = ['signature.md5', '.autoxfer']
@@ -187,12 +188,12 @@ def process_collection(collection_products, collection_id):
     collection_path = os.path.join(DEST_BASE, collection_id)
     os.makedirs(collection_path, exist_ok=True)
     old_lidvid = get_last_version_number(collection_path, collection_id)
-    inventory = read_inventory(old_lidvid, collection_path)
-    inventory.extend(['P,' + x for x in product_lidvids])
+    inv = inventory.read_inventory(old_lidvid, collection_path)
+    inv.extend(['P,' + x for x in product_lidvids])
 
     new_lidvid = make_collection_lidvid(collection_id, old_lidvid['major'] + 1, 0)
 
-    write_inventory(inventory, new_lidvid, collection_path)
+    inventory.write_inventory(inv, new_lidvid, collection_path)
 
     template_filename = "collection_template.xml"
     write_collection(template_filename,
@@ -229,23 +230,8 @@ def is_collection_file(candidate):
     '''
     return candidate.name.startswith('collection') and candidate.name.endswith('.xml')
 
-def read_inventory(collection_lidvid, collection_dir):
-    '''
-    Reads in the inventory for the most recent collection update before this one
-    '''
-    if collection_lidvid['major']:
-        collection_filename = INVENTORY_FILENAME_TEMPLATE.format(**collection_lidvid)
-        collection_path = os.path.join(collection_dir, collection_filename)
-        return open(collection_path).readlines()
-    return []
 
-def write_inventory(inventory, collection_lidvid, collection_dir):
-    '''
-    Writes the collection inventory to a file
-    '''
-    collection_filename = INVENTORY_FILENAME_TEMPLATE.format(**collection_lidvid)
-    collection_path = os.path.join(collection_dir, collection_filename)
-    write_file(collection_path, '\r\n'.join(inventory) + '\r\n')
+
 
 def write_collection(template_filename,
                      collection_lidvid,
@@ -255,7 +241,7 @@ def write_collection(template_filename,
     '''
     Writes the collection label to a file.
     '''
-    template = read_file(template_filename)
+    template = iotools.read_file(template_filename)
     contents = template.format(**{
         'collection_id': collection_lidvid['collection_id'],
         'major': collection_lidvid['major'],
@@ -266,7 +252,7 @@ def write_collection(template_filename,
         'record_count': 0})
     collection_filename = LABEL_FILENAME_TEMPLATE.format(**collection_lidvid)
     collection_path = os.path.join(collection_dir, collection_filename)
-    write_file(collection_path, contents)
+    iotools.write_file(collection_path, contents)
 
 def update_archive(archive_dir, changes):
     '''
@@ -330,21 +316,6 @@ def index(items, indexfunc):
         dictionary.setdefault(key, []).append(item)
     return dictionary
 
-def read_file(filename):
-    '''
-    One-liner to read a file
-    '''
-    with open(filename) as infile:
-        return infile.read()
-
-def write_file(filename, contents):
-    '''
-    One-liner to write a file
-    '''
-    path = os.path.dirname(filename)
-    os.makedirs(path, exist_ok=True)
-    with open(filename, "w") as outfile:
-        outfile.write(contents)
 
 if __name__ == '__main__':
     sys.exit(main())
