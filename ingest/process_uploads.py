@@ -10,6 +10,7 @@ import os
 import os.path
 import itertools
 import subprocess
+
 from product import Product
 from collection import Collection
 import iotools
@@ -188,12 +189,13 @@ def process_collection(collection_products, collection_id):
     collection_path = os.path.join(DEST_BASE, collection_id)
     os.makedirs(collection_path, exist_ok=True)
     old_lidvid = get_last_version_number(collection_path, collection_id)
-    inv = inventory.read_inventory(old_lidvid, collection_path)
-    inv.extend(['P,' + x for x in product_lidvids])
+    old_inv = inventory.read_inventory(old_lidvid, collection_path)
+    new_inv = inventory.from_lidvids('P', product_lidvids)
+    merged_inv = inventory.merge(old_inv, new_inv)
 
     new_lidvid = make_collection_lidvid(collection_id, old_lidvid['major'] + 1, 0)
 
-    inventory.write_inventory(inv, new_lidvid, collection_path)
+    inventory.write_inventory(merged_inv, new_lidvid, collection_path)
 
     template_filename = "collection_template.xml"
     write_collection(template_filename,
@@ -217,6 +219,9 @@ def get_last_version_number(collection_path, collection_id):
     return make_collection_lidvid(collection_id, 0, 0)
 
 def make_collection_lidvid(collection_id, major, minor):
+    '''
+    Creates a collection lidvid from its component parts
+    '''
     return {
         'major': major,
         'minor': minor,

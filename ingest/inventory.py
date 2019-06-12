@@ -26,3 +26,15 @@ def read_inventory(collection_lidvid, collection_dir):
         collection_path = os.path.join(collection_dir, collection_filename)
         return open(collection_path).readlines()
     return []
+
+def from_lidvids(member_type, product_lidvids):
+    '''
+    Generates an inventory from a list of product lidvids
+    '''
+    return [member_type + ',' + x for x in product_lidvids]
+
+def merge(old_inv, new_inv):
+    '''
+    Merges two inventories together. There is no collision resolution yet.
+    '''
+    return new_inv + old_inv
