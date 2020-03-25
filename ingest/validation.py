@@ -5,7 +5,6 @@ import subprocess
 import os.path
 import json
 
-MODEL_VERSION = '1A00'
 SCHEMA_PATH = '../schemas'
 
 DICTIONARIES = ['PDS4_IMG_1A10_1510',
@@ -25,7 +24,6 @@ def run_validator(file_name):
     process = subprocess.run(['validate',
                               '-D',
                               '-s', 'json',
-                              '-m', MODEL_VERSION,
                               '-x', *SCHEMA_PATHS,
                               '-S', *SCHEMATRON_PATHS,
                               '-t', file_name], stdout=subprocess.PIPE)
