@@ -11,7 +11,7 @@ SCHEMA_PATH = '../schemas'
 DICTIONARIES = ['PDS4_IMG_1A10_1510',
                 'PDS4_DISP_1B00',
                 'PDS4_GEOM_1A10',
-                'pds4_catalina.ldd_CSS_1000']
+                'PDS4_SURVEY_1000']
 
 SCHEMA_FILES = [x + '.xsd' for x in DICTIONARIES]
 SCHEMATRON_FILES = [x + '.sch' for x in DICTIONARIES]
