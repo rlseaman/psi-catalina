@@ -139,6 +139,18 @@ Data products related to workflow or per-NEO discovery:
 | Signature         | text    | signature  | MD5 signatures for file manifest             |
 | User              | table   | userfields | User field metadata                          |
 
+Nightly data products:
+
+| Product             | Type  | Ext  | Description |
+|---------------------|-------|------|-------------|
+| Survey planner info | text  | txt  |             |
+| Auto-pointing model | image | fits |             |
+| Sky coverage        | text  | cov  |             |
+| SVN versions        | text  | txt  |             |
+| End-of-night NEOs   | table | neos |             |
+
+
+
 ### 3.2. Inventory of documents
 
 These documents will be included in the archive. Documents can be either PDF/A or plain text.
