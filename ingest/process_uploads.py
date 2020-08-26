@@ -259,14 +259,14 @@ def write_collection(template_filename,
     Writes the collection label to a file.
     '''
     template = iotools.read_file(template_filename)
-    contents = template.format(**{
-        'collection_id': collection_lidvid['collection_id'],
-        'major': collection_lidvid['major'],
-        'minor': collection_lidvid['minor'],
-        'start_date': start_date,
-        'stop_date': stop_date,
-        'file_size': 0,
-        'record_count': 0})
+    contents = template.format(
+        collection_id=collection_lidvid['collection_id'],
+        major=collection_lidvid['major'],
+        minor=collection_lidvid['minor'],
+        start_date=start_date,
+        stop_date=stop_date,
+        file_size=0,
+        record_count=0)
     collection_filename = LABEL_FILENAME_TEMPLATE.format(**collection_lidvid)
     collection_path = os.path.join(collection_dir, collection_filename)
     iotools.write_file(collection_path, contents)
