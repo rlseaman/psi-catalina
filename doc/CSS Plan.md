@@ -165,7 +165,12 @@ These documents will be included in the archive. Documents can be either PDF/A o
 
 ### 3.3. Archive structure, such as grouping of products into collections and bundles.
 
-Refer explicitly to PDS4 standards and cite PDS4 standards reference as appropriate. Specify which version of the PDS information model will be used. [Given the data product inventory Carol will suggest a recommended structure and we can discuss and modify as needed.]
+
+Refer explicitly to PDS4 standards and cite PDS4 standards reference as appropriate. Specify 
+which version of the PDS information model will be used. [Given the data product inventory Carol 
+will suggest a recommended structure and we can discuss and modify as needed.]
+
+(see <https://sbn.psi.edu/css/CSS_Bundle_Design.xlsx>)
 
 ### 3.4. Detailed collection and bundle contents (probably in a table). 
 
