@@ -59,8 +59,8 @@ def validate_run(basedir, func, *args):
     if not validation_result.failures:
         func(*args)
     else:
-        func(*args)
-        #raise Exception('There were validation errors')
+        #func(*args)
+        raise Exception('There were validation errors')
 
 def process_upload_dir(basedir):
     '''
