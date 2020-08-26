@@ -85,7 +85,7 @@ def process_upload_dir(basedir):
     # move files to the archive here
     #subprocess.run(['rsync', './', 'sbnarchive:/dsk1/archive/pds4/non-mission/css'], cwd=DEST_BASE)
     
-    #delete files from temporary directory
+    #delete files from temporary directory/move to deletion area
 
 
 def discover_products(basedir):
