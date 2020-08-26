@@ -84,6 +84,8 @@ def process_upload_dir(basedir):
 
     # move files to the archive here
     #subprocess.run(['rsync', './', 'sbnarchive:/dsk1/archive/pds4/non-mission/css'], cwd=DEST_BASE)
+    
+    #delete files from temporary directory
 
 
 def discover_products(basedir):
@@ -158,7 +160,9 @@ def software_whitelisted(software):
 
 def move_product(product, basedir):
     '''
-    move a product to the archive directory
+    move a product to the archive directory. For the current workflow, this will be a
+    temporary directory on the processing server that will then get synced over
+    to the archive direcory.
     '''
     datadir = os.path.join(product.inst, product.year, product.date)
     labeldir = os.path.join(product.inst, product.year, "pds4", product.date)
