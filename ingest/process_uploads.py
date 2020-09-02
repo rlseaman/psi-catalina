@@ -10,6 +10,7 @@ import os
 import os.path
 import itertools
 import subprocess
+import functools
 
 from product import Product
 from collection import Collection
@@ -18,10 +19,12 @@ import validation
 import inventory
 
 LABEL_FILENAME_TEMPLATE = 'collection_{collection_id}_{major}.{minor}.xml'
-INSTRUMENTS = ['G96']
+INSTRUMENTS = ['703','G96','I52','V06']
 IGNORE_FILES = ['signature.md5', '.autoxfer']
 IGNORE_DATES = ['pds4']
-DEST_BASE = '.'
+DELIVERY_BASE = '/data/CSS'
+ARCHIVE_BASE = '/data/ready/'
+DELETION_BASE = '/sbn/to_delete/'
 
 def main(argv=None):
     '''
@@ -55,37 +58,43 @@ def validate_run(basedir, func, *args):
     '''
     Run a function on this directory if the files in it are valid.
     '''
-    validation_result = validation.Validation(basedir)
-    if not validation_result.failures:
-        func(*args)
-    else:
+    #validation_result = validation.Validation(basedir)
+    #if not validation_result.failures:
+    func(*args)
+    #else:
         #func(*args)
-        raise Exception('There were validation errors')
+    #    raise Exception('There were validation errors')
 
 def process_upload_dir(basedir):
     '''
     process an upload directory, assuming it has been validated.
     '''
+    print ("Discovering products at: " + basedir)
     products = list(discover_products(basedir))
-    lidvids = (product.keywords['lidvid'] for product in products)
-    collection_lids = index(lidvids, extract_collection_id)
+
+    print(products)
+    #lidvids = (product.keywords['lidvid'] for product in products)
+    #collection_lids = index(lidvids, extract_collection_id)
 
     # check whitelist here
-    if not all(product_whitelisted(x) for x in products):
-        raise Exception('Some products used software not on the whitelist')
+    #if not all(product_whitelisted(x) for x in products):
+    #    raise Exception('Some products used software not on the whitelist')
 
-    for product in products:
-        move_product(product, basedir)
+    #for product in products:
+    #    move_product(product, basedir)
 
-    for collection_id in collection_lids:
-        collection_products = [x for x in products if x.keywords['collection_id'] == collection_id]
-        if collection_products:
-            process_collection(collection_products, collection_id)
+    #for collection_id in collection_lids:
+    #    collection_products = [x for x in products if x.keywords['collection_id'] == collection_id]
+    #    if collection_products:
+    #        process_collection(collection_products, collection_id)
 
     # move files to the archive here
-    #subprocess.run(['rsync', './', 'sbnarchive:/dsk1/archive/pds4/non-mission/css'], cwd=DEST_BASE)
+    # subprocess.run(['rsync', './', 'sbnarchive:/dsk1/archive/pds4/non-mission/css'], cwd=ARCHIVE_BASE)
+    #print("rsync from " + ARCHIVE_BASE)
     
-    #delete files from temporary directory/move to deletion area
+    #deletion_area_dest = os.path.join(DELETION_BASE, "placeholder")
+    # delete files from temporary directory/move to deletion area
+    #print("moving to " + deletion_area_dest)
 
 
 def discover_products(basedir):
@@ -103,7 +112,9 @@ def process_inst_directory(basedir, instrument):
 
     Inside of an instrument directory, the labels are organized in subdirectories by year.
     '''
+
     instdir = os.path.join(basedir, instrument)
+    print ("processing " + instdir + "...")
     yeardir = lambda year: os.path.join(instdir, year)
     years = (x.name for x in os.scandir(instdir) if x.is_dir())
 
@@ -164,21 +175,27 @@ def move_product(product, basedir):
     temporary directory on the processing server that will then get synced over
     to the archive direcory.
     '''
+
+    # INSTRUMENT/YEAR/DATE
     datadir = os.path.join(product.inst, product.year, product.date)
+
+    # INSTRUMENT/YEAR/pds4/DATE
     labeldir = os.path.join(product.inst, product.year, "pds4", product.date)
 
     collection_id = product.keywords['collection_id']
-    product_directory = os.path.join(product.inst, product.year, product.date)
-    dest_directory = os.path.join(DEST_BASE, collection_id, product_directory)
+    file_name=product.keywords['file_name']
+
+    dest_directory = os.path.join(ARCHIVE_BASE, collection_id, datadir)
     os.makedirs(dest_directory, exist_ok=True)
 
-    src_data = os.path.join(basedir, datadir, product.keywords['file_name'])
-    dest_data = os.path.join(dest_directory, datadir, product.keywords['file_name'])
-    print('Moved from %s to %s' % (src_data, dest_data))
+    src_data_file = os.path.join(basedir, datadir, file_name)
+
+    dest_data = os.path.join(dest_directory, file_name)
+    print('Moved from %s to %s' % (src_data_file, dest_data))
     #os.rename(src_data, dest_data)
 
     src_label = os.path.join(basedir, labeldir, product.labelfilename)
-    dest_label = os.path.join(dest_directory, datadir, product.labelfilename)
+    dest_label = os.path.join(dest_directory, product.labelfilename)
     print('Moved from %s to %s' % (src_label, dest_label))
     #os.rename(src_label, dest_label)
 
@@ -190,7 +207,7 @@ def process_collection(collection_products, collection_id):
     start_date = min([x.keywords['start_date'] for x in collection_products])
     stop_date = max([x.keywords['stop_date'] for x in collection_products])
 
-    collection_path = os.path.join(DEST_BASE, collection_id)
+    collection_path = os.path.join(ARCHIVE_BASE, collection_id)
     os.makedirs(collection_path, exist_ok=True)
     
     new_lidvid = merge_inventories(collection_path, collection_id, collection_products)
