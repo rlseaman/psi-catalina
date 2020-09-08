@@ -1,0 +1,585 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_1900.sch" schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<?xml-model href="https://pds.nasa.gov/pds4/img/v1/PDS4_IMG_1900.sch" schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<?xml-model href="https://pds.nasa.gov/pds4/disp/v1/PDS4_DISP_1700.sch" schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<?xml-model href="https://pds.nasa.gov/pds4/geom/v1/PDS4_GEOM_1900_1510.sch" schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<?xml-model href="https://pds.nasa.gov/pds4/proc/v1/PDS4_PROC_1900.sch" schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<?xml-model href="https://pds.nasa.gov/pds4/mission/catalina/v1/PDS4_SURVEY_1A00_1000.sch" schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<Product_Observational
+  xmlns="http://pds.nasa.gov/pds4/pds/v1"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:disp="http://pds.nasa.gov/pds4/disp/v1"
+  xmlns:geom="http://pds.nasa.gov/pds4/geom/v1"
+  xmlns:img="http://pds.nasa.gov/pds4/img/v1"
+  xmlns:proc="http://pds.nasa.gov/pds4/proc/v1"
+  xmlns:survey="http://pds.nasa.gov/pds4/survey/v1"
+  xsi:schemaLocation="http://pds.nasa.gov/pds4/pds/v1 https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_1900.xsd
+                      http://pds.nasa.gov/pds4/img/v1 https://pds.nasa.gov/pds4/img/v1/PDS4_IMG_1900.xsd
+                      http://pds.nasa.gov/pds4/disp/v1 https://pds.nasa.gov/pds4/disp/v1/PDS4_DISP_1700.xsd
+                      http://pds.nasa.gov/pds4/geom/v1 https://pds.nasa.gov/pds4/disp/v1/PDS4_GEOM_1900_1510.xsd
+                      http://pds.nasa.gov/pds4/proc/v1 https://pds.nasa.gov/pds4/disp/v1/PDS4_PROC_1900.xsd
+                      http://pds.nasa.gov/pds4/survey/v1 https://pds.nasa.gov/pds4/mission/survey/v1/PDS4_SURVEY_1A00_1000.xsd">
+  <Identification_Area>
+    <logical_identifier>{{ logical_id }}</logical_identifier>
+    <version_id>1.0</version_id>
+    <title>Detections</title>
+    <information_model_version>1.10.0.0</information_model_version>
+    <product_class>Product_Observational</product_class>
+    <Citation_Information>
+      <author_list>Seaman, R., Christensen, E., Gibbs, A., and Shelly, F.</author_list>
+      <publication_year>2019</publication_year>
+      <description>Binary table of point source detections</description>
+    </Citation_Information>
+  </Identification_Area>
+  <Observation_Area>
+    <Time_Coordinates>
+      <start_date_time>2020-07-26T08:09:28.097Z</start_date_time>
+      <stop_date_time>2020-07-26T08:09:58.097Z</stop_date_time>
+    </Time_Coordinates>
+    <Primary_Result_Summary>
+      <purpose>Science</purpose>
+      <processing_level>Derived</processing_level>
+      <Science_Facets>
+        <discipline_name>Small Bodies</discipline_name>
+        <facet1>Physical Properties</facet1>
+      </Science_Facets>
+    </Primary_Result_Summary>
+    <Investigation_Area>
+      <name>None</name>
+      <type>Other Investigation</type>
+      <Internal_Reference>
+        <lid_reference>urn:nasa:pds:context:investigation:individual.none</lid_reference>
+        <reference_type>data_to_investigation</reference_type>
+      </Internal_Reference>
+    </Investigation_Area>
+    <Observing_System>
+      <Observing_System_Component>
+        <name>10K x 10K CCD detector</name>
+        <type>Instrument</type>
+        <Internal_Reference>
+          <lid_reference>urn:nasa:pds:context:instrument:placeholder</lid_reference>
+          <reference_type>is_instrument</reference_type>
+        </Internal_Reference>
+      </Observing_System_Component>
+      <Observing_System_Component>
+        <name>Catalina 1.5 Meter Survey Telescope</name>
+        <type>Telescope</type>
+        <Internal_Reference>
+          <lid_reference>urn:nasa:pds:context:telescope:placeholder</lid_reference>
+          <reference_type>is_telescope</reference_type>
+        </Internal_Reference>
+      </Observing_System_Component>
+      <Observing_System_Component>
+        <name>Steward Observatory, Mt. Lemmon Station</name>
+        <type>Observatory</type>
+        <Internal_Reference>
+          <lid_reference>urn:nasa:pds:context:facility:observatory.steward_mount_lemmon_station</lid_reference>
+          <reference_type>is_facility</reference_type>
+        </Internal_Reference>
+      </Observing_System_Component>
+    </Observing_System>
+    <Target_Identification>
+      <name>Multiple</name>
+      <type>Asteroid</type>
+    </Target_Identification>
+    <Discipline_Area>
+      <survey:Survey>
+        <survey:Footprint>
+          <survey:epoch>2000.0</survey:epoch>
+          <survey:equinox>2000.0</survey:equinox>
+          <survey:Corner_Position>
+            <survey:corner_identification>Top Left</survey:corner_identification>
+            <survey:Coordinate>
+              <survey:right_ascension unit="deg">312.68476</survey:right_ascension>
+              <survey:declination unit="deg">-22.08318</survey:declination>
+            </survey:Coordinate>
+          </survey:Corner_Position>
+          <survey:Corner_Position>
+            <survey:corner_identification>Top Right</survey:corner_identification>
+            <survey:Coordinate>
+              <survey:right_ascension unit="deg">314.91410</survey:right_ascension>
+              <survey:declination unit="deg">-22.08318</survey:declination>
+            </survey:Coordinate>
+          </survey:Corner_Position>
+          <survey:Corner_Position>
+            <survey:corner_identification>Bottom Left</survey:corner_identification>
+            <survey:Coordinate>
+              <survey:right_ascension unit="deg">312.68476</survey:right_ascension>
+              <survey:declination unit="deg">-24.31252</survey:declination>
+            </survey:Coordinate>
+          </survey:Corner_Position>
+          <survey:Corner_Position>
+            <survey:corner_identification>Bottom Right</survey:corner_identification>
+            <survey:Coordinate>
+              <survey:right_ascension unit="deg">314.91410</survey:right_ascension>
+              <survey:declination unit="deg">-24.31252</survey:declination>
+            </survey:Coordinate>
+          </survey:Corner_Position>
+        </survey:Footprint>
+        <survey:Limiting_Magnitude>
+          <survey:band_name>G</survey:band_name>
+          <survey:limiting_magnitude_object_type>asteroid</survey:limiting_magnitude_object_type>
+          <survey:Limiting_Magnitude_By_Percentage>
+            <survey:percentage>50</survey:percentage>
+            <survey:magnitude>21.21</survey:magnitude>
+          </survey:Limiting_Magnitude_By_Percentage>
+          <survey:Limiting_Magnitude_By_Percentage>
+            <survey:percentage>0</survey:percentage>
+            <survey:magnitude>22.46</survey:magnitude>
+          </survey:Limiting_Magnitude_By_Percentage>
+        </survey:Limiting_Magnitude>
+        <survey:field_id>S23133</survey:field_id>
+        <survey:observation_purpose>Survey</survey:observation_purpose>
+        <survey:observation_type>Sidereal stare</survey:observation_type>
+      </survey:Survey>
+      <proc:Processing_Information>
+        <Local_Internal_Reference>
+          <local_identifier_reference>table</local_identifier_reference>
+          <local_reference_type>processing_information_to_data_object</local_reference_type>
+        </Local_Internal_Reference>
+        <proc:Process>
+          <proc:Software>
+            <proc:Software_Program>
+              <proc:name>sex</proc:name>
+              <proc:program_version>2103</proc:program_version>
+            </proc:Software_Program>
+          </proc:Software>
+        </proc:Process>
+      </proc:Processing_Information>
+    </Discipline_Area>
+  </Observation_Area>
+  <File_Area_Observational>
+    <File>
+      <file_name>G96_20200726_2B_S23133_01_0001.detf</file_name>
+      <local_identifier>file</local_identifier>
+      <creation_date_time>2020-08-07T18:49:21.000Z</creation_date_time>
+      <file_size unit="byte">250560</file_size>
+    </File>
+    <Header>
+      <name>FITS File Header</name>
+      <offset unit="byte">0</offset>
+      <object_length unit="byte">2880</object_length>
+      <parsing_standard_id>FITS 3.0</parsing_standard_id>
+    </Header>
+    <Header>
+      <name>Field Header Card Header</name>
+      <offset unit="byte">2880</offset>
+      <object_length unit="byte">2880</object_length>
+      <parsing_standard_id>FITS 3.0</parsing_standard_id>
+    </Header>
+    <Table_Binary>
+      <name>Field Header Card</name>
+      <offset unit="byte">5760</offset>
+      <records>215</records>
+      <Record_Binary>
+        <fields>1</fields>
+        <groups>0</groups>
+        <record_length unit="byte">80</record_length>
+        <Field_Binary>
+          <name>record</name>
+          <field_number>1</field_number>
+          <field_location unit="byte">1</field_location>
+          <data_type>ASCII_String</data_type>
+          <field_length unit="byte">80</field_length>
+          <description>An entry in the header card</description>
+        </Field_Binary>
+      </Record_Binary>
+    </Table_Binary>
+    <Header>
+      <name>Table header</name>
+      <offset unit="byte">23040</offset>
+      <object_length unit="byte">8640</object_length>
+      <parsing_standard_id>FITS 3.0</parsing_standard_id>
+      <description>The header for the table</description>
+    </Header>
+    <Table_Binary>
+      <local_identifier>table</local_identifier>
+      <offset unit="byte">31680</offset>
+      <records>714</records>
+      <Record_Binary>
+        <fields>44</fields>
+        <groups>0</groups>
+        <record_length unit="byte">116</record_length>
+        <Field_Binary>
+          <name>DETS_INDEX</name>
+          <field_number>1</field_number>
+          <field_location unit="byte">1</field_location>
+          <data_type>SignedMSB4</data_type>
+          <field_length unit="byte">4</field_length>
+          <description>Running object number</description>
+        </Field_Binary>
+        <Field_Binary>
+          <name>DETECTION_NUMBER</name>
+          <field_number>2</field_number>
+          <field_location unit="byte">5</field_location>
+          <data_type>SignedMSB4</data_type>
+          <field_length unit="byte">4</field_length>
+          <description>Moving object detection number</description>
+        </Field_Binary>
+        <Field_Binary>
+          <name>FRAME</name>
+          <field_number>3</field_number>
+          <field_location unit="byte">9</field_location>
+          <data_type>SignedMSB4</data_type>
+          <field_length unit="byte">4</field_length>
+          <description>Exposure frame number</description>
+        </Field_Binary>
+        <Field_Binary>
+          <name>SEXTRACTOR_INDEX</name>
+          <field_number>4</field_number>
+          <field_location unit="byte">13</field_location>
+          <data_type>SignedMSB4</data_type>
+          <field_length unit="byte">4</field_length>
+          <description>Number of this detection in sextractor file</description>
+        </Field_Binary>
+        <Field_Binary>
+          <name>TIMESTAMP</name>
+          <field_number>5</field_number>
+          <field_location unit="byte">17</field_location>
+          <data_type>IEEE754MSBDouble</data_type>
+          <field_length unit="byte">8</field_length>
+          <unit>Julian day</unit>
+          <description>Timestamp in Julian days of this astrometric observation</description>
+        </Field_Binary>
+        <Field_Binary>
+          <name>RA</name>
+          <field_number>6</field_number>
+          <field_location unit="byte">25</field_location>
+          <data_type>IEEE754MSBDouble</data_type>
+          <field_length unit="byte">8</field_length>
+          <unit>deg</unit>
+          <description></description>
+        </Field_Binary>
+        <Field_Binary>
+          <name>DEC</name>
+          <field_number>7</field_number>
+          <field_location unit="byte">33</field_location>
+          <data_type>IEEE754MSBDouble</data_type>
+          <field_length unit="byte">8</field_length>
+          <unit>deg</unit>
+          <description></description>
+        </Field_Binary>
+        <Field_Binary>
+          <name>PIXEL_X</name>
+          <field_number>8</field_number>
+          <field_location unit="byte">41</field_location>
+          <data_type>IEEE754MSBDouble</data_type>
+          <field_length unit="byte">8</field_length>
+          <unit>pixel</unit>
+          <description></description>
+        </Field_Binary>
+        <Field_Binary>
+          <name>PIXEL_Y</name>
+          <field_number>9</field_number>
+          <field_location unit="byte">49</field_location>
+          <data_type>IEEE754MSBDouble</data_type>
+          <field_length unit="byte">8</field_length>
+          <unit>pixel</unit>
+          <description></description>
+        </Field_Binary>
+        <Field_Binary>
+          <name>MAGNITUDE</name>
+          <field_number>10</field_number>
+          <field_location unit="byte">57</field_location>
+          <data_type>IEEE754MSBSingle</data_type>
+          <field_length unit="byte">4</field_length>
+          <unit>mag</unit>
+          <description></description>
+        </Field_Binary>
+        <Field_Binary>
+          <name>FWHM</name>
+          <field_number>11</field_number>
+          <field_location unit="byte">61</field_location>
+          <data_type>IEEE754MSBSingle</data_type>
+          <field_length unit="byte">4</field_length>
+          <unit>arcsec</unit>
+          <description></description>
+        </Field_Binary>
+        <Field_Binary>
+          <name>PSF_ELONGATION</name>
+          <field_number>12</field_number>
+          <field_location unit="byte">65</field_location>
+          <data_type>IEEE754MSBSingle</data_type>
+          <field_length unit="byte">4</field_length>
+          <unit>pixel</unit>
+          <description></description>
+        </Field_Binary>
+        <Field_Binary>
+          <name>PSF_ANGLE</name>
+          <field_number>13</field_number>
+          <field_location unit="byte">69</field_location>
+          <data_type>IEEE754MSBSingle</data_type>
+          <field_length unit="byte">4</field_length>
+          <unit>deg</unit>
+          <description></description>
+        </Field_Binary>
+        <Field_Binary>
+          <name>RMS_ERROR</name>
+          <field_number>14</field_number>
+          <field_location unit="byte">73</field_location>
+          <data_type>IEEE754MSBSingle</data_type>
+          <field_length unit="byte">4</field_length>
+          <unit>arcsec</unit>
+          <description></description>
+        </Field_Binary>
+        <Field_Binary>
+          <name>SIGMA</name>
+          <field_number>15</field_number>
+          <field_location unit="byte">77</field_location>
+          <data_type>IEEE754MSBSingle</data_type>
+          <field_length unit="byte">4</field_length>
+          <unit>arcsec</unit>
+          <description></description>
+        </Field_Binary>
+        <Field_Binary>
+          <name>AREA</name>
+          <field_number>16</field_number>
+          <field_location unit="byte">81</field_location>
+          <data_type>SignedMSB4</data_type>
+          <field_length unit="byte">4</field_length>
+          <unit>pixel**2</unit>
+          <description></description>
+        </Field_Binary>
+        <Field_Binary>
+          <name>MTD_SCORE</name>
+          <field_number>17</field_number>
+          <field_location unit="byte">85</field_location>
+          <data_type>IEEE754MSBSingle</data_type>
+          <field_length unit="byte">4</field_length>
+          <description></description>
+        </Field_Binary>
+        <Field_Binary>
+          <name>VELOCITY</name>
+          <field_number>18</field_number>
+          <field_location unit="byte">89</field_location>
+          <data_type>IEEE754MSBSingle</data_type>
+          <field_length unit="byte">4</field_length>
+          <unit>deg/day</unit>
+          <description></description>
+        </Field_Binary>
+        <Field_Binary>
+          <name>POSITION_ANGLE</name>
+          <field_number>19</field_number>
+          <field_location unit="byte">93</field_location>
+          <data_type>IEEE754MSBSingle</data_type>
+          <field_length unit="byte">4</field_length>
+          <unit>deg</unit>
+          <description></description>
+        </Field_Binary>
+        <Field_Binary>
+          <name>PIXELS_PER_FRAME</name>
+          <field_number>20</field_number>
+          <field_location unit="byte">97</field_location>
+          <data_type>IEEE754MSBSingle</data_type>
+          <field_length unit="byte">4</field_length>
+          <unit>pixel</unit>
+          <description></description>
+        </Field_Binary>
+        <Field_Binary>
+          <name>TAIL</name>
+          <field_number>21</field_number>
+          <field_location unit="byte">101</field_location>
+          <data_type>IEEE754MSBSingle</data_type>
+          <field_length unit="byte">4</field_length>
+          <unit>pixel</unit>
+          <description></description>
+        </Field_Binary>
+        <Field_Binary>
+          <name>DIGEST2_SCORE</name>
+          <field_number>22</field_number>
+          <field_location unit="byte">105</field_location>
+          <data_type>IEEE754MSBSingle</data_type>
+          <field_length unit="byte">4</field_length>
+          <description>Score from digest2 algorithm</description>
+        </Field_Binary>
+        <Field_Binary>
+          <name>DET_TYPE</name>
+          <field_number>23</field_number>
+          <field_location unit="byte">109</field_location>
+          <data_type>ASCII_String</data_type>
+          <field_length unit="byte">12</field_length>
+          <description></description>
+        </Field_Binary>
+        <Field_Binary>
+          <name>ERRX2WIN_IMAGE</name>
+          <field_number>24</field_number>
+          <field_location unit="byte">121</field_location>
+          <data_type>IEEE754MSBDouble</data_type>
+          <field_length unit="byte">8</field_length>
+          <unit>pixel**2</unit>
+          <description></description>
+        </Field_Binary>
+        <Field_Binary>
+          <name>ERRY2WIN_IMAGE</name>
+          <field_number>25</field_number>
+          <field_location unit="byte">129</field_location>
+          <data_type>IEEE754MSBDouble</data_type>
+          <field_length unit="byte">8</field_length>
+          <unit>pixel**2</unit>
+          <description></description>
+        </Field_Binary>
+        <Field_Binary>
+          <name>ERRXYWIN_IMAGE</name>
+          <field_number>26</field_number>
+          <field_location unit="byte">137</field_location>
+          <data_type>IEEE754MSBDouble</data_type>
+          <field_length unit="byte">8</field_length>
+          <unit>pixel**2</unit>
+          <description></description>
+        </Field_Binary>
+        <Field_Binary>
+          <name>HITS_ID</name>
+          <field_number>27</field_number>
+          <field_location unit="byte">145</field_location>
+          <data_type>ASCII_String</data_type>
+          <field_length unit="byte">40</field_length>
+          <description></description>
+        </Field_Binary>
+        <Field_Binary>
+          <name>MPCFLAGS</name>
+          <field_number>28</field_number>
+          <field_location unit="byte">185</field_location>
+          <data_type>SignedMSB4</data_type>
+          <field_length unit="byte">4</field_length>
+          <description></description>
+        </Field_Binary>
+        <Field_Binary>
+          <name>IAU_NUMBER</name>
+          <field_number>29</field_number>
+          <field_location unit="byte">189</field_location>
+          <data_type>SignedMSB4</data_type>
+          <field_length unit="byte">4</field_length>
+          <description></description>
+        </Field_Binary>
+        <Field_Binary>
+          <name>DESIGNATION</name>
+          <field_number>30</field_number>
+          <field_location unit="byte">193</field_location>
+          <data_type>ASCII_String</data_type>
+          <field_length unit="byte">20</field_length>
+          <description>Minor Planet Center preliminary designation</description>
+        </Field_Binary>
+        <Field_Binary>
+          <name>EXTNUM</name>
+          <field_number>31</field_number>
+          <field_location unit="byte">213</field_location>
+          <data_type>SignedMSB4</data_type>
+          <field_length unit="byte">4</field_length>
+          <description></description>
+        </Field_Binary>
+        <Field_Binary>
+          <name>ERRTHETAWIN_IMAGE</name>
+          <field_number>32</field_number>
+          <field_location unit="byte">217</field_location>
+          <data_type>IEEE754MSBSingle</data_type>
+          <field_length unit="byte">4</field_length>
+          <unit>deg</unit>
+          <description></description>
+        </Field_Binary>
+        <Field_Binary>
+          <name>FLUX_ISOCOR</name>
+          <field_number>33</field_number>
+          <field_location unit="byte">221</field_location>
+          <data_type>IEEE754MSBSingle</data_type>
+          <field_length unit="byte">4</field_length>
+          <unit>count</unit>
+          <description></description>
+        </Field_Binary>
+        <Field_Binary>
+          <name>FLUX_AUTO</name>
+          <field_number>34</field_number>
+          <field_location unit="byte">225</field_location>
+          <data_type>IEEE754MSBSingle</data_type>
+          <field_length unit="byte">4</field_length>
+          <unit>count</unit>
+          <description></description>
+        </Field_Binary>
+        <Field_Binary>
+          <name>FLUXERR_AUTO</name>
+          <field_number>35</field_number>
+          <field_location unit="byte">229</field_location>
+          <data_type>IEEE754MSBSingle</data_type>
+          <field_length unit="byte">4</field_length>
+          <unit>count</unit>
+          <description></description>
+        </Field_Binary>
+        <Field_Binary>
+          <name>FLUX_RADIUS</name>
+          <field_number>36</field_number>
+          <field_location unit="byte">233</field_location>
+          <data_type>IEEE754MSBSingle</data_type>
+          <field_length unit="byte">4</field_length>
+          <unit>pixel</unit>
+          <description></description>
+        </Field_Binary>
+        <Field_Binary>
+          <name>TEMP_DESIG</name>
+          <field_number>37</field_number>
+          <field_location unit="byte">237</field_location>
+          <data_type>ASCII_String</data_type>
+          <field_length unit="byte">24</field_length>
+          <description></description>
+        </Field_Binary>
+        <Field_Binary>
+          <name>OBSERVER_MARK</name>
+          <field_number>38</field_number>
+          <field_location unit="byte">261</field_location>
+          <data_type>SignedMSB4</data_type>
+          <field_length unit="byte">4</field_length>
+          <description></description>
+        </Field_Binary>
+        <Field_Binary>
+          <name>DETECTION_CHECK</name>
+          <field_number>39</field_number>
+          <field_location unit="byte">265</field_location>
+          <data_type>SignedMSB4</data_type>
+          <field_length unit="byte">4</field_length>
+          <description></description>
+        </Field_Binary>
+        <Field_Binary>
+          <name>DETECTION_SENT</name>
+          <field_number>40</field_number>
+          <field_location unit="byte">269</field_location>
+          <data_type>SignedMSB4</data_type>
+          <field_length unit="byte">4</field_length>
+          <description></description>
+        </Field_Binary>
+        <Field_Binary>
+          <name>MU_MAX</name>
+          <field_number>41</field_number>
+          <field_location unit="byte">273</field_location>
+          <data_type>IEEE754MSBSingle</data_type>
+          <field_length unit="byte">4</field_length>
+          <unit>mag/arcsec**2</unit>
+          <description></description>
+        </Field_Binary>
+        <Field_Binary>
+          <name>MU_THRESHOLD</name>
+          <field_number>42</field_number>
+          <field_location unit="byte">277</field_location>
+          <data_type>IEEE754MSBSingle</data_type>
+          <field_length unit="byte">4</field_length>
+          <unit>mag/arcsec**2</unit>
+          <description></description>
+        </Field_Binary>
+        <Field_Binary>
+          <name>DELTAMU</name>
+          <field_number>43</field_number>
+          <field_location unit="byte">281</field_location>
+          <data_type>IEEE754MSBSingle</data_type>
+          <field_length unit="byte">4</field_length>
+          <unit>mag/arcsec**2</unit>
+          <description></description>
+        </Field_Binary>
+        <Field_Binary>
+          <name>PRECOVERY</name>
+          <field_number>44</field_number>
+          <field_location unit="byte">285</field_location>
+          <data_type>SignedMSB4</data_type>
+          <field_length unit="byte">4</field_length>
+          <description></description>
+        </Field_Binary>
+      </Record_Binary>
+    </Table_Binary>
+  </File_Area_Observational>
+</Product_Observational>
