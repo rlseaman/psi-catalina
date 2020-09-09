@@ -94,6 +94,6 @@ def extract_software(software):
     Extract from the software element
     '''
     return {
-        "software_id": software.software_id.string,
-        "software_version_id": software.software_version_id.string
+        "software_id": software.software_id.string if software.software_id else '', 
+        "software_version_id": software.software_version_id.string if software.software_version_id else ''
     }

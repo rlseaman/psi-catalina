@@ -22,8 +22,8 @@ LABEL_FILENAME_TEMPLATE = 'collection_{collection_id}_{major}.{minor}.xml'
 INSTRUMENTS = ['703','G96','I52','V06']
 IGNORE_FILES = ['signature.md5', '.autoxfer']
 IGNORE_DATES = ['pds4']
-DELIVERY_BASE = '/data/CSS'
-ARCHIVE_BASE = '/data/ready/'
+DELIVERY_BASE = '/data/test'
+ARCHIVE_BASE = '/data/test_ready/'
 DELETION_BASE = '/sbn/to_delete/'
 
 def main(argv=None):
@@ -72,21 +72,24 @@ def process_upload_dir(basedir):
     print ("Discovering products at: " + basedir)
     products = list(discover_products(basedir))
 
-    print(products)
-    #lidvids = (product.keywords['lidvid'] for product in products)
-    #collection_lids = index(lidvids, extract_collection_id)
+    #print(products)
+    lidvids = (product.keywords['lidvid'] for product in products)
+    collection_lids = index(lidvids, extract_collection_id)
+
+    #print (lidvids)
+    print (collection_lids)
 
     # check whitelist here
     #if not all(product_whitelisted(x) for x in products):
     #    raise Exception('Some products used software not on the whitelist')
 
-    #for product in products:
-    #    move_product(product, basedir)
+    for product in products:
+        move_product(product, basedir)
 
-    #for collection_id in collection_lids:
-    #    collection_products = [x for x in products if x.keywords['collection_id'] == collection_id]
-    #    if collection_products:
-    #        process_collection(collection_products, collection_id)
+    for collection_id in collection_lids:
+        collection_products = [x for x in products if x.keywords['collection_id'] == collection_id]
+        if collection_products:
+            process_collection(collection_products, collection_id)
 
     # move files to the archive here
     # subprocess.run(['rsync', './', 'sbnarchive:/dsk1/archive/pds4/non-mission/css'], cwd=ARCHIVE_BASE)
@@ -102,8 +105,8 @@ def discover_products(basedir):
     Find all of the product labels in the directory and convert them
     to product objects
     '''
-    return itertools.chain.from_iterable(process_inst_directory(basedir, instrument)
-                                         for instrument in INSTRUMENTS)
+    return itertools.chain.from_iterable(
+        process_inst_directory(basedir, instrument) for instrument in INSTRUMENTS)
 
 
 def process_inst_directory(basedir, instrument):
@@ -112,14 +115,15 @@ def process_inst_directory(basedir, instrument):
 
     Inside of an instrument directory, the labels are organized in subdirectories by year.
     '''
+    print ("Processing instrument directory", instrument)
 
     instdir = os.path.join(basedir, instrument)
     print ("processing " + instdir + "...")
     yeardir = lambda year: os.path.join(instdir, year)
     years = (x.name for x in os.scandir(instdir) if x.is_dir())
 
-    return itertools.chain.from_iterable(process_year_directory(yeardir(year), instrument, year)
-                                         for year in years)
+    return itertools.chain.from_iterable(
+        process_year_directory(yeardir(year), instrument, year) for year in years)
 
 
 def process_year_directory(yeardir, instrument, year):
@@ -128,13 +132,13 @@ def process_year_directory(yeardir, instrument, year):
 
     Inside of a year directory, the labels are organized in subdirectories by date.
     '''
+    print ("processing year directory", instrument, year)
     dates = (x.name for x in os.scandir(yeardir) if x.is_dir() and x.name not in IGNORE_DATES)
     datadir = lambda date: os.path.join(yeardir, date)
     labeldir = lambda date: os.path.join(yeardir, "pds4", date)
 
     return itertools.chain.from_iterable(
-        process_data(datadir(date), labeldir(date), instrument, year, date)
-        for date in dates)
+        process_data(datadir(date), labeldir(date), instrument, year, date) for date in dates)
 
 def process_data(datadir, labeldir, instrument, year, date):
     '''
@@ -232,7 +236,7 @@ def merge_inventories(collection_path, collection_id, collection_products):
 
     new_lidvid = make_collection_lidvid(collection_id, old_lidvid['major'] + 1, 0)
 
-    inventory.write_inventory(inventory.merge(old_inv, new_inv), new_lidvid, collection_path)
+    #inventory.write_inventory(inventory.merge(old_inv, new_inv), new_lidvid, collection_path)
 
     return new_lidvid
 
@@ -290,7 +294,8 @@ def write_collection(template_filename,
         record_count=0)
     collection_filename = LABEL_FILENAME_TEMPLATE.format(**collection_lidvid)
     collection_path = os.path.join(collection_dir, collection_filename)
-    iotools.write_file(collection_path, contents)
+    print(contents)
+    #iotools.write_file(collection_path, contents)
 
 def update_archive(archive_dir, changes):
     '''
