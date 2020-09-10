@@ -89,7 +89,7 @@ def process_upload_dir(basedir):
     for collection_id in collection_lids:
         collection_products = [x for x in products if x.keywords['collection_id'] == collection_id]
         if collection_products:
-            process_collection(collection_products, collection_id)
+            process_data_collection(collection_products, collection_id)
 
     # move files to the archive here
     # subprocess.run(['rsync', './', 'sbnarchive:/dsk1/archive/pds4/non-mission/css'], cwd=ARCHIVE_BASE)
@@ -133,7 +133,8 @@ def process_year_directory(yeardir, instrument, year):
     Inside of a year directory, the labels are organized in subdirectories by date.
     '''
     print ("processing year directory", instrument, year)
-    dates = (x.name for x in os.scandir(yeardir) if x.is_dir() and x.name not in IGNORE_DATES)
+    dates = [x.name for x in os.scandir(yeardir) if x.is_dir() and x.name not in IGNORE_DATES]
+    print(dates)
     datadir = lambda date: os.path.join(yeardir, date)
     labeldir = lambda date: os.path.join(yeardir, "pds4", date)
 
@@ -146,8 +147,10 @@ def process_data(datadir, labeldir, instrument, year, date):
 
     This checks for a semaphore file before actually doing the processing.
     '''
+    print ("processing data directory", instrument, year, date)
     if semaphore_exists(datadir) and semaphore_exists(labeldir):
         return process_labels(labeldir, instrument, year, date)
+    print("no semaphore")
     return []
     #update_archive(archive_dir, changes)
 
@@ -179,6 +182,8 @@ def move_product(product, basedir):
     temporary directory on the processing server that will then get synced over
     to the archive direcory.
     '''
+    print ("Moving files for:", product.labelfilename)
+    print(product.keywords)
 
     # INSTRUMENT/YEAR/DATE
     datadir = os.path.join(product.inst, product.year, product.date)
@@ -187,36 +192,40 @@ def move_product(product, basedir):
     labeldir = os.path.join(product.inst, product.year, "pds4", product.date)
 
     collection_id = product.keywords['collection_id']
-    file_name=product.keywords['file_name']
+    file_names=product.keywords['file_names'] if 'file_names' in product.keywords else [product.keywords['file_name']]
 
     dest_directory = os.path.join(ARCHIVE_BASE, collection_id, datadir)
     os.makedirs(dest_directory, exist_ok=True)
 
-    src_data_file = os.path.join(basedir, datadir, file_name)
+    for file_name in file_names:
+        src_data_file = os.path.join(basedir, datadir, file_name)
 
-    dest_data = os.path.join(dest_directory, file_name)
-    print('Moved from %s to %s' % (src_data_file, dest_data))
-    #os.rename(src_data, dest_data)
+        dest_data = os.path.join(dest_directory, file_name)
+        print('Moved from %s to %s' % (src_data_file, dest_data))
+        #os.rename(src_data, dest_data)
 
-    src_label = os.path.join(basedir, labeldir, product.labelfilename)
-    dest_label = os.path.join(dest_directory, product.labelfilename)
-    print('Moved from %s to %s' % (src_label, dest_label))
-    #os.rename(src_label, dest_label)
+        src_label = os.path.join(basedir, labeldir, product.labelfilename)
+        dest_label = os.path.join(dest_directory, product.labelfilename)
+        print('Moved from %s to %s' % (src_label, dest_label))
+        #os.rename(src_label, dest_label)
 
 
-def process_collection(collection_products, collection_id):
+def process_data_collection(collection_products, collection_id):
     '''
     Create the collection inventory and label.
     '''
-    start_date = min([x.keywords['start_date'] for x in collection_products])
-    stop_date = max([x.keywords['stop_date'] for x in collection_products])
+    print("Processing collection:", collection_id)
+    start_dates = [x.keywords['start_date'] for x in collection_products if 'start_date' in x.keywords]
+    stop_dates = [x.keywords['stop_date'] for x in collection_products if 'stop_date' in x.keywords]
+    start_date = min(start_dates) if start_dates else None
+    stop_date = max(stop_dates) if stop_dates else None
 
     collection_path = os.path.join(ARCHIVE_BASE, collection_id)
     os.makedirs(collection_path, exist_ok=True)
     
     new_lidvid = merge_inventories(collection_path, collection_id, collection_products)
 
-    template_filename = "collection_template.xml"
+    template_filename = "data_collection_template.xml" if start_date and stop_date else "other_collection_template.xml"
     write_collection(template_filename,
                      new_lidvid,
                      collection_path,
@@ -236,7 +245,7 @@ def merge_inventories(collection_path, collection_id, collection_products):
 
     new_lidvid = make_collection_lidvid(collection_id, old_lidvid['major'] + 1, 0)
 
-    #inventory.write_inventory(inventory.merge(old_inv, new_inv), new_lidvid, collection_path)
+    inventory.write_inventory(inventory.merge(old_inv, new_inv), new_lidvid, collection_path)
 
     return new_lidvid
 
@@ -294,8 +303,9 @@ def write_collection(template_filename,
         record_count=0)
     collection_filename = LABEL_FILENAME_TEMPLATE.format(**collection_lidvid)
     collection_path = os.path.join(collection_dir, collection_filename)
-    print(contents)
-    #iotools.write_file(collection_path, contents)
+    print("writing to: ", collection_path)
+    #print(contents)
+    iotools.write_file(collection_path, contents)
 
 def update_archive(archive_dir, changes):
     '''
@@ -309,6 +319,7 @@ def semaphore_exists(dirname):
     '''
     Verifies that a semaphore file exists in the given directory.
     '''
+    print ("checking for semaphore in", dirname)
     semaphore_file = os.path.join(dirname, '.autoxfer')
     return os.path.exists(semaphore_file)
 

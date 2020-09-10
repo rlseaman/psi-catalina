@@ -15,8 +15,10 @@ def write_inventory(inventory, collection_lidvid, collection_dir):
     '''
     collection_filename = INVENTORY_FILENAME_TEMPLATE.format(**collection_lidvid)
     collection_path = os.path.join(collection_dir, collection_filename)
-    #iotools.write_file(collection_path, '\r\n'.join(inventory) + '\r\n')
-    print('\r\n'.join(inventory) + '\r\n')
+    
+    print ("writing to: ", collection_path)
+    #print('\r\n'.join(inventory) + '\r\n')
+    iotools.write_file(collection_path, '\r\n'.join(inventory) + '\r\n')
 
 def read_inventory(collection_lidvid, collection_dir):
     '''

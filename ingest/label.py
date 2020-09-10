@@ -2,6 +2,7 @@
 Common code for label extraction
 '''
 import os
+import itertools
 
 def extract_collection(collection):
     '''
@@ -21,6 +22,19 @@ def extract_product_observational(product_observational):
     result.update(extract_observation_area(product_observational.Observation_Area))
     result.update(extract_discipline_area(product_observational.Discipline_Area))
     return result
+
+def extract_product_document(product_document):
+    '''
+    Extracts keywords from the Product_Document element
+    '''
+    result = {}
+    result.update(extract_identification_area(product_document.Identification_Area))
+    result.update(extract_document(product_document.Document))
+    #result.update(extract_file_area(product_observational.File_Area_Observational))
+    #result.update(extract_observation_area(product_observational.Observation_Area))
+    #result.update(extract_discipline_area(product_observational.Discipline_Area))
+    return result
+
 
 def extract_identification_area(identification_area):
     '''
@@ -96,4 +110,21 @@ def extract_software(software):
     return {
         "software_id": software.software_id.string if software.software_id else '', 
         "software_version_id": software.software_version_id.string if software.software_version_id else ''
+    }
+
+def extract_document(document):
+    editions = [extract_document_edition(document_edition) for document_edition in document.find_all("Document_Edition")]
+    return {
+        'file_names': list(itertools.chain.from_iterable([edition['file_names'] for edition in editions]))
+    }
+
+def extract_document_edition(document_edition):
+    files = [extract_document_file(document_file) for document_file in document_edition.find_all("document_file")]
+    return {
+        'file_names': [docfile['filename'] for docfile in files]
+    }
+
+def extract_document_file(document_file):
+    return {
+        'filename': document_file.string
     }
