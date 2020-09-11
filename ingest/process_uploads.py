@@ -72,12 +72,14 @@ def process_upload_dir(basedir):
     print ("Discovering products at: " + basedir)
     products = list(discover_products(basedir))
 
+    print (len(products), " products discovered")
+
     #print(products)
     lidvids = (product.keywords['lidvid'] for product in products)
     collection_lids = index(lidvids, extract_collection_id)
 
     #print (lidvids)
-    print (collection_lids)
+    #print (collection_lids)
 
     # check whitelist here
     #if not all(product_whitelisted(x) for x in products):
@@ -91,10 +93,6 @@ def process_upload_dir(basedir):
         if collection_products:
             process_data_collection(collection_products, collection_id)
 
-    # move files to the archive here
-    # subprocess.run(['rsync', './', 'sbnarchive:/dsk1/archive/pds4/non-mission/css'], cwd=ARCHIVE_BASE)
-    #print("rsync from " + ARCHIVE_BASE)
-    
     #deletion_area_dest = os.path.join(DELETION_BASE, "placeholder")
     # delete files from temporary directory/move to deletion area
     #print("moving to " + deletion_area_dest)
@@ -160,6 +158,7 @@ def process_labels(labeldir, instrument, year, date):
     '''
     files = (x.name for x in os.scandir(labeldir) if is_label(x))
     products = [Product(labeldir, infile, instrument, year, date) for infile in files]
+    print(len(products), " products in ", instrument, year, date)
     return products
 
 def product_whitelisted(product):
@@ -192,22 +191,23 @@ def move_product(product, basedir):
     labeldir = os.path.join(product.inst, product.year, "pds4", product.date)
 
     collection_id = product.keywords['collection_id']
-    file_names=product.keywords['file_names'] if 'file_names' in product.keywords else [product.keywords['file_name']]
 
     dest_directory = os.path.join(ARCHIVE_BASE, collection_id, datadir)
     os.makedirs(dest_directory, exist_ok=True)
 
+    src_label = os.path.join(basedir, labeldir, product.labelfilename)
+    dest_label = os.path.join(dest_directory, product.labelfilename)
+    print('Moved from %s to %s' % (src_label, dest_label))
+    os.rename(src_label, dest_label)
+
+    file_names=product.keywords['file_names'] if 'file_names' in product.keywords else [product.keywords['file_name']]
+    if not file_names:
+        raise Exception("No filenames in label:", product.labelfilename)
     for file_name in file_names:
-        src_data_file = os.path.join(basedir, datadir, file_name)
-
+        src_data = os.path.join(basedir, datadir, file_name)
         dest_data = os.path.join(dest_directory, file_name)
-        print('Moved from %s to %s' % (src_data_file, dest_data))
-        #os.rename(src_data, dest_data)
-
-        src_label = os.path.join(basedir, labeldir, product.labelfilename)
-        dest_label = os.path.join(dest_directory, product.labelfilename)
-        print('Moved from %s to %s' % (src_label, dest_label))
-        #os.rename(src_label, dest_label)
+        print('Moved from %s to %s' % (src_data, dest_data))
+        os.rename(src_data, dest_data)
 
 
 def process_data_collection(collection_products, collection_id):

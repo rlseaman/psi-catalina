@@ -119,12 +119,12 @@ def extract_document(document):
     }
 
 def extract_document_edition(document_edition):
-    files = [extract_document_file(document_file) for document_file in document_edition.find_all("document_file")]
+    files = [extract_document_file(document_file) for document_file in document_edition.find_all("Document_File")]
     return {
         'file_names': [docfile['filename'] for docfile in files]
     }
 
 def extract_document_file(document_file):
     return {
-        'filename': document_file.string
-    }
+        'filename': document_file.file_name.string
+    }   
