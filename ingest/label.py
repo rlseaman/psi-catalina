@@ -10,6 +10,8 @@ def extract_collection(collection):
     '''
     result = {}
     result.update(extract_identification_area(collection.Identification_Area))
+    result.update(extract_context_area(collection.Context_Area))
+
     return result
 
 def extract_product_observational(product_observational):
@@ -58,6 +60,16 @@ def extract_observation_area(context_area):
     Extract from the observation_area element
     '''
     return extract_time_coordinates(context_area.Time_Coordinates)
+
+def extract_context_area(context_area):
+    '''
+    Extract from the observation_area element
+    '''
+    result = {}
+    if context_area.Time_Coordinates:
+        result.update(extract_time_coordinates(context_area.Time_Coordinates))
+    return result
+
 
 def extract_time_coordinates(time_coordinates):
     '''

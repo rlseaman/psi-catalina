@@ -219,15 +219,18 @@ def process_data_collection(collection_products, collection_id):
     Create the collection inventory and label.
     '''
     print("Processing collection:", collection_id)
-    start_dates = [x.keywords['start_date'] for x in collection_products if 'start_date' in x.keywords]
-    stop_dates = [x.keywords['stop_date'] for x in collection_products if 'stop_date' in x.keywords]
-    start_date = min(start_dates) if start_dates else None
-    stop_date = max(stop_dates) if stop_dates else None
-
     collection_path = os.path.join(ARCHIVE_BASE, collection_id)
     os.makedirs(collection_path, exist_ok=True)
+
+    collection_labels = get_collection_labels(collection_path, collection_id)
+    print(collection_labels)
+
+    start_dates = [x.keywords['start_date'] for x in collection_products if 'start_date' in x.keywords] + multilookup(collection_labels, 'start_date')
+    stop_dates = [x.keywords['stop_date'] for x in collection_products if 'stop_date' in x.keywords] + multilookup(collection_labels, 'stop_date')
+    start_date = min(start_dates) if start_dates else None
+    stop_date = max(stop_dates) if stop_dates else None
     
-    new_lidvid = merge_inventories(collection_path, collection_id, collection_products)
+    new_lidvid = merge_inventories(collection_path, collection_id, collection_products, collection_labels)
 
     template_filename = COLLECTION_FILES.get(collection_id, "other_collection_template.xml")
     write_collection(template_filename,
@@ -236,14 +239,14 @@ def process_data_collection(collection_products, collection_id):
                      start_date,
                      stop_date)
 
-def merge_inventories(collection_path, collection_id, collection_products):
+def merge_inventories(collection_path, collection_id, collection_products, collection_labels):
     '''
     Produces a new collection inventory file, and returns the lidvid for the
     new collection
     '''
     product_lidvids = [x.keywords['lidvid'] for x in collection_products]
 
-    old_lidvid = get_last_version_number(collection_path, collection_id)
+    old_lidvid = get_last_version_number(collection_id, collection_labels)
     old_inv = inventory.read_inventory(old_lidvid, collection_path)
     new_inv = inventory.from_lidvids('P', product_lidvids)
 
@@ -253,20 +256,29 @@ def merge_inventories(collection_path, collection_id, collection_products):
 
     return new_lidvid
 
+def multilookup(labels, keyword):
+    return [x.keywords[keyword] for x in labels if keyword in x.keywords]
 
-def get_last_version_number(collection_path, collection_id):
+def get_last_version_number(collection_id, collection_labels):
     '''
     Gets the most recent known version number for a collection
     '''
-    collection_files = [x for x in os.scandir(collection_path) if is_collection_file(x)]
-    if collection_files:
-        collection_labels = [Collection(collection_path, x.name) for x in collection_files]
+    if collection_labels:
         collection_versions = [
             (x.keywords['major'], x.keywords['minor'])
             for x in collection_labels]
         major, minor = max(collection_versions)
         return make_collection_lidvid(collection_id, major, minor)
     return make_collection_lidvid(collection_id, 0, 0)
+
+def get_collection_labels(collection_path, collection_id):
+    '''
+    Gets the most recent known version number for a collection
+    '''
+    collection_files = [x for x in os.scandir(collection_path) if is_collection_file(x)]
+    return [Collection(collection_path, x.name) for x in collection_files]
+    
+
 
 def make_collection_lidvid(collection_id, major, minor):
     '''
