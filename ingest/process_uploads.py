@@ -26,6 +26,10 @@ DELIVERY_BASE = '/data/test'
 ARCHIVE_BASE = '/data/test_ready/'
 DELETION_BASE = '/sbn/to_delete/'
 
+COLLECTION_FILES = {
+    "data_derived" : "data_collection_template.xml"
+}
+
 def main(argv=None):
     '''
     Extract command line arguments, ensure that the script is not already running,
@@ -225,7 +229,7 @@ def process_data_collection(collection_products, collection_id):
     
     new_lidvid = merge_inventories(collection_path, collection_id, collection_products)
 
-    template_filename = "data_collection_template.xml" if start_date and stop_date else "other_collection_template.xml"
+    template_filename = COLLECTION_FILES.get(collection_id, "other_collection_template.xml")
     write_collection(template_filename,
                      new_lidvid,
                      collection_path,
