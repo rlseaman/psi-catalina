@@ -6,7 +6,7 @@ import itertools
 
 def extract_collection(collection):
     '''
-    Extracts keywords from the Product_Observational element
+    Extracts keywords from the Product_Collection element
     '''
     result = {}
     result.update(extract_identification_area(collection.Identification_Area))
@@ -125,18 +125,28 @@ def extract_software(software):
     }
 
 def extract_document(document):
+    '''
+    Extracts keywords form the Document element
+    '''
+
     editions = [extract_document_edition(document_edition) for document_edition in document.find_all("Document_Edition")]
     return {
         'file_names': list(itertools.chain.from_iterable([edition['file_names'] for edition in editions]))
     }
 
 def extract_document_edition(document_edition):
+    '''
+    Extracts keywords form the Document_Edition element
+    '''
     files = [extract_document_file(document_file) for document_file in document_edition.find_all("Document_File")]
     return {
         'file_names': [docfile['filename'] for docfile in files]
     }
 
 def extract_document_file(document_file):
+    '''
+    Extracts keywords form the Document_File element
+    '''
     return {
         'filename': document_file.file_name.string
     }   
