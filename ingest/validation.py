@@ -17,11 +17,13 @@ SCHEMATRON_FILES = [x + '.sch' for x in DICTIONARIES]
 SCHEMA_PATHS = [os.path.join(SCHEMA_PATH, x) for x in SCHEMA_FILES]
 SCHEMATRON_PATHS = [os.path.join(SCHEMA_PATH, x) for x in SCHEMATRON_FILES]
 
+VALIDATE_CMD='validate'
+
 def run_validator(file_name):
     '''
     Runs the label validatior on the given file or directory
     '''
-    process = subprocess.run(['validate',
+    process = subprocess.run([VALIDATE_CMD,
                               '-D',
                               '-s', 'json',
                               '-x', *SCHEMA_PATHS,

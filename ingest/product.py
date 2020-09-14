@@ -12,6 +12,10 @@ def extract_label(xmldoc):
     '''
     if xmldoc.Product_Observational:
         return label.extract_product_observational(xmldoc.Product_Observational)
+    if xmldoc.Product_Document:
+        return label.extract_product_document(xmldoc.Product_Document)
+
+    print ("Unknown product type")
     return {}
 
 class Product:
@@ -32,3 +36,5 @@ class Product:
                 self.year = year
                 self.date = date
                 self.labelfilename = filename
+                if 'lidvid' not in self.keywords:
+                    raise Exception("no lidvid in file:" + filepath)

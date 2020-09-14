@@ -2,13 +2,16 @@
 Common code for label extraction
 '''
 import os
+import itertools
 
 def extract_collection(collection):
     '''
-    Extracts keywords from the Product_Observational element
+    Extracts keywords from the Product_Collection element
     '''
     result = {}
     result.update(extract_identification_area(collection.Identification_Area))
+    result.update(extract_context_area(collection.Context_Area))
+
     return result
 
 def extract_product_observational(product_observational):
@@ -21,6 +24,19 @@ def extract_product_observational(product_observational):
     result.update(extract_observation_area(product_observational.Observation_Area))
     result.update(extract_discipline_area(product_observational.Discipline_Area))
     return result
+
+def extract_product_document(product_document):
+    '''
+    Extracts keywords from the Product_Document element
+    '''
+    result = {}
+    result.update(extract_identification_area(product_document.Identification_Area))
+    result.update(extract_document(product_document.Document))
+    #result.update(extract_file_area(product_observational.File_Area_Observational))
+    #result.update(extract_observation_area(product_observational.Observation_Area))
+    #result.update(extract_discipline_area(product_observational.Discipline_Area))
+    return result
+
 
 def extract_identification_area(identification_area):
     '''
@@ -44,6 +60,16 @@ def extract_observation_area(context_area):
     Extract from the observation_area element
     '''
     return extract_time_coordinates(context_area.Time_Coordinates)
+
+def extract_context_area(context_area):
+    '''
+    Extract from the observation_area element
+    '''
+    result = {}
+    if context_area.Time_Coordinates:
+        result.update(extract_time_coordinates(context_area.Time_Coordinates))
+    return result
+
 
 def extract_time_coordinates(time_coordinates):
     '''
@@ -94,6 +120,33 @@ def extract_software(software):
     Extract from the software element
     '''
     return {
-        "software_id": software.software_id.string,
-        "software_version_id": software.software_version_id.string
+        "software_id": software.software_id.string if software.software_id else '', 
+        "software_version_id": software.software_version_id.string if software.software_version_id else ''
     }
+
+def extract_document(document):
+    '''
+    Extracts keywords form the Document element
+    '''
+
+    editions = [extract_document_edition(document_edition) for document_edition in document.find_all("Document_Edition")]
+    return {
+        'file_names': list(itertools.chain.from_iterable([edition['file_names'] for edition in editions]))
+    }
+
+def extract_document_edition(document_edition):
+    '''
+    Extracts keywords form the Document_Edition element
+    '''
+    files = [extract_document_file(document_file) for document_file in document_edition.find_all("Document_File")]
+    return {
+        'file_names': [docfile['filename'] for docfile in files]
+    }
+
+def extract_document_file(document_file):
+    '''
+    Extracts keywords form the Document_File element
+    '''
+    return {
+        'filename': document_file.file_name.string
+    }   
