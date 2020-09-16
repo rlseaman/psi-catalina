@@ -40,4 +40,4 @@ def merge(old_inv, new_inv):
     '''
     Merges two inventories together. There is no collision resolution yet.
     '''
-    return new_inv + old_inv
+    return list(set(new_inv + old_inv))
