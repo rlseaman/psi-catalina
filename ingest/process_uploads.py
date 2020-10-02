@@ -201,14 +201,16 @@ def move_product(product, basedir):
     dest_directory = os.path.join(ARCHIVE_BASE, collection_id, datadir)
     os.makedirs(dest_directory, exist_ok=True)
 
-    src_label = os.path.join(basedir, labeldir, product.labelfilename)
-    dest_label = os.path.join(dest_directory, product.labelfilename)
-    print('Moved from %s to %s' % (src_label, dest_label))
-    os.rename(src_label, dest_label)
-
     file_names=product.keywords['file_names'] if 'file_names' in product.keywords else [product.keywords['file_name']]
     if not file_names:
         raise Exception("No filenames in label:", product.labelfilename)
+
+    src_label = os.path.join(basedir, labeldir, product.labelfilename)
+    dest_label = os.path.join(dest_directory, product.labelfilename)
+    print('Moved from %s to %s' % (src_label, dest_label))
+    preprocess.preprocess_labelfile(src_label, file_names)
+    os.rename(src_label, dest_label)
+
     for file_name in file_names:
         src_data = os.path.join(basedir, datadir, file_name)
         dest_data = os.path.join(dest_directory, file_name)
