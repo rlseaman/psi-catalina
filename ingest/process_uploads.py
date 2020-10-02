@@ -17,6 +17,8 @@ from collection import Collection
 import iotools
 import validation
 import inventory
+import preprocess
+
 
 LABEL_FILENAME_TEMPLATE = 'collection_{collection_id}_{major}.{minor}.xml'
 INSTRUMENTS = ['703','G96','I52','V06']
@@ -211,6 +213,7 @@ def move_product(product, basedir):
         src_data = os.path.join(basedir, datadir, file_name)
         dest_data = os.path.join(dest_directory, file_name)
         print('Moved from %s to %s' % (src_data, dest_data))
+        preprocess.preprocess_datafile(src_data)
         os.rename(src_data, dest_data)
 
 
