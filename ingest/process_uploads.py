@@ -78,6 +78,7 @@ def process_upload_dir(basedir):
     print ("Discovering products at: " + basedir)
     products = list(discover_products(basedir))
 
+
     print (len(products), " products discovered")
 
     #print(products)
@@ -90,6 +91,11 @@ def process_upload_dir(basedir):
     # check whitelist here
     #if not all(product_whitelisted(x) for x in products):
     #    raise Exception('Some products used software not on the whitelist')
+
+    for product in products:
+        preprocess_product(product, basedir)
+
+    # validate here
 
     for product in products:
         move_product(product, basedir)
@@ -181,6 +187,28 @@ def software_whitelisted(software):
     '''
     return True
 
+def preprocess_product(product, basedir):
+    print ("Preprocessing files for:", product.labelfilename)
+    print(product.keywords)
+
+    # INSTRUMENT/YEAR/DATE
+    datadir = os.path.join(product.inst, product.year, product.date)
+
+    # INSTRUMENT/YEAR/pds4/DATE
+    labeldir = os.path.join(product.inst, product.year, "pds4", product.date)
+
+    file_names=product.keywords['file_names'] if 'file_names' in product.keywords else [product.keywords['file_name']]
+    if not file_names:
+        raise Exception("No filenames in label:", product.labelfilename)
+
+    src_label = os.path.join(basedir, labeldir, product.labelfilename)
+    preprocess.preprocess_labelfile(src_label, file_names)
+
+    for file_name in file_names:
+        src_data = os.path.join(basedir, datadir, file_name)
+        preprocess.preprocess_datafile(src_data)
+
+
 def move_product(product, basedir):
     '''
     move a product to the archive directory. For the current workflow, this will be a
@@ -208,14 +236,12 @@ def move_product(product, basedir):
     src_label = os.path.join(basedir, labeldir, product.labelfilename)
     dest_label = os.path.join(dest_directory, product.labelfilename)
     print('Moved from %s to %s' % (src_label, dest_label))
-    preprocess.preprocess_labelfile(src_label, file_names)
     os.rename(src_label, dest_label)
 
     for file_name in file_names:
         src_data = os.path.join(basedir, datadir, file_name)
         dest_data = os.path.join(dest_directory, file_name)
         print('Moved from %s to %s' % (src_data, dest_data))
-        preprocess.preprocess_datafile(src_data)
         os.rename(src_data, dest_data)
 
 
