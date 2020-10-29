@@ -11,6 +11,26 @@
                 "type": "Asteroid"
             }
         ],
+        "observing_system": [
+            {
+                "component_name": "10K x 10K CCD detector",
+                "component_type": "Instrument",
+                "component_lid": "urn:nasa:pds:context:instrument:placeholder",
+                "lid_type": "is_instrument"
+            },
+            {
+                "component_name": "Catalina 1.5 Meter Survey Telescope",
+                "component_type": "Telescope",
+                "component_lid": "urn:nasa:pds:context:telescope:placeholder",
+                "lid_type": "is_telescope"
+            },
+            {
+                "component_name": "Steward Observatory, Mt. Lemmon Station",
+                "component_type": "Observatory",
+                "component_lid": "urn:nasa:pds:context:facility:observatory.steward_mount_lemmon_station",
+                "lid_type": "is_facility"
+            }
+        ],
         "collections": [
             {
                 "collection_id":"document",
