@@ -5,6 +5,12 @@
         "bundle_description":"Catalina Sky Survey",
         "author_list":"Seaman, R., Christensen, E., Gibbs, A., and Shelly, F.",
         "doi":"sampledoi",
+        "targets": [
+            {
+                "name": "Multiple Asteroids",
+                "type": "Asteroid"
+            }
+        ],
         "collections": [
             {
                 "collection_id":"document",
