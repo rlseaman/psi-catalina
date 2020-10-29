@@ -49,8 +49,8 @@ def linefeed_to_crlf(filename, datafilename):
 
 def strip_label_fz_extension(contents, datafilename):
     uncompressed_datafilename = datafilename.replace(".fz", "")
-    return contents.replace(datafilename, uncompressed_datafilename))
+    return contents.replace(datafilename, uncompressed_datafilename)
 
-def strip_label_gz_extension(filename, datafilename):
+def strip_label_gz_extension(contents, datafilename):
     uncompressed_datafilename = datafilename.replace(".gz", "")
-    return contents.replace(datafilename, uncompressed_datafilename))
+    return contents.replace(datafilename, uncompressed_datafilename)
