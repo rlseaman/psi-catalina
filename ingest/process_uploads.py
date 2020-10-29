@@ -42,7 +42,7 @@ def main(argv=None):
 
     basedir = argv[1]
 
-    lockfile_run(basedir, validate_run, basedir, process_upload_dir, basedir)
+    lockfile_run(basedir, process_upload_dir, basedir)
 
     return 0
 
@@ -60,16 +60,6 @@ def lockfile_run(basedir, func, *args):
         finally:
             os.remove(lockfile)
 
-def validate_run(basedir, func, *args):
-    '''
-    Run a function on this directory if the files in it are valid.
-    '''
-    #validation_result = validation.Validation(basedir)
-    #if not validation_result.failures:
-    func(*args)
-    #else:
-        #func(*args)
-    #    raise Exception('There were validation errors')
 
 def process_upload_dir(basedir):
     '''
@@ -95,7 +85,9 @@ def process_upload_dir(basedir):
     for product in products:
         preprocess_product(product, basedir)
 
-    # validate here
+    #validation_result = validation.Validation(basedir)
+    #if validation_result.failures:
+    #    raise Exception('There were validation errors')
 
     for product in products:
         move_product(product, basedir)
