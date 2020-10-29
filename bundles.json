@@ -1,0 +1,40 @@
+[
+    {
+        "bundle_id":"gbo.ast.catalina.survey",
+        "bundle_title":"Catalina Sky Survey Bundle",
+        "bundle_description":"Catalina Sky Survey",
+        "author_list":"Seaman, R., Christensen, E., Gibbs, A., and Shelly, F.",
+        "doi":"sampledoi",
+        "collections": [
+            {
+                "collection_id":"document",
+                "collection_title":"Document Collection",
+                "collection_description": "Documents for Catalina Sky Survey.",
+                "collection_type":"Document",
+                "reference_type":"bundle_has_document_collection"
+            },
+            {
+                "collection_id":"data_derived",
+                "collection_title":"Derived Data Collection",
+                "collection_description": "Derived Data files for Catalina Sky Survey",
+                "collection_type":"Data",
+                "reference_type":"bundle_has_member_collection"
+            },
+            {
+                "collection_id":"data_raw",
+                "collection_title":"Raw Data Collection",
+                "collection_description": "Raw Data files for Catalina Sky Survey",
+                "collection_type":"Data",
+                "reference_type":"bundle_has_member_collection"
+            },
+            {
+                "collection_id":"data_reduced",
+                "collection_title":"Reduced Data Collection",
+                "collection_description": "Reduced Data files for Catalina Sky Survey",
+                "collection_type":"Data",
+                "reference_type":"bundle_has_member_collection"
+            }            
+
+        ]       
+    }
+]
