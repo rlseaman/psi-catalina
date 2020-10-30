@@ -86,7 +86,7 @@ def process_upload_dir(basedir):
         preprocess_product(product, basedir)
 
 
-    validation_results = [validation.validate_product() for product in products]
+    validation_results = [validation.validate_product(product) for product in products]
     validation_failures = [failures for failures, successes in validation_results if failures]
     if validation_failures:
         raise Exception('There were validation errors')
@@ -127,10 +127,10 @@ def process_inst_directory(basedir, instrument):
     years = (x.name for x in os.scandir(instdir) if x.is_dir())
 
     return itertools.chain.from_iterable(
-        process_year_directory(yeardir(year), instrument, year) for year in years)
+        process_year_directory(basedir, yeardir(year), instrument, year) for year in years)
 
 
-def process_year_directory(yeardir, instrument, year):
+def process_year_directory(basedir, yeardir, instrument, year):
     '''
     Processes the given year directory.
 
@@ -153,17 +153,17 @@ def process_data(datadir, labeldir, instrument, year, date):
     '''
     print ("processing data directory", instrument, year, date)
     if semaphore_exists(datadir) and semaphore_exists(labeldir):
-        return process_labels(labeldir, instrument, year, date)
+        return process_labels(datadir, labeldir, instrument, year, date)
     print("no semaphore")
     return []
     #update_archive(archive_dir, changes)
 
-def process_labels(labeldir, instrument, year, date):
+def process_labels(datadir, labeldir, instrument, year, date):
     '''
     Processes the data in a given data directory and label directory pair.
     '''
     files = (x.name for x in os.scandir(labeldir) if is_label(x))
-    products = [Product(os.path.join(labeldir, infile), instrument, year, date) for infile in files]
+    products = [Product(datadir, os.path.join(labeldir, infile), instrument, year, date) for infile in files]
     print(len(products), " products in ", instrument, year, date)
     return products
 

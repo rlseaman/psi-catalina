@@ -23,7 +23,7 @@ class Product:
     Represents the product itself.
     '''
 
-    def __init__(self, filepath, inst=None, year=None, date=None):
+    def __init__(self, datadir, filepath, inst=None, year=None, date=None):
         '''
         Parses a label file into a Product
         '''
@@ -35,5 +35,8 @@ class Product:
                 self.year = year
                 self.date = date
                 self.labelfilename = os.path.basename(filepath)
+                self.labeldir = os.path.dirname(filepath)
+                self.labelpath = filepath
+                self.datadir = datadir
                 if 'lidvid' not in self.keywords:
                     raise Exception("no lidvid in file:" + filepath)
