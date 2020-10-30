@@ -85,9 +85,11 @@ def process_upload_dir(basedir):
     for product in products:
         preprocess_product(product, basedir)
 
-    #validation_result = validation.Validation(basedir)
-    #if validation_result.failures:
-    #    raise Exception('There were validation errors')
+
+    validation_results = [validation.validate_product() for product in products]
+    validation_failures = [failures for failures, successes in validation_results if failures]
+    if validation_failures:
+        raise Exception('There were validation errors')
 
     for product in products:
         move_product(product, basedir)
@@ -161,7 +163,7 @@ def process_labels(labeldir, instrument, year, date):
     Processes the data in a given data directory and label directory pair.
     '''
     files = (x.name for x in os.scandir(labeldir) if is_label(x))
-    products = [Product(labeldir, infile, instrument, year, date) for infile in files]
+    products = [Product(os.path.join(labeldir, infile), instrument, year, date) for infile in files]
     print(len(products), " products in ", instrument, year, date)
     return products
 

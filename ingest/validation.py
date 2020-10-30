@@ -4,6 +4,10 @@ Performs validation on a PDS4 label
 import subprocess
 import os.path
 import json
+import product
+import tempfile
+import shutil
+import gzip
 
 SCHEMA_PATH = '../schemas'
 
@@ -19,18 +23,49 @@ SCHEMATRON_PATHS = [os.path.join(SCHEMA_PATH, x) for x in SCHEMATRON_FILES]
 
 VALIDATE_CMD='validate'
 
+def validate_product(label_path, data_dir):
+    '''
+    Moves the entirety of the product to a temporary location,
+    decompressed the data files if needed, and validates the product.
+    '''
+    with tempfile.TemporaryDirectory() as temp:
+        temp_dir = temp.name
+
+        label_file_name = os.path.basename(label_path)
+        temp_label_path = os.path.join(temp_dir, label_file_name)
+        shutil.copy(label_path, temp_label_path)
+        p = product.Product(temp_label_path)
+        data_file_names = p.keywords['file_names']
+        for data_file_name in data_file_names:
+            data_path = os.path.join(data_dir, data_file_name)
+            temp_data_path = os.path.join(data_dir, data_file_name)
+
+            if data_file_name.endswith(".gz"):
+                temp_data_path = temp_data_path.replace(".gz", "")
+                with open(temp_data_path, "wb") as uncompressed, open(data_path, "rb") as compressed:
+                    shutil.copyfileobj(compressed, uncompressed)
+            else:
+                shutil.copy(data_path, temp_data_path)
+
+        return run_validator(temp_label_path)
+
 def run_validator(file_name):
     '''
     Runs the label validatior on the given file or directory
     '''
     process = subprocess.run([VALIDATE_CMD,
-                              '-D',
                               '-s', 'json',
                               '-x', *SCHEMA_PATHS,
                               '-S', *SCHEMATRON_PATHS,
                               '-t', file_name], stdout=subprocess.PIPE)
     stdout = process.stdout
-    return json.loads(stdout)
+    
+    result = json.loads(stdout)
+    failures = [x for x in result['productLevelValidationResults']
+                         if x['status'] == "FAIL"]
+    successes = [x for x in result['productLevelValidationResults']
+                          if x['status'] == "PASS"]
+    return (failures, successes)
 
 class Validation:
     '''
@@ -39,7 +74,4 @@ class Validation:
     '''
     def __init__(self, dirname):
         result = run_validator(dirname)
-        self.failures = [x for x in result['productLevelValidationResults']
-                         if x['status'] == "FAIL"]
-        self.successes = [x for x in result['productLevelValidationResults']
-                          if x['status'] == "PASS"]
+        self.failures, self.successes = result

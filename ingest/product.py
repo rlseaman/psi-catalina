@@ -23,11 +23,10 @@ class Product:
     Represents the product itself.
     '''
 
-    def __init__(self, datapath, filename, inst, year, date):
+    def __init__(self, filepath, inst=None, year=None, date=None):
         '''
         Parses a label file into a Product
         '''
-        filepath = os.path.join(datapath, filename)
         with open(filepath) as infile:
             xmldoc = BeautifulSoup(infile, 'lxml-xml')
             if xmldoc:
@@ -35,6 +34,6 @@ class Product:
                 self.inst = inst
                 self.year = year
                 self.date = date
-                self.labelfilename = filename
+                self.labelfilename = os.path.basename(filepath)
                 if 'lidvid' not in self.keywords:
                     raise Exception("no lidvid in file:" + filepath)
