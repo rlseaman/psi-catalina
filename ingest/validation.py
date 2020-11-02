@@ -22,6 +22,7 @@ SCHEMA_PATHS = [os.path.join(SCHEMA_PATH, x) for x in SCHEMA_FILES]
 SCHEMATRON_PATHS = [os.path.join(SCHEMA_PATH, x) for x in SCHEMATRON_FILES]
 
 VALIDATE_CMD='validate'
+FUNPACK_CMD='funpack'
 
 def validate_product(product):
     '''
@@ -49,6 +50,9 @@ def create_temp_copy(temp_dir, product):
             temp_data_path = temp_data_path.replace(".gz", "")
             with open(temp_data_path, "wb") as uncompressed, open(data_path, "rb") as compressed:
                 shutil.copyfileobj(compressed, uncompressed)
+        if data_file_name.endswith(".fz"):
+            temp_data_path = temp_data_path.replace(".fz", "")
+            subprocess.run(FUNPACK_CMD, '-c', '-O', temp_data_path, data_path)
         else:
             shutil.copy(data_path, temp_data_path)
     return temp_label_path
