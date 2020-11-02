@@ -18,6 +18,7 @@ import iotools
 import validation
 import inventory
 import preprocess
+import paths
 
 
 LABEL_FILENAME_TEMPLATE = 'collection_{collection_id}_{major}.{minor}.xml'
@@ -66,7 +67,8 @@ def process_upload_dir(basedir):
     process an upload directory, assuming it has been validated.
     '''
     print ("Discovering products at: " + basedir)
-    products = list(discover_products(basedir))
+    loc = paths.Paths(basedir, ARCHIVE_BASE)
+    products = list(discover_products(loc))
 
 
     print (len(products), " products discovered")
@@ -83,7 +85,7 @@ def process_upload_dir(basedir):
     #    raise Exception('Some products used software not on the whitelist')
 
     for product in products:
-        preprocess_product(product, basedir)
+        preprocess_product(product, loc)
 
 
     validation_results = [validation.validate_product(product) for product in products]
@@ -92,7 +94,7 @@ def process_upload_dir(basedir):
         raise Exception('There were validation errors')
 
     for product in products:
-        move_product(product, basedir)
+        move_product(product, loc)
 
     for collection_id in collection_lids:
         collection_products = [x for x in products if x.keywords['collection_id'] == collection_id]
@@ -104,54 +106,64 @@ def process_upload_dir(basedir):
     #print("moving to " + deletion_area_dest)
 
 
-def discover_products(basedir):
+def discover_products(loc):
     '''
     Find all of the product labels in the directory and convert them
     to product objects
     '''
     return itertools.chain.from_iterable(
-        process_inst_directory(basedir, instrument) for instrument in INSTRUMENTS)
+        process_inst_directory(loc, instrument) for instrument in INSTRUMENTS)
 
 
-def process_inst_directory(basedir, instrument):
+def process_inst_directory(loc, instrument):
     '''
     Processes the given instrument directory
 
     Inside of an instrument directory, the labels are organized in subdirectories by year.
+
+    basedir: the absolute path the to the top-level source files
+    instrument: the mpc code for the instrument
     '''
     print ("Processing instrument directory", instrument)
 
-    instdir = os.path.join(basedir, instrument)
+    instdir = loc.datadir(instrument)
     print ("processing " + instdir + "...")
-    yeardir = lambda year: os.path.join(instdir, year)
     years = (x.name for x in os.scandir(instdir) if x.is_dir())
 
     return itertools.chain.from_iterable(
-        process_year_directory(basedir, yeardir(year), instrument, year) for year in years)
+        process_year_directory(loc, instrument, year) for year in years)
 
 
-def process_year_directory(basedir, yeardir, instrument, year):
+def process_year_directory(loc, instrument, year):
     '''
     Processes the given year directory.
 
     Inside of a year directory, the labels are organized in subdirectories by date.
+
+    yeardir: the absolute path to the files for the given year
+    instrument: the mpc code of the instrument
+    year: the year being processed
     '''
     print ("processing year directory", instrument, year)
+    yeardir = loc.datadir(instrument, year)
     dates = [x.name for x in os.scandir(yeardir) if x.is_dir() and x.name not in IGNORE_DATES]
     print(dates)
-    datadir = lambda date: os.path.join(yeardir, date)
-    labeldir = lambda date: os.path.join(yeardir, "pds4", date)
 
     return itertools.chain.from_iterable(
-        process_data(datadir(date), labeldir(date), instrument, year, date) for date in dates)
+        process_data(loc, instrument, year, date) for date in dates)
 
-def process_data(datadir, labeldir, instrument, year, date):
+def process_data(loc, instrument, year, date):
     '''
     Processes the data in a given data directory and label directory pair.
 
     This checks for a semaphore file before actually doing the processing.
+
+    datadir: the absolute path to the actual data files
+    labeldir: the absolute path to the label files
     '''
     print ("processing data directory", instrument, year, date)
+    datadir = loc.datadir(instrument, year, date)
+    labeldir = loc.labeldir(instrument, year, date)
     if semaphore_exists(datadir) and semaphore_exists(labeldir):
         return process_labels(datadir, labeldir, instrument, year, date)
     print("no semaphore")
@@ -161,6 +173,9 @@ def process_data(datadir, labeldir, instrument, year, date):
 def process_labels(datadir, labeldir, instrument, year, date):
     '''
     Processes the data in a given data directory and label directory pair.
+
+    datadir: the absolute path to the actual data files
+    labeldir: the absolute path to the label files
     '''
     files = (x.name for x in os.scandir(labeldir) if is_label(x))
     products = [Product(datadir, os.path.join(labeldir, infile), instrument, year, date) for infile in files]
@@ -181,29 +196,23 @@ def software_whitelisted(software):
     '''
     return True
 
-def preprocess_product(product, basedir):
+def preprocess_product(product, loc):
     print ("Preprocessing files for:", product.labelfilename)
     print(product.keywords)
-
-    # INSTRUMENT/YEAR/DATE
-    datadir = os.path.join(product.inst, product.year, product.date)
-
-    # INSTRUMENT/YEAR/pds4/DATE
-    labeldir = os.path.join(product.inst, product.year, "pds4", product.date)
 
     file_names=product.keywords['file_names'] if 'file_names' in product.keywords else [product.keywords['file_name']]
     if not file_names:
         raise Exception("No filenames in label:", product.labelfilename)
 
-    src_label = os.path.join(basedir, labeldir, product.labelfilename)
+    src_label = loc.labeldir(product.inst, product.year, product.date, product.labelfilename)
     preprocess.preprocess_labelfile(src_label, file_names)
 
     for file_name in file_names:
-        src_data = os.path.join(basedir, datadir, file_name)
+        src_data = loc.labeldir(product.inst, product.year, product.date, file_name)
         preprocess.preprocess_datafile(src_data)
 
 
-def move_product(product, basedir):
+def move_product(product, loc):
     '''
     move a product to the archive directory. For the current workflow, this will be a
     temporary directory on the processing server that will then get synced over
@@ -212,28 +221,23 @@ def move_product(product, basedir):
     print ("Moving files for:", product.labelfilename)
     print(product.keywords)
 
-    # INSTRUMENT/YEAR/DATE
-    datadir = os.path.join(product.inst, product.year, product.date)
-
-    # INSTRUMENT/YEAR/pds4/DATE
-    labeldir = os.path.join(product.inst, product.year, "pds4", product.date)
-
     collection_id = product.keywords['collection_id']
 
-    dest_directory = os.path.join(ARCHIVE_BASE, collection_id, datadir)
+    datadir = loc.datadir(product.inst, product.year, product.date)
+    dest_directory = loc.destdir(collection_id, product.inst, product.year, product.date)
     os.makedirs(dest_directory, exist_ok=True)
 
     file_names=product.keywords['file_names'] if 'file_names' in product.keywords else [product.keywords['file_name']]
     if not file_names:
         raise Exception("No filenames in label:", product.labelfilename)
 
-    src_label = os.path.join(basedir, labeldir, product.labelfilename)
+    src_label = product.labelpath
     dest_label = os.path.join(dest_directory, product.labelfilename)
     print('Moved from %s to %s' % (src_label, dest_label))
     os.rename(src_label, dest_label)
 
     for file_name in file_names:
-        src_data = os.path.join(basedir, datadir, file_name)
+        src_data = os.path.join(datadir, file_name)
         dest_data = os.path.join(dest_directory, file_name)
         print('Moved from %s to %s' % (src_data, dest_data))
         os.rename(src_data, dest_data)
