@@ -88,11 +88,9 @@ def process_upload_dir(basedir):
         preprocess_product(product, loc)
 
 
-    validation_results = [validation.validate_product(product) for product in products]
-    validation_failures = [failures for failures,_,_ in validation_results if failures]
+    validation_failures,_,result = validation.validate_products(products)
     if validation_failures:
-        results = [result for _,_,result in validation_results]
-        print(results)
+        print(result)
         raise Exception('There were validation errors')
 
     for product in products:

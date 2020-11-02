@@ -30,25 +30,42 @@ def validate_product(product):
     '''
     with tempfile.TemporaryDirectory() as temp:
         temp_dir = temp.name
-        label_file_name = product.labelfilename
-        label_path = product.label_path
-        data_dir = product.data_dir
-        
-        temp_label_path = os.path.join(temp_dir, label_file_name)
-        shutil.copy(label_path, temp_label_path)
-        data_file_names = product.keywords['file_names']
-        for data_file_name in data_file_names:
-            data_path = os.path.join(data_dir, data_file_name)
-            temp_data_path = os.path.join(data_dir, data_file_name)
-
-            if data_file_name.endswith(".gz"):
-                temp_data_path = temp_data_path.replace(".gz", "")
-                with open(temp_data_path, "wb") as uncompressed, open(data_path, "rb") as compressed:
-                    shutil.copyfileobj(compressed, uncompressed)
-            else:
-                shutil.copy(data_path, temp_data_path)
-
+        temp_label_path = create_temp_copy(temp_dir, product)
         return run_validator(temp_label_path)
+
+def create_temp_copy(temp_dir, product):
+    label_file_name = product.labelfilename
+    label_path = product.label_path
+    data_dir = product.data_dir
+    
+    temp_label_path = os.path.join(temp_dir, label_file_name)
+    shutil.copy(label_path, temp_label_path)
+    data_file_names = product.keywords['file_names']
+    for data_file_name in data_file_names:
+        data_path = os.path.join(data_dir, data_file_name)
+        temp_data_path = os.path.join(data_dir, data_file_name)
+
+        if data_file_name.endswith(".gz"):
+            temp_data_path = temp_data_path.replace(".gz", "")
+            with open(temp_data_path, "wb") as uncompressed, open(data_path, "rb") as compressed:
+                shutil.copyfileobj(compressed, uncompressed)
+        else:
+            shutil.copy(data_path, temp_data_path)
+    return temp_label_path
+
+
+def validate_products(products):
+    '''
+    Moves the entirety of the product to a temporary location,
+    decompressed the data files if needed, and validates the product.
+    '''
+    with tempfile.TemporaryDirectory() as temp:
+        temp_dir = temp.name
+        for product in products:
+            create_temp_copy(temp_dir, product)
+
+    return run_validator(temp_dir)
+
 
 def run_validator(file_name):
     '''
