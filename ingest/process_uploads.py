@@ -30,7 +30,9 @@ ARCHIVE_BASE = '/data/test_ready/'
 DELETION_BASE = '/sbn/to_delete/'
 
 COLLECTION_FILES = {
-    "data_derived" : "data_collection_template.xml"
+    "data_derived" : "data_collection_template.xml",
+    "data_raW" : "data_collection_template.xml",
+    "data_reduced" : "data_collection_template.xml",
 }
 
 def main(argv=None):
