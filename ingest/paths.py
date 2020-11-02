@@ -1,8 +1,9 @@
 import os
 
 class Paths:
-    def __init__(self, basedir):
+    def __init__(self, basedir, dest):
         self.basedir = basedir
+        self.dest = dest
 
     def datadir(self, inst=None, year=None, date=None, filename=None):
         if filename:
@@ -27,3 +28,6 @@ class Paths:
             return os.path.join(self.basedir, inst)
         else:
             return self.basedir
+
+    def destdir(self, collection_id, inst, year, date):
+        return os.path.join(self.dest, collection_id, inst, year, date)
