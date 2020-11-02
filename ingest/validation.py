@@ -66,7 +66,7 @@ def run_validator(file_name):
                          if x['status'] == "FAIL"]
     successes = [x for x in result['productLevelValidationResults']
                           if x['status'] == "PASS"]
-    return (failures, successes)
+    return (failures, successes, stdout)
 
 class Validation:
     '''
