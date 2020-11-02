@@ -28,6 +28,8 @@ IGNORE_DATES = ['pds4']
 DELIVERY_BASE = '/data/test'
 ARCHIVE_BASE = '/data/test_ready/'
 DELETION_BASE = '/sbn/to_delete/'
+CONFIG_VALIDATE=False
+CONFIG_MOVE_FILES=False
 
 COLLECTION_FILES = {
     "data_derived" : "data_collection_template.xml",
@@ -86,17 +88,19 @@ def process_upload_dir(basedir):
     #if not all(product_whitelisted(x) for x in products):
     #    raise Exception('Some products used software not on the whitelist')
 
+    
     for product in products:
         preprocess_product(product, loc)
 
+    if CONFIG_VALIDATE:
+        validation_failures,_,result = validation.validate_products(products)
+        if validation_failures:
+            print(result)
+            raise Exception('There were validation errors')
 
-    validation_failures,_,result = validation.validate_products(products)
-    if validation_failures:
-        print(result)
-        raise Exception('There were validation errors')
-
-    for product in products:
-        move_product(product, loc)
+    if CONFIG_MOVE_FILES:
+        for product in products:
+            move_product(product, loc)
 
     for collection_id in collection_lids:
         collection_products = [x for x in products if x.keywords['collection_id'] == collection_id]
