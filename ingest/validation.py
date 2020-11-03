@@ -52,7 +52,7 @@ def create_temp_copy(temp_dir, product):
                 shutil.copyfileobj(compressed, uncompressed)
         if data_file_name.endswith(".fz"):
             temp_data_path = temp_data_path.replace(".fz", "")
-            subprocess.run(FUNPACK_CMD, '-c', '-O', temp_data_path, data_path)
+            subprocess.run([FUNPACK_CMD, '-c', '-O', temp_data_path, data_path])
         else:
             shutil.copy(data_path, temp_data_path)
     return temp_label_path

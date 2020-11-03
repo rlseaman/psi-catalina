@@ -1,3 +1,21 @@
+import subprocess
+import logging
+
+def linefeed_to_crlf(filename):
+    logging.info("Normalizing whitespace for: %s", filename)
+    with open(filename) as f:
+        lines = [x.strip() + "\r\n" for x in f.readlines()]
+    with open(filename, "w") as f2:
+        f2.writelines(lines)
+
+def strip_label_fz_extension(contents, datafilename):
+    uncompressed_datafilename = datafilename.replace(".fz", "")
+    return contents.replace(datafilename, uncompressed_datafilename)
+
+def strip_label_gz_extension(contents, datafilename):
+    uncompressed_datafilename = datafilename.replace(".gz", "")
+    return contents.replace(datafilename, uncompressed_datafilename)
+
 DATA_FUNCS = {
     "sext": linefeed_to_crlf,
     "iext": linefeed_to_crlf,
@@ -24,9 +42,10 @@ LABEL_FUNCS = {
 }
 
 def preprocess_datafile(filename):
-    extension = filename.split(".")[-1]
+    newfilename = decompress(filename)
+    extension = newfilename.split(".")[-1]
     if extension in DATA_FUNCS:
-        DATA_FUNCS[extension](filename)
+        DATA_FUNCS[extension](newfilename)
 
 def preprocess_labelfile(filename, datafilenames):
     with open(filename) as f:
@@ -37,20 +56,15 @@ def preprocess_labelfile(filename, datafilenames):
         if extension in LABEL_FUNCS:
             labelcontents = LABEL_FUNCS[extension](labelcontents, datafilename)
 
-    with open(filename) as f2:
+    with open(filename, "w") as f2:
         f2.write(labelcontents)
     
 
-def linefeed_to_crlf(filename, datafilename):
-    with open(filename) as f:
-        lines = [x.strip() + "\r\n" for x in f.readlines()]
-    with open(filename, "w") as f2:
-        f2.writelines(lines)
-
-def strip_label_fz_extension(contents, datafilename):
-    uncompressed_datafilename = datafilename.replace(".fz", "")
-    return contents.replace(datafilename, uncompressed_datafilename)
-
-def strip_label_gz_extension(contents, datafilename):
-    uncompressed_datafilename = datafilename.replace(".gz", "")
-    return contents.replace(datafilename, uncompressed_datafilename)
+def decompress(datafilename):
+    if datafilename.endswith(".gz"):
+        logging.info("Decompressing: %s", datafilename)
+        temp_data_path = datafilename.replace(".gz", "")
+        subprocess.run(['gunzip', temp_data_path])
+        return temp_data_path
+    else:
+        return datafilename

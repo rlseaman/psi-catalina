@@ -5,6 +5,7 @@ attributes for running through the pipeline.
 import os
 from bs4 import BeautifulSoup
 import label
+import logging
 
 def extract_label(xmldoc):
     '''
@@ -27,6 +28,7 @@ class Product:
         '''
         Parses a label file into a Product
         '''
+        logging.debug("Creating product for: %s", filepath)
         with open(filepath) as infile:
             xmldoc = BeautifulSoup(infile, 'lxml-xml')
             if xmldoc:

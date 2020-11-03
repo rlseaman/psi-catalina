@@ -26,7 +26,7 @@ import paths
 LABEL_FILENAME_TEMPLATE = 'collection_{collection_id}_{major}.{minor}.xml'
 INSTRUMENTS = ['703','G96','I52','V06']
 IGNORE_FILES = ['signature.md5', '.autoxfer']
-IGNORE_DATES = ['pds4']
+IGNORE_DATES = ['pds4', 'other']
 DELETION_BASE = '/sbn/to_delete/'
 CONFIG_VALIDATE=False
 CONFIG_MOVE_FILES=False
@@ -47,9 +47,7 @@ def main(argv=None):
     parser.add_argument('--destdir', help='The destination directory for the processed data', required=True)
     args = parser.parse_args()
 
-    logging.basicConfig(filename=os.path.join(args.basedir, "ingest.log"), 
-        encoding='utf-8', 
-        level=logging.INFO,
+    logging.basicConfig(level=logging.INFO,
         format='%(asctime)s|%(levelname)s|%(message)s')
 
     lockfile_run(args.basedir, args.destdir)
@@ -173,10 +171,12 @@ def process_data(loc, instrument, year, date):
     labeldir: the absolute path to the label files
     '''
     logging.info("processing data directory %s/%s/%s", instrument, year, date)
+
     datadir = loc.datadir(instrument, year, date)
     labeldir = loc.labeldir(instrument, year, date)
     if semaphore_exists(datadir) and semaphore_exists(labeldir):
         return process_labels(datadir, labeldir, instrument, year, date)
+    
     logging.warning("no semaphore: %s and %s", labeldir, datadir)
     return []
 
@@ -187,6 +187,7 @@ def process_labels(datadir, labeldir, instrument, year, date):
     datadir: the absolute path to the actual data files
     labeldir: the absolute path to the label files
     '''
+    logging.info("Processing searching for labels in %s/%s/%s", instrument, year, date)
     files = (x.name for x in os.scandir(labeldir) if is_label(x))
     products = [Product(datadir, os.path.join(labeldir, infile), instrument, year, date) for infile in files]
     logging.info("%s products in %s/%s/%s", len(products), instrument, year, date)
@@ -214,12 +215,13 @@ def preprocess_product(product, loc):
     if not file_names:
         raise Exception("No filenames in label:", product.labelfilename)
 
+    for file_name in file_names:
+        src_data = loc.datadir(product.inst, product.year, product.date, file_name)
+        preprocess.preprocess_datafile(src_data)
+
     src_label = loc.labeldir(product.inst, product.year, product.date, product.labelfilename)
     preprocess.preprocess_labelfile(src_label, file_names)
 
-    for file_name in file_names:
-        src_data = loc.labeldir(product.inst, product.year, product.date, file_name)
-        preprocess.preprocess_datafile(src_data)
 
 
 def move_product(product, loc):
