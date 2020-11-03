@@ -13,7 +13,7 @@ class Paths:
         subdir = "pds4" if date else None
         return self._buildpath((self.basedir, inst, year, subdir, date, filename))
         
-    def destdir(self, collection_id, inst, year, date):
+    def destdir(self, collection_id, inst=None, year=None, date=None):
         return self._buildpath((self.dest, collection_id, inst, year, date))
 
     def _buildpath(self, elements):

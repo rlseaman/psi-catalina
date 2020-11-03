@@ -105,7 +105,7 @@ def process_upload_dir(basedir):
     for collection_id in collection_lids:
         collection_products = [x for x in products if x.keywords['collection_id'] == collection_id]
         if collection_products:
-            process_data_collection(collection_products, collection_id)
+            process_data_collection(loc, collection_products, collection_id)
 
     #deletion_area_dest = os.path.join(DELETION_BASE, "placeholder")
     # delete files from temporary directory/move to deletion area
@@ -249,12 +249,12 @@ def move_product(product, loc):
         os.rename(src_data, dest_data)
 
 
-def process_data_collection(collection_products, collection_id):
+def process_data_collection(loc, collection_products, collection_id):
     '''
     Create the collection inventory and label.
     '''
     print("Processing collection:", collection_id)
-    collection_path = os.path.join(ARCHIVE_BASE, collection_id)
+    collection_path = loc.destdir(collection_id)
     os.makedirs(collection_path, exist_ok=True)
 
     collection_labels = get_collection_labels(collection_path, collection_id)
