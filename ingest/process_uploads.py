@@ -47,6 +47,11 @@ def main(argv=None):
     parser.add_argument('--destdir', help='The destination directory for the processed data', required=True)
     args = parser.parse_args()
 
+    logging.basicConfig(filename=os.path.join(args.basedir, "ingest.log"), 
+        encoding='utf-8', 
+        level=logging.INFO,
+        format='%(asctime)s|%(levelname)s|%(message)s')
+
     lockfile_run(args.basedir, args.destdir)
 
     return 0
