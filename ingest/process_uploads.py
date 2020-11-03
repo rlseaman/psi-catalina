@@ -19,14 +19,13 @@ import validation
 import inventory
 import preprocess
 import paths
+import argparse
 
 
 LABEL_FILENAME_TEMPLATE = 'collection_{collection_id}_{major}.{minor}.xml'
 INSTRUMENTS = ['703','G96','I52','V06']
 IGNORE_FILES = ['signature.md5', '.autoxfer']
 IGNORE_DATES = ['pds4']
-DELIVERY_BASE = '/data/test'
-ARCHIVE_BASE = '/data/test_ready/'
 DELETION_BASE = '/sbn/to_delete/'
 CONFIG_VALIDATE=False
 CONFIG_MOVE_FILES=False
@@ -42,16 +41,16 @@ def main(argv=None):
     Extract command line arguments, ensure that the script is not already running,
     and process the current upload directory.
     '''
-    if argv is None:
-        argv = sys.argv
+    parser = argparse.ArgumentParser(description='Validate a PDS4 collection inventory against the directory')
+    parser.add_argument('--basedir', help='The base directory for the delivered data', required=True)
+    parser.add_argument('--destdir', help='The destination directory for the processed data', required=True)
+    args = parser.parse_args()
 
-    basedir = argv[1]
-
-    lockfile_run(basedir, process_upload_dir, basedir)
+    lockfile_run(args.basedir, args.destdir)
 
     return 0
 
-def lockfile_run(basedir, func, *args):
+def lockfile_run(basedir, destdir):
     '''
     Run a function on this directory if one isn't already running. This is
     enforced with a lockfile.
@@ -61,17 +60,17 @@ def lockfile_run(basedir, func, *args):
         with open(lockfile, "w") as lock:
             lock.write(".")
         try:
-            func(*args)
+            process_upload_dir(basedir, destdir)
         finally:
             os.remove(lockfile)
 
 
-def process_upload_dir(basedir):
+def process_upload_dir(basedir, destdir):
     '''
     process an upload directory, assuming it has been validated.
     '''
     print ("Discovering products at: " + basedir)
-    loc = paths.Paths(basedir, ARCHIVE_BASE)
+    loc = paths.Paths(basedir, destdir)
     products = list(discover_products(loc))
 
 
