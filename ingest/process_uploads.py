@@ -11,6 +11,8 @@ import os.path
 import itertools
 import subprocess
 import functools
+import argparse
+import logging
 
 from product import Product
 from collection import Collection
@@ -19,7 +21,6 @@ import validation
 import inventory
 import preprocess
 import paths
-import argparse
 
 
 LABEL_FILENAME_TEMPLATE = 'collection_{collection_id}_{major}.{minor}.xml'
@@ -69,19 +70,19 @@ def process_upload_dir(basedir, destdir):
     '''
     process an upload directory, assuming it has been validated.
     '''
-    print ("Discovering products at: " + basedir)
+    logging.info("Discovering products at: %s", basedir)
     loc = paths.Paths(basedir, destdir)
     products = list(discover_products(loc))
 
 
-    print (len(products), " products discovered")
+    logging.info("%i products discovered", len(products))
 
-    #print(products)
+    logging.debug(products)
     lidvids = (product.keywords['lidvid'] for product in products)
     collection_lids = index(lidvids, extract_collection_id)
 
-    #print (lidvids)
-    #print (collection_lids)
+    logging.debug(lidvids)
+    logging.debug(collection_lids)
 
     # check whitelist here
     #if not all(product_whitelisted(x) for x in products):
@@ -94,7 +95,7 @@ def process_upload_dir(basedir, destdir):
     if CONFIG_VALIDATE:
         validation_failures,_,result = validation.validate_products(products)
         if validation_failures:
-            print(result)
+            logging.error(result)
             raise Exception('There were validation errors')
 
     if CONFIG_MOVE_FILES:
@@ -108,7 +109,7 @@ def process_upload_dir(basedir, destdir):
 
     #deletion_area_dest = os.path.join(DELETION_BASE, "placeholder")
     # delete files from temporary directory/move to deletion area
-    #print("moving to " + deletion_area_dest)
+    #logging.info("moving to %s", deletion_area_dest)
 
 
 def discover_products(loc):
@@ -129,10 +130,10 @@ def process_inst_directory(loc, instrument):
     basedir: the absolute path the to the top-level source files
     instrument: the mpc code for the instrument
     '''
-    print ("Processing instrument directory", instrument)
+    logging.info("Processing instrument directory: %s", instrument)
 
     instdir = loc.datadir(instrument)
-    print ("processing " + instdir + "...")
+    logging.info("processing %s...", instdir)
     years = (x.name for x in os.scandir(instdir) if x.is_dir())
 
     return itertools.chain.from_iterable(
@@ -149,10 +150,10 @@ def process_year_directory(loc, instrument, year):
     instrument: the mpc code of the instrument
     year: the year being processed
     '''
-    print ("processing year directory", instrument, year)
+    logging.info("processing year directory %s/%s", instrument, year)
     yeardir = loc.datadir(instrument, year)
     dates = [x.name for x in os.scandir(yeardir) if x.is_dir() and x.name not in IGNORE_DATES]
-    print(dates)
+    logging.info("dates found: %s", dates)
 
     return itertools.chain.from_iterable(
         process_data(loc, instrument, year, date) for date in dates)
@@ -166,14 +167,13 @@ def process_data(loc, instrument, year, date):
     datadir: the absolute path to the actual data files
     labeldir: the absolute path to the label files
     '''
-    print ("processing data directory", instrument, year, date)
+    logging.info("processing data directory %s/%s/%s", instrument, year, date)
     datadir = loc.datadir(instrument, year, date)
     labeldir = loc.labeldir(instrument, year, date)
     if semaphore_exists(datadir) and semaphore_exists(labeldir):
         return process_labels(datadir, labeldir, instrument, year, date)
-    print("no semaphore")
+    logging.warning("no semaphore: %s and %s", labeldir, datadir)
     return []
-    #update_archive(archive_dir, changes)
 
 def process_labels(datadir, labeldir, instrument, year, date):
     '''
@@ -184,7 +184,7 @@ def process_labels(datadir, labeldir, instrument, year, date):
     '''
     files = (x.name for x in os.scandir(labeldir) if is_label(x))
     products = [Product(datadir, os.path.join(labeldir, infile), instrument, year, date) for infile in files]
-    print(len(products), " products in ", instrument, year, date)
+    logging.info("%s products in %s/%s/%s", len(products), instrument, year, date)
     return products
 
 def product_whitelisted(product):
@@ -202,8 +202,8 @@ def software_whitelisted(software):
     return True
 
 def preprocess_product(product, loc):
-    print ("Preprocessing files for:", product.labelfilename)
-    print(product.keywords)
+    logging.info("Preprocessing files for: %s", product.labelfilename)
+    logging.debug(product.keywords)
 
     file_names=product.keywords['file_names'] if 'file_names' in product.keywords else [product.keywords['file_name']]
     if not file_names:
@@ -223,8 +223,8 @@ def move_product(product, loc):
     temporary directory on the processing server that will then get synced over
     to the archive direcory.
     '''
-    print ("Moving files for:", product.labelfilename)
-    print(product.keywords)
+    logging.info("Moving files for: %s", product.labelfilename)
+    logging.debug(product.keywords)
 
     collection_id = product.keywords['collection_id']
 
@@ -238,13 +238,13 @@ def move_product(product, loc):
 
     src_label = product.labelpath
     dest_label = os.path.join(dest_directory, product.labelfilename)
-    print('Moved from %s to %s' % (src_label, dest_label))
+    logging.info('Moved from %s to %s', src_label, dest_label)
     os.rename(src_label, dest_label)
 
     for file_name in file_names:
         src_data = os.path.join(datadir, file_name)
         dest_data = os.path.join(dest_directory, file_name)
-        print('Moved from %s to %s' % (src_data, dest_data))
+        logging.info('Moved from %s to %s', src_data, dest_data)
         os.rename(src_data, dest_data)
 
 
@@ -252,12 +252,12 @@ def process_data_collection(loc, collection_products, collection_id):
     '''
     Create the collection inventory and label.
     '''
-    print("Processing collection:", collection_id)
+    logging.info("Processing collection: %s", collection_id)
     collection_path = loc.destdir(collection_id)
     os.makedirs(collection_path, exist_ok=True)
 
     collection_labels = get_collection_labels(collection_path, collection_id)
-    print(collection_labels)
+    logging.debug(collection_labels)
 
     start_dates = [x.keywords['start_date'] for x in collection_products if 'start_date' in x.keywords] + multilookup(collection_labels, 'start_date')
     stop_dates = [x.keywords['stop_date'] for x in collection_products if 'stop_date' in x.keywords] + multilookup(collection_labels, 'stop_date')
@@ -356,23 +356,16 @@ def write_collection(template_filename,
         record_count=0)
     collection_filename = LABEL_FILENAME_TEMPLATE.format(**collection_lidvid)
     collection_path = os.path.join(collection_dir, collection_filename)
-    print("writing to: ", collection_path)
-    #print(contents)
+    logging.info("writing to: %s", collection_path)
+    logging.debug(contents)
     iotools.write_file(collection_path, contents)
 
-def update_archive(archive_dir, changes):
-    '''
-    Placeholder for code to actually upload data to the archive site
-    '''
-    print('updating %s' % archive_dir)
-    for change in changes:
-        print(change)
 
 def semaphore_exists(dirname):
     '''
     Verifies that a semaphore file exists in the given directory.
     '''
-    print ("checking for semaphore in", dirname)
+    logging.info("checking for semaphore in %s", dirname)
     semaphore_file = os.path.join(dirname, '.autoxfer')
     return os.path.exists(semaphore_file)
 
