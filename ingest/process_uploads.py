@@ -33,7 +33,7 @@ CONFIG_MOVE_FILES=False
 
 COLLECTION_FILES = {
     "data_derived" : "data_collection_template.xml",
-    "data_raW" : "data_collection_template.xml",
+    "data_raw" : "data_collection_template.xml",
     "data_reduced" : "data_collection_template.xml",
 }
 
