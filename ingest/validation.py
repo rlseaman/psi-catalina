@@ -8,6 +8,7 @@ import product
 import tempfile
 import shutil
 import gzip
+import logging
 
 SCHEMA_PATH = '../schemas'
 
@@ -46,15 +47,19 @@ def create_temp_copy(temp_dir, product):
         data_path = os.path.join(data_dir, data_file_name)
         temp_data_path = os.path.join(data_dir, data_file_name)
 
-        if data_file_name.endswith(".gz"):
-            temp_data_path = temp_data_path.replace(".gz", "")
-            with open(temp_data_path, "wb") as uncompressed, open(data_path, "rb") as compressed:
-                shutil.copyfileobj(compressed, uncompressed)
-        if data_file_name.endswith(".fz"):
-            temp_data_path = temp_data_path.replace(".fz", "")
-            subprocess.run([FUNPACK_CMD, '-c', '-O', temp_data_path, data_path])
-        else:
+        if os.path.exists(data_path):
             shutil.copy(data_path, temp_data_path)
+        elif os.path.exists(data_path + ".gz"):
+            temp_data_path = temp_data_path.replace(".gz", "")
+            with open(temp_data_path, "wb") as uncompressed, open(data_path + ".gz", "rb") as compressed:
+                shutil.copyfileobj(compressed, uncompressed)
+        elif os.path.exists(data_path + ".fz"):
+            temp_data_path = temp_data_path.replace(".fz", "")
+            subprocess.run([FUNPACK_CMD, '-c', '-O', temp_data_path, data_path + ".fz"])
+        else:
+            logging.error("could not find data file: %s", temp_data_path)
+            raise Exception("could not find data file: " + temp_data_path)
+            
     return temp_label_path
 
 
