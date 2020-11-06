@@ -28,8 +28,6 @@ INSTRUMENTS = ['703','G96','I52','V06']
 IGNORE_FILES = ['signature.md5', '.autoxfer']
 IGNORE_DATES = ['pds4', 'other']
 DELETION_BASE = '/sbn/to_delete/'
-CONFIG_VALIDATE=False
-CONFIG_MOVE_FILES=False
 
 COLLECTION_FILES = {
     "data_derived" : "data_collection_template.xml",
@@ -45,16 +43,19 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description='Validate a PDS4 collection inventory against the directory')
     parser.add_argument('--basedir', help='The base directory for the delivered data', required=True)
     parser.add_argument('--destdir', help='The destination directory for the processed data', required=True)
+    parser.add_argument('--skip-preprocessing', action='store_true', dest='skip_preprocessing', help='If enabled, will not preprocess the data and label files')
+    parser.add_argument('--skip-validation', action='store_true', dest='skip_validation', help='If enabled, will not validate the data')
+    parser.add_argument('--skip-move', action='store_true', dest='skip_move', help='If enabled, will not move the data')
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO,
         format='%(asctime)s|%(levelname)s|%(message)s')
 
-    lockfile_run(args.basedir, args.destdir)
+    lockfile_run(args.basedir, args.destdir, args.skip_preprocessing ,args.skip_validation, args.skip_move)
 
     return 0
 
-def lockfile_run(basedir, destdir):
+def lockfile_run(basedir, destdir, skip_preprocessing, skip_validation, skip_move):
     '''
     Run a function on this directory if one isn't already running. This is
     enforced with a lockfile.
@@ -64,12 +65,12 @@ def lockfile_run(basedir, destdir):
         with open(lockfile, "w") as lock:
             lock.write(".")
         try:
-            process_upload_dir(basedir, destdir)
+            process_upload_dir(basedir, destdir, skip_preprocessing, skip_validation, skip_move)
         finally:
             os.remove(lockfile)
 
 
-def process_upload_dir(basedir, destdir):
+def process_upload_dir(basedir, destdir, skip_preprocessing, skip_validation, skip_move):
     '''
     process an upload directory, assuming it has been validated.
     '''
@@ -92,16 +93,17 @@ def process_upload_dir(basedir, destdir):
     #    raise Exception('Some products used software not on the whitelist')
 
     
-    for product in products:
-        preprocess_product(product, loc)
+    if not skip_preprocessing:
+        for product in products:
+            preprocess_product(product, loc)
 
-    if CONFIG_VALIDATE:
+    if not skip_validation:
         validation_failures,_,result = validation.validate_products(products)
         if validation_failures:
             logging.error(result)
             raise Exception('There were validation errors')
 
-    if CONFIG_MOVE_FILES:
+    if not skip_move:
         for product in products:
             move_product(product, loc)
 
