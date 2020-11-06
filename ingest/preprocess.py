@@ -42,12 +42,15 @@ LABEL_FUNCS = {
 }
 
 def preprocess_datafile(filename):
-    newfilename = decompress(filename)
-    extension = newfilename.split(".")[-1]
-    if extension in DATA_FUNCS:
-        DATA_FUNCS[extension](newfilename)
-    if not newfilename == filename:
-        recompress(newfilename)
+    newfilename = filename.replace(".gz", "")
+    extension = expected_new_filename.split(".")[-1]
+
+    if extension in DATA_FUNCS.keys:
+        decompress(filename)
+        if extension in DATA_FUNCS:
+            DATA_FUNCS[extension](newfilename)
+        if not newfilename == filename:
+            recompress(newfilename)
 
 def preprocess_labelfile(filename, datafilenames):
     with open(filename) as f:
@@ -66,14 +69,8 @@ def decompress(datafilename):
     if datafilename.endswith(".gz"):
         logging.info("Decompressing: %s", datafilename)
         subprocess.run(['gunzip', datafilename])
-        return datafilename.replace(".gz", "")
-    else:
-        return datafilename
 
 def recompress(datafilename):
     if not datafilename.endswith(".gz") or datafilename.endswith(".fz"):
         logging.info("Recompressing: %s", datafilename)
         subprocess.run(['gzip', datafilename])
-        return datafilename + ".gz"
-    else:
-        return datafilename
