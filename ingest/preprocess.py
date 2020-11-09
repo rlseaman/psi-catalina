@@ -4,9 +4,9 @@ import logging
 def linefeed_to_crlf(filename):
     logging.info("Normalizing whitespace for: %s", filename)
     with open(filename) as f:
-        lines = [x.strip() + "\r\n" for x in f.readlines()]
+        lines = [x.strip() for x in f.readlines()]
     with open(filename, "w") as f2:
-        f2.writelines(lines)
+        f2.write("\r\n".join(lines) + "\r\n")
 
 def strip_label_fz_extension(contents, datafilename):
     uncompressed_datafilename = datafilename.replace(".fz", "")
@@ -43,12 +43,11 @@ LABEL_FUNCS = {
 
 def preprocess_datafile(filename):
     newfilename = filename.replace(".gz", "")
-    extension = expected_new_filename.split(".")[-1]
+    extension = newfilename.split(".")[-1]
 
-    if extension in DATA_FUNCS.keys:
+    if extension in DATA_FUNCS:
         decompress(filename)
-        if extension in DATA_FUNCS:
-            DATA_FUNCS[extension](newfilename)
+        DATA_FUNCS[extension](newfilename)
         if not newfilename == filename:
             recompress(newfilename)
 
