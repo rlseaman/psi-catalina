@@ -49,8 +49,9 @@ def main(argv=None):
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO,
-        format='%(asctime)s|%(levelname)s|%(message)s')
+        format='%(asctime)s|%(levelname)s|%(message)s', filename="process_uploads.log")
 
+    logging.info("Basedir: %s, Destdir: %s", args.basedir, args.destdir)
     lockfile_run(args.basedir, args.destdir, args.skip_preprocessing ,args.skip_validation, args.skip_move)
 
     return 0
@@ -92,16 +93,20 @@ def process_upload_dir(basedir, destdir, skip_preprocessing, skip_validation, sk
     #if not all(product_whitelisted(x) for x in products):
     #    raise Exception('Some products used software not on the whitelist')
 
-    
-    if not skip_preprocessing:
-        for product in products:
-            preprocess_product(product, loc)
 
-    if not skip_validation:
-        validation_failures,_,result = validation.validate_products(products)
-        if validation_failures:
-            logging.error(result)
-            raise Exception('There were validation errors')
+    for product in products:
+        all_validation_failures = []
+        results = []
+
+        if not skip_preprocessing:
+            preprocess_product(product, loc)
+        if not skip_validation:
+            validation_failures,_,result = validation.validate_product(product, True)
+            if validation_failures:
+                logging.error(result)
+                all_validation_failures.extend(validation_failures)
+    if all_validation_failures:
+        raise Exception('There were validation errors')
 
     if not skip_move:
         for product in products:
@@ -210,7 +215,7 @@ def software_whitelisted(software):
     return True
 
 def preprocess_product(product, loc):
-    logging.info("Preprocessing files for: %s", product.labelfilename)
+    logging.debug("Preprocessing files for: %s", product.labelfilename)
     logging.debug(product.keywords)
 
     file_names=product.keywords['file_names'] if 'file_names' in product.keywords else [product.keywords['file_name']]
