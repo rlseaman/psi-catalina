@@ -42,3 +42,6 @@ class Product:
                 self.datadir = datadir
                 if 'lidvid' not in self.keywords:
                     raise Exception("no lidvid in file:" + filepath)
+
+    def file_names(self):
+        return self.keywords['file_names'] if 'file_names' in self.keywords else [self.keywords['file_name']]
