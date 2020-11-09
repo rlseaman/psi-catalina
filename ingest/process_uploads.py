@@ -29,6 +29,7 @@ INSTRUMENTS = ['703','G96','I52','V06']
 IGNORE_FILES = ['signature.md5', '.autoxfer']
 IGNORE_DATES = ['pds4', 'other']
 DELETION_BASE = '/sbn/to_delete/'
+BATCH_SIZE=100
 
 COLLECTION_FILES = {
     "data_derived" : "data_collection_template.xml",
@@ -96,14 +97,15 @@ def process_upload_dir(basedir, destdir, skip_preprocessing, skip_validation, sk
     #    raise Exception('Some products used software not on the whitelist')
 
 
-    for product in products:
+    for batch in chunk(products, BATCH_SIZE):
         all_validation_failures = []
         results = []
 
         if not skip_preprocessing:
-            preprocess_product(product, loc)
+            for product in batch:
+                preprocess_product(product, loc)
         if not skip_validation:
-            validation_failures,_,result = validation.validate_product(product, True)
+            validation_failures,_,result = validation.validate_products(batch, True)
             if validation_failures:
                 all_validation_failures.extend(validation_failures)
     if all_validation_failures:
@@ -430,6 +432,10 @@ def index(items, indexfunc):
         key = indexfunc(item)
         dictionary.setdefault(key, []).append(item)
     return dictionary
+
+def chunk(items, size):
+    for i in range(0, len(items), size):
+        yield items[i:i+size]
 
 
 if __name__ == '__main__':

@@ -35,6 +35,20 @@ def validate_product(product, skip_data):
         temp_label_path = create_temp_copy(temp_dir, product, skip_data)
         return run_validator(temp_label_path, skip_data)
 
+def validate_products(products, skip_data):
+    '''
+    Moves the entirety of the product to a temporary location,
+    decompressed the data files if needed, and validates the product.
+    '''
+    with tempfile.TemporaryDirectory() as temp:
+        logging.info("Validating products at: %s", temp)
+        temp_dir = temp
+        for product in products:
+            create_temp_copy(temp_dir, product, skip_data)
+
+        return run_validator(temp_dir, skip_data)
+
+
 def create_temp_copy(temp_dir, product, skip_data):
     label_file_name = product.labelfilename
     label_path = product.labelpath
@@ -70,18 +84,6 @@ def create_temp_copy(temp_dir, product, skip_data):
     return temp_label_path
 
 
-def validate_products(products):
-    '''
-    Moves the entirety of the product to a temporary location,
-    decompressed the data files if needed, and validates the product.
-    '''
-    with tempfile.TemporaryDirectory() as temp:
-        logging.info("Validating products at: %s", temp)
-        temp_dir = temp
-        for product in products:
-            create_temp_copy(temp_dir, product)
-
-        return run_validator(temp_dir)
 
 
 def run_validator(file_name, skip_data):
@@ -102,6 +104,7 @@ def run_validator(file_name, skip_data):
 
     if failures:
         logging.error(result)
+    logging.info("Validation passed")
     return (failures, successes, stdout)
 
 class Validation:
