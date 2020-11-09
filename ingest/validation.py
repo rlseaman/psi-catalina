@@ -15,7 +15,8 @@ SCHEMA_PATH = '../schemas'
 DICTIONARIES = ['PDS4_IMG_1900',
                 'PDS4_DISP_1900',
                 'PDS4_GEOM_1900_1510',
-                'PDS4_SURVEY_1A00_1000']
+                'PDS4_SURVEY_1A00_1000',
+                'PDS4_PROC_1900']
 
 SCHEMA_FILES = [x + '.xsd' for x in DICTIONARIES]
 SCHEMATRON_FILES = [x + '.sch' for x in DICTIONARIES]
@@ -100,7 +101,9 @@ def run_validator(file_name, skip_data):
                           if x['status'] == "PASS"]
 
     if failures:
-        logging.error(result)
+        for failure in failures:
+            logging.error(failure)
+            #logging.error(result)
     else:
         logging.info("Validation passed")
     return (failures, successes, stdout)
