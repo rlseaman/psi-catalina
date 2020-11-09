@@ -30,10 +30,7 @@ def validate_product(product, skip_data):
     Moves the entirety of the product to a temporary location,
     decompressed the data files if needed, and validates the product.
     '''
-    with tempfile.TemporaryDirectory() as temp:
-        temp_dir = temp
-        temp_label_path = create_temp_copy(temp_dir, product, skip_data)
-        return run_validator(temp_label_path, skip_data)
+    return validate_products([product], skip_data)
 
 def validate_products(products, skip_data):
     '''
@@ -104,7 +101,8 @@ def run_validator(file_name, skip_data):
 
     if failures:
         logging.error(result)
-    logging.info("Validation passed")
+    else:
+        logging.info("Validation passed")
     return (failures, successes, stdout)
 
 class Validation:
