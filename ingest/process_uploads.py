@@ -13,6 +13,7 @@ import subprocess
 import functools
 import argparse
 import logging
+import time
 
 from product import Product
 from collection import Collection
@@ -49,7 +50,8 @@ def main(argv=None):
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO,
-        format='%(asctime)s|%(levelname)s|%(message)s', filename="process_uploads.log")
+        format='%(asctime)s|%(levelname)s|%(message)s', 
+        filename="process_uploads_%s.log" % time.time())
 
     logging.info("Basedir: %s, Destdir: %s", args.basedir, args.destdir)
     lockfile_run(args.basedir, args.destdir, args.skip_preprocessing ,args.skip_validation, args.skip_move)
@@ -103,7 +105,6 @@ def process_upload_dir(basedir, destdir, skip_preprocessing, skip_validation, sk
         if not skip_validation:
             validation_failures,_,result = validation.validate_product(product, True)
             if validation_failures:
-                logging.error(result)
                 all_validation_failures.extend(validation_failures)
     if all_validation_failures:
         raise Exception('There were validation errors')

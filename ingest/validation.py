@@ -32,10 +32,10 @@ def validate_product(product, skip_data):
     '''
     with tempfile.TemporaryDirectory() as temp:
         temp_dir = temp
-        temp_label_path = create_temp_copy(temp_dir, product)
+        temp_label_path = create_temp_copy(temp_dir, product, skip_data)
         return run_validator(temp_label_path, skip_data)
 
-def create_temp_copy(temp_dir, product):
+def create_temp_copy(temp_dir, product, skip_data):
     label_file_name = product.labelfilename
     label_path = product.labelpath
     data_dir = product.datadir
@@ -50,7 +50,10 @@ def create_temp_copy(temp_dir, product):
         data_path = os.path.join(data_dir, data_file_name)
         temp_data_path = os.path.join(temp_dir, data_file_name)
 
-        if os.path.exists(data_path):
+        if skip_data:
+            logging.info("Creating dummy copy of %s", data_path)
+            with open(temp_data_path, "w") as f: pass
+        elif os.path.exists(data_path):
             logging.info("Copying temporary %s to %s", data_path, temp_data_path)
             shutil.copy(data_path, temp_data_path)
         elif os.path.exists(data_path + ".gz"):
@@ -96,6 +99,9 @@ def run_validator(file_name, skip_data):
                          if x['status'] == "FAIL"]
     successes = [x for x in result['productLevelValidationResults']
                           if x['status'] == "PASS"]
+
+    if failures:
+        logging.error(result)
     return (failures, successes, stdout)
 
 class Validation:
