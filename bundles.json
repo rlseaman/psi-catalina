@@ -4,32 +4,146 @@
         "bundle_title":"Catalina Sky Survey Bundle",
         "bundle_description":"Catalina Sky Survey",
         "author_list":"Seaman, R., Christensen, E., Gibbs, A., and Shelly, F.",
-        "doi":"sampledoi",
         "targets": [
             {
                 "name": "Multiple Asteroids",
                 "type": "Asteroid"
             }
         ],
-        "observing_system": [
-            {
-                "component_name": "10K x 10K CCD detector",
-                "component_type": "Instrument",
-                "component_lid": "urn:nasa:pds:context:instrument:placeholder",
-                "lid_type": "is_instrument"
-            },
-            {
-                "component_name": "Catalina 1.5 Meter Survey Telescope",
-                "component_type": "Telescope",
-                "component_lid": "urn:nasa:pds:context:telescope:placeholder",
-                "lid_type": "is_telescope"
-            },
-            {
-                "component_name": "Steward Observatory, Mt. Lemmon Station",
-                "component_type": "Observatory",
-                "component_lid": "urn:nasa:pds:context:facility:observatory.steward_mount_lemmon_station",
-                "lid_type": "is_facility"
-            }
+        "observing_systems": [
+            [
+                {
+                    "component_name": "Mount Lemmon (Catalina) Station",
+                    "component_type": "Observatory",
+                    "component_lid": "urn:nasa:pds:context:facility:observatory.mount_lemmonn",
+                    "lid_type": "is_facility"
+                },
+                {
+                    "component_name": "1.54-m multipurpose reflector",
+                    "component_type": "Telescope",
+                    "component_lid": "urn:nasa:pds:context:telescope:mount_lemmon.1m54",
+                    "lid_type": "is_telescope"
+                },
+                {
+                    "component_name": "SI_600-386",
+                    "component_type": "Instrument",
+                    "component_lid": "urn:nasa:pds:context:instrument:mount_lemmon.1m54.4kccd",
+                    "lid_type": "is_instrument"
+                },
+                {
+                    "component_name": "SN_110-106/165685-06",
+                    "component_type": "Instrument",
+                    "component_lid": "urn:nasa:pds:context:instrument:mount_lemmon.1m54.10kccd",
+                    "lid_type": "is_instrument"
+                }                
+
+            ],
+            [
+                {
+                    "component_name": "Mount Lemmon (Catalina) Station",
+                    "component_type": "Observatory",
+                    "component_lid": "urn:nasa:pds:context:facility:observatory.mount_lemmon",
+                    "lid_type": "is_facility"
+                },
+                {
+                    "component_name": "1.02-m Cassegrain reflector",
+                    "component_type": "Telescope",
+                    "component_lid": "urn:nasa:pds:context:telescope:mount_lemmon.1m02r",
+                    "lid_type": "is_telescope"
+                },
+                {
+                    "component_name": "SI_800-594",
+                    "component_type": "Instrument",
+                    "component_lid": "urn:nasa:pds:context:instrument:mount_lemmon.1m02.2kccd",
+                    "lid_type": "is_instrument"
+                }                
+            ],
+            [
+                {
+                    "component_name": "Mount Bigelow (Catalina) Station",
+                    "component_type": "Observatory",
+                    "component_lid": "urn:nasa:pds:context:facility:observatory.mount_bigelow",
+                    "lid_type": "is_facility"
+                },
+                {
+                    "component_name": "1.54-m Cassegrain/Coude reflector",
+                    "component_type": "Telescope",
+                    "component_lid": "urn:nasa:pds:context:telescope:mount_bigelow.1m54",
+                    "lid_type": "is_telescope"
+                },
+                {
+                    "component_name": "Mont4K CCD Imager",
+                    "component_type": "Instrument",
+                    "component_lid": "urn:nasa:pds:context:instrument:mount_bigelow.1m54.mont4k",
+                    "lid_type": "is_instrument"
+                }                
+            ],
+            [
+                {
+                    "component_name": "Mount Bigelow (Catalina) Station",
+                    "component_type": "Observatory",
+                    "component_lid": "urn:nasa:pds:context:facility:observatory.mount_bigelow",
+                    "lid_type": "is_facility"
+                },
+                {
+                    "component_name": "Catalina Sky Survey 0.7-m Schmidt telescope (MPC code 703)",
+                    "component_type": "Telescope",
+                    "component_lid": "urn:nasa:pds:context:telescope:mount_bigelow.0m7",
+                    "lid_type": "is_telescope"
+                },
+                {
+                    "component_name": "SI_600-277",
+                    "component_type": "Instrument",
+                    "component_lid": "urn:nasa:pds:context:instrument:mount_bigelow.0m7.4kccd",
+                    "lid_type": "is_instrument"
+                },
+                {
+                    "component_name": "SN_110-108/165685-06",
+                    "component_type": "Instrument",
+                    "component_lid": "urn:nasa:pds:context:instrument:mount_bigelow.0m7.10kccd",
+                    "lid_type": "is_instrument"
+                }
+            ],
+            [
+                {
+                    "component_name": "Steward Observatory, Kitt Peak Station",
+                    "component_type": "Observatory",
+                    "component_lid": "urn:nasa:pds:context:facility:observatory.steward-kittpeak",
+                    "lid_type": "is_facility"
+                },
+                {
+                    "component_name": "Catalina Sky Survey 2.3-m Bok telescope (MPC code V00)",
+                    "component_type": "Telescope",
+                    "component_lid": "urn:nasa:pds:context:telescope:steward-kittpeak.bok2m3",
+                    "lid_type": "is_telescope"
+                },
+                {
+                    "component_name": "90Prime Mosaic camera",
+                    "component_type": "Instrument",
+                    "component_lid": "urn:nasa:pds:context:instrument:steward-kittpeak.bok2m3.90prime",
+                    "lid_type": "is_instrument"
+                }                
+            ],
+            [
+                {
+                    "component_name": "Siding Spring Observatory",
+                    "component_type": "Observatory",
+                    "component_lid": "urn:nasa:pds:context:facility:observatory.siding_spring",
+                    "lid_type": "is_facility"
+                },
+                {
+                    "component_name": "Catalina Sky Survey 0.5-m Uppsala Schmidt telescope (MPC code E12)",
+                    "component_type": "Telescope",
+                    "component_lid": "urn:nasa:pds:context:telescope:siding_spring.uppsala0m5",
+                    "lid_type": "is_telescope"
+                },
+                {
+                    "component_name": " SI_600-263",
+                    "component_type": "Instrument",
+                    "component_lid": "urn:nasa:pds:context:telescope:siding_spring.uppsala0m5",
+                    "lid_type": "is_instrument"
+                }                
+            ]            
         ],
         "collections": [
             {
