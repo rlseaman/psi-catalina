@@ -5,6 +5,7 @@ attributes for running through the pipeline.
 import os
 from bs4 import BeautifulSoup
 import label
+import logging
 
 def extract_label(xmldoc):
     '''
@@ -12,6 +13,10 @@ def extract_label(xmldoc):
     '''
     if xmldoc.Product_Observational:
         return label.extract_product_observational(xmldoc.Product_Observational)
+    if xmldoc.Product_Document:
+        return label.extract_product_document(xmldoc.Product_Document)
+
+    print ("Unknown product type")
     return {}
 
 class Product:
@@ -19,11 +24,11 @@ class Product:
     Represents the product itself.
     '''
 
-    def __init__(self, datapath, filename, inst, year, date):
+    def __init__(self, datadir, filepath, inst=None, year=None, date=None):
         '''
         Parses a label file into a Product
         '''
-        filepath = os.path.join(datapath, filename)
+        logging.debug("Creating product for: %s", filepath)
         with open(filepath) as infile:
             xmldoc = BeautifulSoup(infile, 'lxml-xml')
             if xmldoc:
@@ -31,4 +36,12 @@ class Product:
                 self.inst = inst
                 self.year = year
                 self.date = date
-                self.labelfilename = filename
+                self.labelfilename = os.path.basename(filepath)
+                self.labeldir = os.path.dirname(filepath)
+                self.labelpath = filepath
+                self.datadir = datadir
+                if 'lidvid' not in self.keywords:
+                    raise Exception("no lidvid in file:" + filepath)
+
+    def file_names(self):
+        return self.keywords['file_names'] if 'file_names' in self.keywords else [self.keywords['file_name']]
