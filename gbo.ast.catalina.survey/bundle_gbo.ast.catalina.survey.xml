@@ -42,7 +42,7 @@
                 <name>Mount Lemmon (Catalina) Station</name>
                 <type>Observatory</type>
                 <Internal_Reference>
-                    <lid_reference>urn:nasa:pds:context:facility:observatory.mount_lemmonn</lid_reference>
+                    <lid_reference>urn:nasa:pds:context:facility:observatory.mount_lemmon</lid_reference>
                     <reference_type>is_facility</reference_type>
                 </Internal_Reference>
             </Observing_System_Component>
@@ -84,7 +84,7 @@
                 <name>1.02-m Cassegrain reflector</name>
                 <type>Telescope</type>
                 <Internal_Reference>
-                    <lid_reference>urn:nasa:pds:context:telescope:mount_lemmon.1m02r</lid_reference>
+                    <lid_reference>urn:nasa:pds:context:telescope:mount_lemmon.1m02</lid_reference>
                     <reference_type>is_telescope</reference_type>
                 </Internal_Reference>
             </Observing_System_Component>

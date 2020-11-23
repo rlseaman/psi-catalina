@@ -15,7 +15,7 @@
                 {
                     "component_name": "Mount Lemmon (Catalina) Station",
                     "component_type": "Observatory",
-                    "component_lid": "urn:nasa:pds:context:facility:observatory.mount_lemmonn",
+                    "component_lid": "urn:nasa:pds:context:facility:observatory.mount_lemmon",
                     "lid_type": "is_facility"
                 },
                 {
@@ -48,7 +48,7 @@
                 {
                     "component_name": "1.02-m Cassegrain reflector",
                     "component_type": "Telescope",
-                    "component_lid": "urn:nasa:pds:context:telescope:mount_lemmon.1m02r",
+                    "component_lid": "urn:nasa:pds:context:telescope:mount_lemmon.1m02",
                     "lid_type": "is_telescope"
                 },
                 {
