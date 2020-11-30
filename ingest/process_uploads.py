@@ -32,9 +32,10 @@ DELETION_BASE = '/sbn/to_delete/'
 BATCH_SIZE=100
 
 COLLECTION_FILES = {
-    "data_derived" : "data_collection_template.xml",
-    "data_raw" : "data_collection_template.xml",
-    "data_reduced" : "data_collection_template.xml",
+    "data_derived" : "collection_data_derived.xml",
+    "data_raw" : "collection_data_raw.xml",
+    "data_reduced": "collection_data_reduced.xml",
+    "document" : "collection_document.xml",
 }
 
 def main(argv=None):
