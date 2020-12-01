@@ -35,6 +35,8 @@ COLLECTION_FILES = {
     "data_derived" : "collection_data_derived.xml",
     "data_raw" : "collection_data_raw.xml",
     "data_reduced": "collection_data_reduced.xml",
+    "data_partially_processed": "collection_data_partially_processed.xml",
+    "data_calibrated": "collection_data_calibrated.xml",
     "document" : "collection_document.xml",
 }
 
