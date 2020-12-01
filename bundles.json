@@ -168,6 +168,20 @@
                 "reference_type":"bundle_has_member_collection"
             },
             {
+                "collection_id":"data_calibrated",
+                "collection_title":"Calibrated Data Collection",
+                "collection_description": "Calibrated Data files for Catalina Sky Survey",
+                "collection_type":"Data",
+                "reference_type":"bundle_has_member_collection"
+            },
+            {
+                "collection_id":"data_partially_processed",
+                "collection_title":"Partially Processed Data Collection",
+                "collection_description": "Partially Processed Data files for Catalina Sky Survey",
+                "collection_type":"Data",
+                "reference_type":"bundle_has_member_collection"
+            },
+            {
                 "collection_id":"data_reduced",
                 "collection_title":"Reduced Data Collection",
                 "collection_description": "Reduced Data files for Catalina Sky Survey",
