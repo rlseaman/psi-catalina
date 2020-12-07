@@ -49,6 +49,8 @@ def main(argv=None):
     parser.add_argument('--basedir', help='The base directory for the delivered data', required=True)
     parser.add_argument('--destdir', help='The destination directory for the processed data', required=True)
     parser.add_argument('--skip-preprocessing', action='store_true', dest='skip_preprocessing', help='If enabled, will not preprocess the data and label files')
+    parser.add_argument('--skip-data-preprocessing', action='store_true', dest='skip_data_preprocessing', help='If enabled, will not preprocess the data files')
+    parser.add_argument('--skip-label-preprocessing', action='store_true', dest='skip_label_preprocessing', help='If enabled, will not preprocess the label files')
     parser.add_argument('--skip-validation', action='store_true', dest='skip_validation', help='If enabled, will not validate the data')
     parser.add_argument('--permissive-validation', action='store_true', dest='permissive_validation', help='If enabled, will continue even if there are validation errors')
     parser.add_argument('--skip-data-validation', action='store_true', dest='skip_data_validation', help='If enabled, will not validate the data')
@@ -60,11 +62,11 @@ def main(argv=None):
         filename="process_uploads_%s.log" % time.time())
 
     logging.info("Basedir: %s, Destdir: %s", args.basedir, args.destdir)
-    lockfile_run(args.basedir, args.destdir, args.skip_preprocessing ,args.skip_validation, args.skip_move, args.skip_data_validation, args.permissive_validation)
+    lockfile_run(args.basedir, args.destdir, args.skip_preprocessing, args.skip_data_preprocessing, args.skip_label_preprocessing, args.skip_validation, args.skip_move, args.skip_data_validation, args.permissive_validation)
 
     return 0
 
-def lockfile_run(basedir, destdir, skip_preprocessing, skip_validation, skip_move, skip_data_validation, permissive_validation):
+def lockfile_run(basedir, destdir, skip_preprocessing, skip_data_preprocessing, skip_label_preprocessing, skip_validation, skip_move, skip_data_validation, permissive_validation):
     '''
     Run a function on this directory if one isn't already running. This is
     enforced with a lockfile.
@@ -74,12 +76,12 @@ def lockfile_run(basedir, destdir, skip_preprocessing, skip_validation, skip_mov
         with open(lockfile, "w") as lock:
             lock.write(".")
         try:
-            process_upload_dir(basedir, destdir, skip_preprocessing, skip_validation, skip_move, skip_data_validation, permissive_validation)
+            process_upload_dir(basedir, destdir, skip_preprocessing, skip_data_preprocessing, skip_label_preprocessing, skip_validation, skip_move, skip_data_validation, permissive_validation)
         finally:
             os.remove(lockfile)
 
 
-def process_upload_dir(basedir, destdir, skip_preprocessing, skip_validation, skip_move, skip_data_validation, permissive_validation):
+def process_upload_dir(basedir, destdir, skip_preprocessing, skip_data_preprocessing, skip_label_preprocessing, skip_validation, skip_move, skip_data_validation, permissive_validation):
     '''
     process an upload directory, assuming it has been validated.
     '''
@@ -108,7 +110,7 @@ def process_upload_dir(basedir, destdir, skip_preprocessing, skip_validation, sk
 
         if not skip_preprocessing:
             for product in batch:
-                preprocess_product(product, loc)
+                preprocess_product(product, loc, skip_data_preprocessing, skip_label_preprocessing)
         if not skip_validation:
             validation_failures,_,result = validation.validate_products(batch, skip_data_validation)
             if validation_failures:
@@ -222,7 +224,7 @@ def software_whitelisted(software):
     '''
     return True
 
-def preprocess_product(product, loc):
+def preprocess_product(product, loc, skip_data_preprocessing, skip_label_preprocessing):
     logging.debug("Preprocessing files for: %s", product.labelfilename)
     logging.debug(product.keywords)
 
@@ -230,12 +232,14 @@ def preprocess_product(product, loc):
     if not file_names:
         raise Exception("No filenames in label:", product.labelfilename)
 
-    for file_name in file_names:
-        src_data = loc.datadir(product.inst, product.year, product.date, file_name)
-        preprocess.preprocess_datafile(src_data)
+    if not skip_data_preprocessing:
+        for file_name in file_names:
+            src_data = loc.datadir(product.inst, product.year, product.date, file_name)
+            preprocess.preprocess_datafile(src_data)
 
-    src_label = loc.labeldir(product.inst, product.year, product.date, product.labelfilename)
-    preprocess.preprocess_labelfile(src_label, file_names)
+    if not skip_label_preprocessing:
+        src_label = loc.labeldir(product.inst, product.year, product.date, product.labelfilename)
+        preprocess.preprocess_labelfile(src_label, file_names)
 
 
 
