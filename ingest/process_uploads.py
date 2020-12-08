@@ -61,12 +61,24 @@ def main(argv=None):
         format='%(asctime)s|%(levelname)s|%(message)s', 
         filename="process_uploads_%s.log" % time.time())
 
+    preprocessing_opts = {
+        "skip_preprocessing" : args.skip_preprocessing,
+        "skip_data_preprocessing": args.skip_data_preprocessing,
+        "skip_label_preprocessing": args.skip_label_preprocessing
+    }
+
+    validation_opts = {
+        "skip_validation": args.skip_validation,
+        "skip_data_validation": args.skip_data_validation,
+        "permissive_validation": args.permissive_validation
+    }
+
     logging.info("Basedir: %s, Destdir: %s", args.basedir, args.destdir)
-    lockfile_run(args.basedir, args.destdir, args.skip_preprocessing, args.skip_data_preprocessing, args.skip_label_preprocessing, args.skip_validation, args.skip_move, args.skip_data_validation, args.permissive_validation)
+    lockfile_run(args.basedir, args.destdir, preprocessing_opts, validation_opts, args.skip_move)
 
     return 0
 
-def lockfile_run(basedir, destdir, skip_preprocessing, skip_data_preprocessing, skip_label_preprocessing, skip_validation, skip_move, skip_data_validation, permissive_validation):
+def lockfile_run(basedir, destdir, preprocessing_opts, validation_opts, skip_move):
     '''
     Run a function on this directory if one isn't already running. This is
     enforced with a lockfile.
@@ -76,12 +88,12 @@ def lockfile_run(basedir, destdir, skip_preprocessing, skip_data_preprocessing, 
         with open(lockfile, "w") as lock:
             lock.write(".")
         try:
-            process_upload_dir(basedir, destdir, skip_preprocessing, skip_data_preprocessing, skip_label_preprocessing, skip_validation, skip_move, skip_data_validation, permissive_validation)
+            process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, skip_move)
         finally:
             os.remove(lockfile)
 
 
-def process_upload_dir(basedir, destdir, skip_preprocessing, skip_data_preprocessing, skip_label_preprocessing, skip_validation, skip_move, skip_data_validation, permissive_validation):
+def process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, skip_move):
     '''
     process an upload directory, assuming it has been validated.
     '''
@@ -106,16 +118,15 @@ def process_upload_dir(basedir, destdir, skip_preprocessing, skip_data_preproces
 
     for batch in chunk(products, BATCH_SIZE):
         all_validation_failures = []
-        results = []
 
-        if not skip_preprocessing:
+        if not preprocessing_opts["skip_preprocessing"]:
             for product in batch:
-                preprocess_product(product, loc, skip_data_preprocessing, skip_label_preprocessing)
-        if not skip_validation:
-            validation_failures,_,result = validation.validate_products(batch, skip_data_validation)
+                preprocess_product(product, loc, preprocessing_opts["skip_data_preprocessing"], preprocessing_opts["skip_label_preprocessing"])
+        if not validation_opts["skip_validation"]:
+            validation_failures,_,_ = validation.validate_products(batch, validation_opts["skip_data_validation"])
             if validation_failures:
                 all_validation_failures.extend(validation_failures)
-    if all_validation_failures and not permissive_validation:
+    if all_validation_failures and not validation_opts["permissive_validation"]:
         raise Exception('There were validation errors')
 
     if not skip_move:
