@@ -14,6 +14,8 @@ import functools
 import argparse
 import logging
 import time
+from types import SimpleNamespace
+
 
 from product import Product
 from collection import Collection
@@ -22,6 +24,7 @@ import validation
 import inventory
 import preprocess
 import paths
+
 
 
 LABEL_FILENAME_TEMPLATE = 'collection_{collection_id}_{major}.{minor}.xml'
@@ -61,17 +64,17 @@ def main(argv=None):
         format='%(asctime)s|%(levelname)s|%(message)s', 
         filename="process_uploads_%s.log" % time.time())
 
-    preprocessing_opts = {
-        "skip_preprocessing" : args.skip_preprocessing,
-        "skip_data_preprocessing": args.skip_data_preprocessing,
-        "skip_label_preprocessing": args.skip_label_preprocessing
-    }
+    preprocessing_opts = SimpleNamespace(
+        skip_preprocessing=args.skip_preprocessing,
+        skip_data_preprocessing=args.skip_data_preprocessing,
+        skip_label_preprocessing=args.skip_label_preprocessing
+    )
 
-    validation_opts = {
-        "skip_validation": args.skip_validation,
-        "skip_data_validation": args.skip_data_validation,
-        "permissive_validation": args.permissive_validation
-    }
+    validation_opts = SimpleNamespace(
+        skip_validation=args.skip_validation,
+        skip_data_validation=args.skip_data_validation,
+        permissive_validation=args.permissive_validation
+    )
 
     logging.info("Basedir: %s, Destdir: %s", args.basedir, args.destdir)
     lockfile_run(args.basedir, args.destdir, preprocessing_opts, validation_opts, args.skip_move)
@@ -119,14 +122,14 @@ def process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, sk
     for batch in chunk(products, BATCH_SIZE):
         all_validation_failures = []
 
-        if not preprocessing_opts["skip_preprocessing"]:
+        if not preprocessing_opts.skip_preprocessing:
             for product in batch:
-                preprocess_product(product, loc, preprocessing_opts["skip_data_preprocessing"], preprocessing_opts["skip_label_preprocessing"])
-        if not validation_opts["skip_validation"]:
-            validation_failures,_,_ = validation.validate_products(batch, validation_opts["skip_data_validation"])
+                preprocess_product(product, loc, preprocessing_opts.skip_data_preprocessing, preprocessing_opts.skip_label_preprocessing)
+        if not validation_opts.skip_validation:
+            validation_failures,_,_ = validation.validate_products(batch, validation_opts.skip_data_validation)
             if validation_failures:
                 all_validation_failures.extend(validation_failures)
-    if all_validation_failures and not validation_opts["permissive_validation"]:
+    if all_validation_failures and not validation_opts.permissive_validation:
         raise Exception('There were validation errors')
 
     if not skip_move:
