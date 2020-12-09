@@ -119,18 +119,7 @@ def process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, sk
     #    raise Exception('Some products used software not on the whitelist')
 
 
-    for batch in chunk(products, BATCH_SIZE):
-        all_validation_failures = []
-
-        if not preprocessing_opts.skip_preprocessing:
-            for product in batch:
-                preprocess_product(product, loc, preprocessing_opts.skip_data_preprocessing, preprocessing_opts.skip_label_preprocessing)
-        if not validation_opts.skip_validation:
-            validation_failures,_,_ = validation.validate_products(batch, validation_opts.skip_data_validation)
-            if validation_failures:
-                all_validation_failures.extend(validation_failures)
-    if all_validation_failures and not validation_opts.permissive_validation:
-        raise Exception('There were validation errors')
+    validate_products(products, loc, preprocessing_opts, validation_opts)
 
     if not skip_move:
         for product in products:
@@ -144,6 +133,25 @@ def process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, sk
     #deletion_area_dest = os.path.join(DELETION_BASE, "placeholder")
     # delete files from temporary directory/move to deletion area
     #logging.info("moving to %s", deletion_area_dest)
+
+def validate_products(products, loc, preprocessing_opts, validation_opts):
+    '''
+    Preprocess and validates the products. 
+    The preprocessing happens during this step for liveness. The could have been preprocessed as a batch earlier.
+    '''
+    for batch in chunk(products, BATCH_SIZE):
+        all_validation_failures = []
+
+        if not preprocessing_opts.skip_preprocessing:
+            for product in batch:
+                preprocess_product(product, loc, preprocessing_opts.skip_data_preprocessing, preprocessing_opts.skip_label_preprocessing)
+        if not validation_opts.skip_validation:
+            validation_failures,_,_ = validation.validate_products(batch, validation_opts.skip_data_validation)
+            if validation_failures:
+                all_validation_failures.extend(validation_failures)
+    if all_validation_failures and not validation_opts.permissive_validation:
+        raise Exception('There were validation errors')
+
 
 
 def discover_products(loc):
