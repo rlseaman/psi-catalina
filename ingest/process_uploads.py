@@ -58,6 +58,7 @@ def main(argv=None):
     parser.add_argument('--permissive-validation', action='store_true', dest='permissive_validation', help='If enabled, will continue even if there are validation errors')
     parser.add_argument('--skip-data-validation', action='store_true', dest='skip_data_validation', help='If enabled, will not validate the data')
     parser.add_argument('--skip-move', action='store_true', dest='skip_move', help='If enabled, will not move the data')
+    parser.add_argument('--skip-collection-update', action='store_true', dest='skip_collection_update', help='If enabled, will update the collection inventory or label')
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO,
@@ -75,13 +76,18 @@ def main(argv=None):
         skip_data_validation=args.skip_data_validation,
         permissive_validation=args.permissive_validation
     )
+    
+    postprocessing_opts = SimpleNamespace(
+        skip_move=args.skip_move,
+        skip_collection_update=args.skip_collection_update
+    )
 
     logging.info("Basedir: %s, Destdir: %s", args.basedir, args.destdir)
-    lockfile_run(args.basedir, args.destdir, preprocessing_opts, validation_opts, args.skip_move)
+    lockfile_run(args.basedir, args.destdir, preprocessing_opts, validation_opts, postprocessing_opts)
 
     return 0
 
-def lockfile_run(basedir, destdir, preprocessing_opts, validation_opts, skip_move):
+def lockfile_run(basedir, destdir, preprocessing_opts, validation_opts, postprocesing_opts):
     '''
     Run a function on this directory if one isn't already running. This is
     enforced with a lockfile.
@@ -91,12 +97,12 @@ def lockfile_run(basedir, destdir, preprocessing_opts, validation_opts, skip_mov
         with open(lockfile, "w") as lock:
             lock.write(".")
         try:
-            process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, skip_move)
+            process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, postprocesing_opts)
         finally:
             os.remove(lockfile)
 
 
-def process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, skip_move):
+def process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, postprocesing_opts):
     '''
     process an upload directory, assuming it has been validated.
     '''
@@ -121,14 +127,15 @@ def process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, sk
 
     validate_products(products, loc, preprocessing_opts, validation_opts)
 
-    if not skip_move:
+    if not postprocesing_opts.skip_move:
         for product in products:
             move_product(product, loc)
 
-    for collection_id in collection_lids:
-        collection_products = [x for x in products if x.collection_id == collection_id]
-        if collection_products:
-            process_data_collection(loc, collection_products, collection_id)
+    if not postprocesing_opts.skip_collection_update:
+        for collection_id in collection_lids:
+            collection_products = [x for x in products if x.collection_id == collection_id]
+            if collection_products:
+                process_data_collection(loc, collection_products, collection_id)
 
     #deletion_area_dest = os.path.join(DELETION_BASE, "placeholder")
     # delete files from temporary directory/move to deletion area
