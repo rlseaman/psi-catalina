@@ -32,7 +32,18 @@ class Product:
         with open(filepath) as infile:
             xmldoc = BeautifulSoup(infile, 'lxml-xml')
             if xmldoc:
-                self.keywords = extract_label(xmldoc)
+                keywords = extract_label(xmldoc)
+                if 'lidvid' not in keywords:
+                    raise Exception("no lidvid in file:" + filepath)
+                self.lidvid = keywords['lidvid']
+                self.filenames = keywords['file_names'] if 'file_names' in keywords else [keywords['file_name']]
+                self.start_date = keywords.get('start_date')
+                self.stop_date = keywords.get('stop_date')
+                self.majorversion = keywords.get('major')
+                self.minorversion = keywords.get('minor')
+                self.collection_id = keywords.get('collection_id')
+                self.software = keywords.get('software')
+
                 self.inst = inst
                 self.year = year
                 self.date = date
@@ -40,8 +51,4 @@ class Product:
                 self.labeldir = os.path.dirname(filepath)
                 self.labelpath = filepath
                 self.datadir = datadir
-                if 'lidvid' not in self.keywords:
-                    raise Exception("no lidvid in file:" + filepath)
 
-    def file_names(self):
-        return self.keywords['file_names'] if 'file_names' in self.keywords else [self.keywords['file_name']]

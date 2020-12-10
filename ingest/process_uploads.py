@@ -108,7 +108,7 @@ def process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, sk
     logging.info("%i products discovered", len(products))
 
     logging.debug(products)
-    lidvids = (product.keywords['lidvid'] for product in products)
+    lidvids = (product.lidvid for product in products)
     collection_lids = index(lidvids, extract_collection_id)
 
     logging.debug(lidvids)
@@ -126,7 +126,7 @@ def process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, sk
             move_product(product, loc)
 
     for collection_id in collection_lids:
-        collection_products = [x for x in products if x.keywords['collection_id'] == collection_id]
+        collection_products = [x for x in products if x.collection_id == collection_id]
         if collection_products:
             process_data_collection(loc, collection_products, collection_id)
 
@@ -236,8 +236,8 @@ def product_whitelisted(product):
     '''
     determines if all of the software for the product has been approved
     '''
-    if 'software' in product.keywords:
-        return all([software_whitelisted(x) for x in product.keywords['software']])
+    if product.software:
+        return all([software_whitelisted(x) for x in product.software])
     return True
 
 def software_whitelisted(software):
@@ -248,9 +248,8 @@ def software_whitelisted(software):
 
 def preprocess_product(product, loc, skip_data_preprocessing, skip_label_preprocessing):
     logging.debug("Preprocessing files for: %s", product.labelfilename)
-    logging.debug(product.keywords)
 
-    file_names=product.keywords['file_names'] if 'file_names' in product.keywords else [product.keywords['file_name']]
+    file_names=product.filenames
     if not file_names:
         raise Exception("No filenames in label:", product.labelfilename)
 
@@ -272,15 +271,14 @@ def move_product(product, loc):
     to the archive direcory.
     '''
     logging.info("Moving files for: %s", product.labelfilename)
-    logging.debug(product.keywords)
 
-    collection_id = product.keywords['collection_id']
+    collection_id = product.collection_id
 
     datadir = loc.datadir(product.inst, product.year, product.date)
     dest_directory = loc.destdir(collection_id, product.inst, product.year, product.date)
     os.makedirs(dest_directory, exist_ok=True)
 
-    file_names=product.keywords['file_names'] if 'file_names' in product.keywords else [product.keywords['file_name']]
+    file_names=product.filenames
     if not file_names:
         raise Exception("No filenames in label:", product.labelfilename)
 
@@ -307,8 +305,8 @@ def process_data_collection(loc, collection_products, collection_id):
     collection_labels = get_collection_labels(collection_path, collection_id)
     logging.debug(collection_labels)
 
-    start_dates = [x.keywords['start_date'] for x in collection_products if 'start_date' in x.keywords] + multilookup(collection_labels, 'start_date')
-    stop_dates = [x.keywords['stop_date'] for x in collection_products if 'stop_date' in x.keywords] + multilookup(collection_labels, 'stop_date')
+    start_dates = [x.start_date for x in collection_products + collection_labels if x.start_date]
+    stop_dates = [x.stop_date for x in collection_products + collection_labels if x.stop_date]
     start_date = min(start_dates) if start_dates else None
     stop_date = max(stop_dates) if stop_dates else None
     
@@ -326,7 +324,7 @@ def merge_inventories(collection_path, collection_id, collection_products, colle
     Produces a new collection inventory file, and returns the lidvid for the
     new collection
     '''
-    product_lidvids = [x.keywords['lidvid'] for x in collection_products]
+    product_lidvids = [x.lidvid for x in collection_products]
 
     old_lidvid = get_last_version_number(collection_id, collection_labels)
     old_inv = inventory.read_inventory(old_lidvid, collection_path)
@@ -338,19 +336,13 @@ def merge_inventories(collection_path, collection_id, collection_products, colle
 
     return new_lidvid
 
-def multilookup(labels, keyword):
-    '''
-    Gets a value from every collection label passed in
-    '''
-    return [x.keywords[keyword] for x in labels if keyword in x.keywords]
-
 def get_last_version_number(collection_id, collection_labels):
     '''
     Gets the most recent known version number for a collection
     '''
     if collection_labels:
         collection_versions = [
-            (x.keywords['major'], x.keywords['minor'])
+            (x.majorversion, x.minorversion)
             for x in collection_labels]
         major, minor = max(collection_versions)
         return make_collection_lidvid(collection_id, major, minor)
