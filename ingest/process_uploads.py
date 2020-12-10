@@ -146,9 +146,8 @@ def validate_products(products, loc, preprocessing_opts, validation_opts):
     Preprocess and validates the products. 
     The preprocessing happens during this step for liveness. The could have been preprocessed as a batch earlier.
     '''
+    all_validation_failures = []
     for batch in chunk(products, BATCH_SIZE):
-        all_validation_failures = []
-
         if not preprocessing_opts.skip_preprocessing:
             for product in batch:
                 preprocess_product(product, loc, preprocessing_opts.skip_data_preprocessing, preprocessing_opts.skip_label_preprocessing)
