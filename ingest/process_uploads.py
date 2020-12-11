@@ -61,9 +61,12 @@ def main(argv=None):
     parser.add_argument('--skip-collection-update', action='store_true', dest='skip_collection_update', help='If enabled, will update the collection inventory or label')
     args = parser.parse_args()
 
+    logfilename="process_uploads_%s.log" % time.time()
+    print(logfilename)
+
     logging.basicConfig(level=logging.INFO,
         format='%(asctime)s|%(levelname)s|%(message)s', 
-        filename="process_uploads_%s.log" % time.time())
+        filename=logfilename)
 
     preprocessing_opts = SimpleNamespace(
         skip_preprocessing=args.skip_preprocessing,
@@ -154,7 +157,7 @@ def validate_products(products, loc, preprocessing_opts, validation_opts):
     files from being altered if there are validation errors.
     '''
     all_validation_failures = []
-    
+
     if preprocessing_opts.skip_preprocessing:
         logging.info("Skipping temp preprocessing")
     if validation_opts.skip_validation:
