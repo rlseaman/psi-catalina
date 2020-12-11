@@ -93,7 +93,9 @@ def lockfile_run(basedir, destdir, preprocessing_opts, validation_opts, postproc
     enforced with a lockfile.
     '''
     lockfile = os.path.join(basedir, ".lockfile")
-    if not os.path.exists(lockfile):
+    if os.path.exists(lockfile):
+        logging.info("Lockfile found, skipping processing")
+    else:
         with open(lockfile, "w") as lock:
             lock.write(".")
         try:
@@ -127,11 +129,15 @@ def process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, po
 
     validate_products(products, loc, preprocessing_opts, validation_opts)
 
-    if not postprocesing_opts.skip_move:
+    if postprocesing_opts.skip_move:
+        logging.info("Skipping move")
+    else:
         for product in products:
             move_product(product, loc)
 
-    if not postprocesing_opts.skip_collection_update:
+    if postprocesing_opts.skip_collection_update:
+        logging.info("Skipping collection update")
+    else:
         for collection_id in collection_lids:
             collection_products = [x for x in products if x.collection_id == collection_id]
             if collection_products:
@@ -144,9 +150,16 @@ def process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, po
 def validate_products(products, loc, preprocessing_opts, validation_opts):
     '''
     Preprocess and validates the products. 
-    The preprocessing happens during this step for liveness. The could have been preprocessed as a batch earlier.
+    The files will be preprocessed in the same manner as after validation. This prevents the original 
+    files from being altered if there are validation errors.
     '''
     all_validation_failures = []
+    
+    if preprocessing_opts.skip_preprocessing:
+        logging.info("Skipping temp preprocessing")
+    if validation_opts.skip_validation:
+        logging.info("Skipping validation")
+
     for batch in chunk(products, BATCH_SIZE):
         if not preprocessing_opts.skip_preprocessing:
             for product in batch:
@@ -259,12 +272,16 @@ def preprocess_product(product, loc, skip_data_preprocessing, skip_label_preproc
     if not file_names:
         raise Exception("No filenames in label:", product.labelfilename)
 
-    if not skip_data_preprocessing:
+    if skip_data_preprocessing:
+        logging.info("Skipping preprocessing")
+    else:
         for file_name in file_names:
             src_data = loc.datadir(product.inst, product.year, product.date, file_name)
             preprocess.preprocess_datafile(src_data)
 
-    if not skip_label_preprocessing:
+    if skip_label_preprocessing:
+        logging.info("Skipping label preprocessing")
+    else:
         src_label = loc.labeldir(product.inst, product.year, product.date, product.labelfilename)
         preprocess.preprocess_labelfile(src_label, file_names)
 
