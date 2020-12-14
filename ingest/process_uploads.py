@@ -121,7 +121,7 @@ def process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, po
     logging.info("%i products discovered", len(products))
 
     #logging.debug(products)
-    lidvids = (product.lidvid for product in products)
+    lidvids = (product.lidvid() for product in products)
     collection_lids = index(lidvids, extract_collection_id)
 
     logging.debug(lidvids)
@@ -144,7 +144,7 @@ def process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, po
         logging.info("Skipping collection update")
     else:
         for collection_id in collection_lids:
-            collection_products = [x for x in products if x.collection_id == collection_id]
+            collection_products = [x for x in products if x.collection_id() == collection_id]
             if collection_products:
                 process_data_collection(loc, collection_products, collection_id)
 
@@ -268,7 +268,7 @@ def product_whitelisted(product):
     determines if all of the software for the product has been approved
     '''
     if product.software:
-        return all([software_whitelisted(x) for x in product.software])
+        return all([software_whitelisted(x) for x in product.software()])
     return True
 
 def software_whitelisted(software):
@@ -280,7 +280,7 @@ def software_whitelisted(software):
 def preprocess_product(product, loc, skip_data_preprocessing, skip_label_preprocessing):
     logging.debug("Preprocessing files for: %s", product.labelfilename)
 
-    file_names=product.filenames
+    file_names=product.filenames()
     if not file_names:
         raise Exception("No filenames in label:", product.labelfilename)
 
@@ -307,13 +307,13 @@ def move_product(product, loc):
     '''
     logging.info("Moving files for: %s", product.labelfilename)
 
-    collection_id = product.collection_id
+    collection_id = product.collection_id()
 
     datadir = loc.datadir(product.inst, product.year, product.date)
     dest_directory = loc.destdir(collection_id, product.inst, product.year, product.date)
     os.makedirs(dest_directory, exist_ok=True)
 
-    file_names=product.filenames
+    file_names=product.filenames()
     if not file_names:
         raise Exception("No filenames in label:", product.labelfilename)
 
@@ -340,8 +340,8 @@ def process_data_collection(loc, collection_products, collection_id):
     collection_labels = get_collection_labels(collection_path, collection_id)
     logging.debug(collection_labels)
 
-    start_dates = [x.start_date for x in collection_products + collection_labels if x.start_date]
-    stop_dates = [x.stop_date for x in collection_products + collection_labels if x.stop_date]
+    start_dates = [x.start_date() for x in collection_products + collection_labels if x.start_date()]
+    stop_dates = [x.stop_date() for x in collection_products + collection_labels if x.stop_date()]
     start_date = min(start_dates) if start_dates else None
     stop_date = max(stop_dates) if stop_dates else None
     
@@ -359,7 +359,7 @@ def merge_inventories(collection_path, collection_id, collection_products, colle
     Produces a new collection inventory file, and returns the lidvid for the
     new collection
     '''
-    product_lidvids = [x.lidvid for x in collection_products]
+    product_lidvids = [x.lidvid() for x in collection_products]
 
     old_lidvid = get_last_version_number(collection_id, collection_labels)
     old_inv = inventory.read_inventory(old_lidvid, collection_path)
@@ -377,7 +377,7 @@ def get_last_version_number(collection_id, collection_labels):
     '''
     if collection_labels:
         collection_versions = [
-            (x.majorversion, x.minorversion)
+            (x.majorversion(), x.minorversion())
             for x in collection_labels]
         major, minor = max(collection_versions)
         return make_collection_lidvid(collection_id, major, minor)

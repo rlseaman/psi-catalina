@@ -57,7 +57,7 @@ def create_temp_copy(temp_dir, product, skip_data):
     temp_label_path = os.path.join(temp_dir, label_file_name)
     shutil.copy(label_path, temp_label_path)
 
-    data_file_names = product.filenames
+    data_file_names = product.filenames()
     for data_file_name in data_file_names:
         data_path = os.path.join(data_dir, data_file_name)
         temp_data_path = os.path.join(temp_dir, data_file_name)
