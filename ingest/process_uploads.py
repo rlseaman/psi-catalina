@@ -97,7 +97,7 @@ def lockfile_run(basedir, destdir, preprocessing_opts, validation_opts, postproc
     '''
     lockfile = os.path.join(basedir, ".lockfile")
     if os.path.exists(lockfile):
-        logging.info("Lockfile found, skipping processing")
+        logging.info("Lockfile found at %s, skipping processing", lockfile)
     else:
         with open(lockfile, "w") as lock:
             lock.write(".")
