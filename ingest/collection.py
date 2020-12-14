@@ -27,3 +27,9 @@ class Collection:
             xmldoc = BeautifulSoup(infile, 'lxml-xml')
             if xmldoc:
                 self.keywords = extract_label(xmldoc)
+                self.start_date = self.keywords.get('start_date')
+                self.stop_date = self.keywords.get('stop_date')
+                self.majorversion = self.keywords.get('major')
+                self.minorversion = self.keywords.get('minor')
+
+                
