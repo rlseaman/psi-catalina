@@ -114,6 +114,9 @@ def process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, po
     logging.info("Discovering products at: %s", basedir)
     loc = paths.Paths(basedir, destdir)
     products = list(discover_products(loc))
+    discovered_products = discover_products(loc)
+    logging.info("Discovey complete, consolidating: %s", basedir)
+    products = list(discovered_products)
 
 
     logging.info("%i products discovered", len(products))
