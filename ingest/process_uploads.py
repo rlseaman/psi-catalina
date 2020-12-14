@@ -113,7 +113,6 @@ def process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, po
     '''
     logging.info("Discovering products at: %s", basedir)
     loc = paths.Paths(basedir, destdir)
-    products = list(discover_products(loc))
     discovered_products = discover_products(loc)
     logging.info("Discovey complete, consolidating: %s", basedir)
     products = list(discovered_products)
@@ -254,9 +253,14 @@ def process_labels(datadir, labeldir, instrument, year, date):
     labeldir: the absolute path to the label files
     '''
     logging.info("Processing searching for labels in %s/%s/%s", instrument, year, date)
-    files = (x.name for x in os.scandir(labeldir) if is_label(x))
-    products = [Product(datadir, os.path.join(labeldir, infile), instrument, year, date) for infile in files]
-    logging.info("%s products in %s/%s/%s", len(products), instrument, year, date)
+    files = [x.name for x in os.scandir(labeldir) if is_label(x)]
+    empty_labels = [x for x in files if os.path.getsize(os.path.join(labeldir, x)) == 0]
+    if empty_labels:
+        logging.warn("Empty labels in %s: %s", labeldir, empty_labels)
+    nonempty_labels = [x for x in files if os.path.getsize(os.path.join(labeldir, x)) > 0]
+    products = (Product(datadir, os.path.join(labeldir, infile), instrument, year, date) for infile in nonempty_labels)
+    #logging.info("%s products in %s/%s/%s", len(products), instrument, year, date)
+    logging.info("discovery complete in %s/%s/%s", instrument, year, date)
     return products
 
 def product_whitelisted(product):
