@@ -121,7 +121,7 @@ def process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, po
 
     logging.info("%i products discovered", len(products))
 
-    logging.debug(products)
+    #logging.debug(products)
     lidvids = (product.lidvid for product in products)
     collection_lids = index(lidvids, extract_collection_id)
 
@@ -152,6 +152,7 @@ def process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, po
     #deletion_area_dest = os.path.join(DELETION_BASE, "placeholder")
     # delete files from temporary directory/move to deletion area
     #logging.info("moving to %s", deletion_area_dest)
+    logging.info("done")
 
 def validate_products(products, loc, preprocessing_opts, validation_opts):
     '''
@@ -167,6 +168,7 @@ def validate_products(products, loc, preprocessing_opts, validation_opts):
         logging.info("Skipping validation")
 
     for batch in chunk(products, BATCH_SIZE):
+        logging.info("Validating a batch of %s...", len(batch))
         if not preprocessing_opts.skip_preprocessing:
             for product in batch:
                 preprocess_product(product, loc, preprocessing_opts.skip_data_preprocessing, preprocessing_opts.skip_label_preprocessing)
