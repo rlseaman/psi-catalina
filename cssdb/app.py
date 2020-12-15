@@ -15,7 +15,7 @@ def to_dict(fields, t):
 
 @app.route("/")
 def root():
-    with sqlite3.connect(DB_FILE) as conn:
+    with get_connection() as conn:
         c = conn.cursor()
         c.execute("select * from obsnight")
         obsnights = [to_dict(cssdb.OBSNIGHT_FIELDS_PK, x) for x in c.fetchall()]
@@ -25,7 +25,7 @@ def root():
 @app.route("/night/<night_id>")
 def night(night_id):
     term = (night_id, )
-    with sqlite3.connect(DB_FILE) as conn:
+    with get_connection() as conn:
         c = conn.cursor()
 
         c.execute("select * from obsnight where night_id = ?", term)
@@ -60,7 +60,7 @@ def night(night_id):
 @app.route("/object/<object_id>")
 def obj(object_id):
     objid = (object_id, )
-    with sqlite3.connect(DB_FILE) as conn:
+    with get_connection() as conn:
         c = conn.cursor()
 
         c.execute("select * from userfields join obsnight using(night_id) where userfield_name = ?", objid)
@@ -88,7 +88,7 @@ def obj(object_id):
 def field(field_id):
     match_param = (field_id, )
     like_param = ('%' + field_id + '%', )
-    with sqlite3.connect(DB_FILE) as conn:
+    with get_connection() as conn:
         c = conn.cursor()
 
         c.execute("select * from surveyfields join obsnight using(night_id) where surveyfield_code = ?", match_param)
@@ -116,7 +116,7 @@ def field(field_id):
 @app.route("/img/survey/<night_id>")
 def survey(night_id):
     match_param = (night_id, )
-    with sqlite3.connect(DB_FILE) as conn:
+    with get_connection() as conn:
         c = conn.cursor()
 
         c.execute("select ra, declination from surveyfields where night_id = ?", match_param)
@@ -135,3 +135,8 @@ def survey(night_id):
     #return str(len(b.getvalue()))
     #return send_file('temp.png', mimetype='image/png')
     return Response(b.getvalue(), mimetype='image/png')
+
+
+def get_connection():
+    conn = sqlite3.connect(DB_FILE)
+    return conn
