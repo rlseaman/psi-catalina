@@ -4,7 +4,6 @@ import io
 from PIL import Image, ImageDraw
 from flask import Flask, escape, request, render_template, send_file, Response
 
-import cssdb
 
 app = Flask(__name__)
 
@@ -18,7 +17,7 @@ def root():
     with get_connection() as conn:
         c = conn.cursor()
         c.execute("select * from obsnight")
-        obsnights = [to_dict(cssdb.OBSNIGHT_FIELDS_PK, x) for x in c.fetchall()]
+        obsnights = c.fetchall()
 
     return render_template('index.html', nights=obsnights)
 
@@ -29,23 +28,22 @@ def night(night_id):
         c = conn.cursor()
 
         c.execute("select * from obsnight where night_id = ?", term)
-        night = [to_dict(cssdb.OBSNIGHT_FIELDS_PK, x) for x in c.fetchall()][0]
+        night = c.fetchall()[0]
 
-        
         c.execute("select * from userfields where night_id = ?", term)
-        userfields = [to_dict(cssdb.USERFIELD_FIELDS_PK, x) for x in c.fetchall()]
+        userfields = c.fetchall()
 
         c.execute("select * from followups where night_id = ?", term)
-        followups = [to_dict(cssdb.FOLLOWUP_FIELDS_PK, x) for x in c.fetchall()]
+        followups = c.fetchall()
 
         c.execute("select * from observations where night_id = ?", term)
-        observations = [to_dict(cssdb.OBS_FIELDS_PK, x) for x in c.fetchall()]
+        observations = c.fetchall()
 
         c.execute("select * from surveyfields where night_id = ?", term)
-        surveyfields = [to_dict(cssdb.SURVEYFIELD_FIELDS_PK, x) for x in c.fetchall()]
+        surveyfields = c.fetchall()
 
         c.execute("select * from neo where night_id = ?", term)
-        neos = [to_dict(cssdb.NEO_FIELDS_PK, x) for x in c.fetchall()]
+        neos = c.fetchall()
 
 
     return render_template(
@@ -64,16 +62,16 @@ def obj(object_id):
         c = conn.cursor()
 
         c.execute("select * from userfields join obsnight using(night_id) where userfield_name = ?", objid)
-        userfields = [to_dict(cssdb.USERFIELD_FIELDS_PK + cssdb.OBSNIGHT_FIELDS, x) for x in c.fetchall()]
+        userfields = c.fetchall()
 
         c.execute("select * from followups join obsnight using(night_id) where followup_name = ?", objid)
-        followups = [to_dict(cssdb.FOLLOWUP_FIELDS_PK + cssdb.OBSNIGHT_FIELDS, x) for x in c.fetchall()]
+        followups = c.fetchall()
 
         c.execute("select * from astrometry join obsnight using(night_id) where astr_code = ?", objid)
-        astrometries = [to_dict(cssdb.ASTR_FIELDS_PK + cssdb.OBSNIGHT_FIELDS, x) for x in c.fetchall()]
+        astrometries = c.fetchall()
 
         c.execute("select * from neo join obsnight using(night_id) where neo_code = ?", objid)
-        neos = [to_dict(cssdb.NEO_FIELDS_PK + cssdb.OBSNIGHT_FIELDS, x) for x in c.fetchall()]
+        neos = c.fetchall()
 
     return render_template(
         'object.html', 
@@ -92,16 +90,16 @@ def field(field_id):
         c = conn.cursor()
 
         c.execute("select * from surveyfields join obsnight using(night_id) where surveyfield_code = ?", match_param)
-        surveyfields = [to_dict(cssdb.SURVEYFIELD_FIELDS_PK + cssdb.OBSNIGHT_FIELDS, x) for x in c.fetchall()]
+        surveyfields = c.fetchall()
 
         c.execute("select * from followups join obsnight using(night_id) where field_code = ?", match_param)
-        followups = [to_dict(cssdb.FOLLOWUP_FIELDS_PK + cssdb.OBSNIGHT_FIELDS, x) for x in c.fetchall()]
+        followups = c.fetchall()
 
         c.execute("select * from userfields join obsnight using(night_id) where comment = ?", match_param)
-        userfields = [to_dict(cssdb.USERFIELD_FIELDS_PK + cssdb.OBSNIGHT_FIELDS, x) for x in c.fetchall()]
+        userfields = c.fetchall()
 
         c.execute("select * from observations join obsnight using(night_id) where obsfile like ?", like_param)
-        observations = [to_dict(cssdb.OBS_FIELDS_PK + cssdb.OBSNIGHT_FIELDS, x) for x in c.fetchall()]
+        observations = c.fetchall()
 
 
 
@@ -139,4 +137,5 @@ def survey(night_id):
 
 def get_connection():
     conn = sqlite3.connect(DB_FILE)
+    conn.row_factory = sqlite3.Row
     return conn
