@@ -42,8 +42,8 @@ def extract_identification_area(identification_area):
     '''
     Extracts keywords from the Identification_Area element
     '''
-    lid = identification_area.logical_identifier.string
-    vid = identification_area.version_id.string
+    lid = str(identification_area.logical_identifier.string)
+    vid = str(identification_area.version_id.string)
     major, minor = [int(x) for x in vid.split(".")]
 
     return {
@@ -76,8 +76,8 @@ def extract_time_coordinates(time_coordinates):
     gets the start and stop time from the time_coordinates element
     '''
     return {
-        "start_date": time_coordinates.start_date_time.string,
-        "stop_date": time_coordinates.stop_date_time.string
+        "start_date": str(time_coordinates.start_date_time.string),
+        "stop_date": str(time_coordinates.stop_date_time.string)
     }
 
 def extract_file_area(file_area):
@@ -85,7 +85,7 @@ def extract_file_area(file_area):
     Extracts keywords from the File_Area element
     '''
     return {
-        "file_name": os.path.basename(file_area.File.file_name.string)
+        "file_name": os.path.basename(str(file_area.File.file_name.string))
     }
 
 def extract_collection_id(lid):
@@ -120,8 +120,8 @@ def extract_software(software):
     Extract from the software element
     '''
     return {
-        "software_id": software.software_id.string if software.software_id else '', 
-        "software_version_id": software.software_version_id.string if software.software_version_id else ''
+        "software_id": str(software.software_id.string) if software.software_id else '', 
+        "software_version_id": str(software.software_version_id.string) if software.software_version_id else ''
     }
 
 def extract_document(document):
@@ -148,5 +148,5 @@ def extract_document_file(document_file):
     Extracts keywords form the Document_File element
     '''
     return {
-        'filename': document_file.file_name.string
+        'filename': str(document_file.file_name.string)
     }   

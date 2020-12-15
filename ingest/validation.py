@@ -57,7 +57,7 @@ def create_temp_copy(temp_dir, product, skip_data):
     temp_label_path = os.path.join(temp_dir, label_file_name)
     shutil.copy(label_path, temp_label_path)
 
-    data_file_names = product.file_names()
+    data_file_names = product.filenames()
     for data_file_name in data_file_names:
         data_path = os.path.join(data_dir, data_file_name)
         temp_data_path = os.path.join(temp_dir, data_file_name)
@@ -89,11 +89,16 @@ def run_validator(file_name, skip_data):
     Runs the label validatior on the given file or directory
     '''
 
+    logging.info("Running the validator...")
     params = [VALIDATE_CMD, '-s', 'json'] + (['-D'] if skip_data else []) + ['-x', *SCHEMA_PATHS, '-S', *SCHEMATRON_PATHS, '-t', file_name]
 
     process = subprocess.run(params, stdout=subprocess.PIPE)
+
+    logging.info("Validation complete, processing results...")
+
     stdout = process.stdout
     
+
     result = json.loads(stdout)
     failures = [x for x in result['productLevelValidationResults']
                          if x['status'] == "FAIL"]
@@ -101,6 +106,7 @@ def run_validator(file_name, skip_data):
                           if x['status'] == "PASS"]
 
     if failures:
+        logging.info("Failures encountered")
         for failure in failures:
             logging.error(failure)
             #logging.error(result)
@@ -114,5 +120,5 @@ class Validation:
     and failures
     '''
     def __init__(self, dirname):
-        result = run_validator(dirname)
+        result = run_validator(dirname, true)
         self.failures, self.successes = result

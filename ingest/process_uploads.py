@@ -14,6 +14,8 @@ import functools
 import argparse
 import logging
 import time
+from types import SimpleNamespace
+
 
 from product import Product
 from collection import Collection
@@ -22,6 +24,7 @@ import validation
 import inventory
 import preprocess
 import paths
+
 
 
 LABEL_FILENAME_TEMPLATE = 'collection_{collection_id}_{major}.{minor}.xml'
@@ -49,48 +52,76 @@ def main(argv=None):
     parser.add_argument('--basedir', help='The base directory for the delivered data', required=True)
     parser.add_argument('--destdir', help='The destination directory for the processed data', required=True)
     parser.add_argument('--skip-preprocessing', action='store_true', dest='skip_preprocessing', help='If enabled, will not preprocess the data and label files')
+    parser.add_argument('--skip-data-preprocessing', action='store_true', dest='skip_data_preprocessing', help='If enabled, will not preprocess the data files')
+    parser.add_argument('--skip-label-preprocessing', action='store_true', dest='skip_label_preprocessing', help='If enabled, will not preprocess the label files')
     parser.add_argument('--skip-validation', action='store_true', dest='skip_validation', help='If enabled, will not validate the data')
+    parser.add_argument('--permissive-validation', action='store_true', dest='permissive_validation', help='If enabled, will continue even if there are validation errors')
     parser.add_argument('--skip-data-validation', action='store_true', dest='skip_data_validation', help='If enabled, will not validate the data')
     parser.add_argument('--skip-move', action='store_true', dest='skip_move', help='If enabled, will not move the data')
+    parser.add_argument('--skip-collection-update', action='store_true', dest='skip_collection_update', help='If enabled, will update the collection inventory or label')
     args = parser.parse_args()
+
+    logfilename="process_uploads_%s.log" % time.time()
+    print(logfilename)
 
     logging.basicConfig(level=logging.INFO,
         format='%(asctime)s|%(levelname)s|%(message)s', 
-        filename="process_uploads_%s.log" % time.time())
+        filename=logfilename)
+
+    preprocessing_opts = SimpleNamespace(
+        skip_preprocessing=args.skip_preprocessing,
+        skip_data_preprocessing=args.skip_data_preprocessing,
+        skip_label_preprocessing=args.skip_label_preprocessing
+    )
+
+    validation_opts = SimpleNamespace(
+        skip_validation=args.skip_validation,
+        skip_data_validation=args.skip_data_validation,
+        permissive_validation=args.permissive_validation
+    )
+    
+    postprocessing_opts = SimpleNamespace(
+        skip_move=args.skip_move,
+        skip_collection_update=args.skip_collection_update
+    )
 
     logging.info("Basedir: %s, Destdir: %s", args.basedir, args.destdir)
-    lockfile_run(args.basedir, args.destdir, args.skip_preprocessing ,args.skip_validation, args.skip_move, args.skip_data_validation)
+    lockfile_run(args.basedir, args.destdir, preprocessing_opts, validation_opts, postprocessing_opts)
 
     return 0
 
-def lockfile_run(basedir, destdir, skip_preprocessing, skip_validation, skip_move, skip_data_validation):
+def lockfile_run(basedir, destdir, preprocessing_opts, validation_opts, postprocesing_opts):
     '''
     Run a function on this directory if one isn't already running. This is
     enforced with a lockfile.
     '''
     lockfile = os.path.join(basedir, ".lockfile")
-    if not os.path.exists(lockfile):
+    if os.path.exists(lockfile):
+        logging.info("Lockfile found at %s, skipping processing", lockfile)
+    else:
         with open(lockfile, "w") as lock:
             lock.write(".")
         try:
-            process_upload_dir(basedir, destdir, skip_preprocessing, skip_validation, skip_move, skip_data_validation)
+            process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, postprocesing_opts)
         finally:
             os.remove(lockfile)
 
 
-def process_upload_dir(basedir, destdir, skip_preprocessing, skip_validation, skip_move, skip_data_validation):
+def process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, postprocesing_opts):
     '''
     process an upload directory, assuming it has been validated.
     '''
     logging.info("Discovering products at: %s", basedir)
     loc = paths.Paths(basedir, destdir)
-    products = list(discover_products(loc))
+    discovered_products = discover_products(loc)
+    logging.info("Discovey complete, consolidating: %s", basedir)
+    products = list(discovered_products)
 
 
     logging.info("%i products discovered", len(products))
 
-    logging.debug(products)
-    lidvids = (product.keywords['lidvid'] for product in products)
+    #logging.debug(products)
+    lidvids = (product.lidvid() for product in products)
     collection_lids = index(lidvids, extract_collection_id)
 
     logging.debug(lidvids)
@@ -101,32 +132,52 @@ def process_upload_dir(basedir, destdir, skip_preprocessing, skip_validation, sk
     #    raise Exception('Some products used software not on the whitelist')
 
 
-    for batch in chunk(products, BATCH_SIZE):
-        all_validation_failures = []
-        results = []
+    validate_products(products, loc, preprocessing_opts, validation_opts)
 
-        if not skip_preprocessing:
-            for product in batch:
-                preprocess_product(product, loc)
-        if not skip_validation:
-            validation_failures,_,result = validation.validate_products(batch, skip_data_validation)
-            if validation_failures:
-                all_validation_failures.extend(validation_failures)
-    if all_validation_failures:
-        raise Exception('There were validation errors')
-
-    if not skip_move:
+    if postprocesing_opts.skip_move:
+        logging.info("Skipping move")
+    else:
         for product in products:
             move_product(product, loc)
 
-    for collection_id in collection_lids:
-        collection_products = [x for x in products if x.keywords['collection_id'] == collection_id]
-        if collection_products:
-            process_data_collection(loc, collection_products, collection_id)
+    if postprocesing_opts.skip_collection_update:
+        logging.info("Skipping collection update")
+    else:
+        for collection_id in collection_lids:
+            collection_products = [x for x in products if x.collection_id() == collection_id]
+            if collection_products:
+                process_data_collection(loc, collection_products, collection_id)
 
     #deletion_area_dest = os.path.join(DELETION_BASE, "placeholder")
     # delete files from temporary directory/move to deletion area
     #logging.info("moving to %s", deletion_area_dest)
+    logging.info("done")
+
+def validate_products(products, loc, preprocessing_opts, validation_opts):
+    '''
+    Preprocess and validates the products. 
+    The files will be preprocessed in the same manner as after validation. This prevents the original 
+    files from being altered if there are validation errors.
+    '''
+    all_validation_failures = []
+
+    if preprocessing_opts.skip_preprocessing:
+        logging.info("Skipping temp preprocessing")
+    if validation_opts.skip_validation:
+        logging.info("Skipping validation")
+
+    for batch in chunk(products, BATCH_SIZE):
+        logging.info("Validating a batch of %s...", len(batch))
+        if not preprocessing_opts.skip_preprocessing:
+            for product in batch:
+                preprocess_product(product, loc, preprocessing_opts.skip_data_preprocessing, preprocessing_opts.skip_label_preprocessing)
+        if not validation_opts.skip_validation:
+            validation_failures,_,_ = validation.validate_products(batch, validation_opts.skip_data_validation)
+            if validation_failures:
+                all_validation_failures.extend(validation_failures)
+    if all_validation_failures and not validation_opts.permissive_validation:
+        raise Exception('There were validation errors')
+
 
 
 def discover_products(loc):
@@ -202,17 +253,22 @@ def process_labels(datadir, labeldir, instrument, year, date):
     labeldir: the absolute path to the label files
     '''
     logging.info("Processing searching for labels in %s/%s/%s", instrument, year, date)
-    files = (x.name for x in os.scandir(labeldir) if is_label(x))
-    products = [Product(datadir, os.path.join(labeldir, infile), instrument, year, date) for infile in files]
-    logging.info("%s products in %s/%s/%s", len(products), instrument, year, date)
+    files = [x.name for x in os.scandir(labeldir) if is_label(x)]
+    empty_labels = [x for x in files if os.path.getsize(os.path.join(labeldir, x)) == 0]
+    if empty_labels:
+        logging.warn("Empty labels in %s: %s", labeldir, empty_labels)
+    nonempty_labels = [x for x in files if os.path.getsize(os.path.join(labeldir, x)) > 0]
+    products = (Product(datadir, os.path.join(labeldir, infile), instrument, year, date) for infile in nonempty_labels)
+    #logging.info("%s products in %s/%s/%s", len(products), instrument, year, date)
+    logging.info("discovery complete in %s/%s/%s", instrument, year, date)
     return products
 
 def product_whitelisted(product):
     '''
     determines if all of the software for the product has been approved
     '''
-    if 'software' in product.keywords:
-        return all([software_whitelisted(x) for x in product.keywords['software']])
+    if product.software:
+        return all([software_whitelisted(x) for x in product.software()])
     return True
 
 def software_whitelisted(software):
@@ -221,20 +277,25 @@ def software_whitelisted(software):
     '''
     return True
 
-def preprocess_product(product, loc):
+def preprocess_product(product, loc, skip_data_preprocessing, skip_label_preprocessing):
     logging.debug("Preprocessing files for: %s", product.labelfilename)
-    logging.debug(product.keywords)
 
-    file_names=product.keywords['file_names'] if 'file_names' in product.keywords else [product.keywords['file_name']]
+    file_names=product.filenames()
     if not file_names:
         raise Exception("No filenames in label:", product.labelfilename)
 
-    for file_name in file_names:
-        src_data = loc.datadir(product.inst, product.year, product.date, file_name)
-        preprocess.preprocess_datafile(src_data)
+    if skip_data_preprocessing:
+        logging.info("Skipping preprocessing")
+    else:
+        for file_name in file_names:
+            src_data = loc.datadir(product.inst, product.year, product.date, file_name)
+            preprocess.preprocess_datafile(src_data)
 
-    src_label = loc.labeldir(product.inst, product.year, product.date, product.labelfilename)
-    preprocess.preprocess_labelfile(src_label, file_names)
+    if skip_label_preprocessing:
+        logging.info("Skipping label preprocessing")
+    else:
+        src_label = loc.labeldir(product.inst, product.year, product.date, product.labelfilename)
+        preprocess.preprocess_labelfile(src_label, file_names)
 
 
 
@@ -245,15 +306,14 @@ def move_product(product, loc):
     to the archive direcory.
     '''
     logging.info("Moving files for: %s", product.labelfilename)
-    logging.debug(product.keywords)
 
-    collection_id = product.keywords['collection_id']
+    collection_id = product.collection_id()
 
     datadir = loc.datadir(product.inst, product.year, product.date)
     dest_directory = loc.destdir(collection_id, product.inst, product.year, product.date)
     os.makedirs(dest_directory, exist_ok=True)
 
-    file_names=product.keywords['file_names'] if 'file_names' in product.keywords else [product.keywords['file_name']]
+    file_names=product.filenames()
     if not file_names:
         raise Exception("No filenames in label:", product.labelfilename)
 
@@ -280,8 +340,8 @@ def process_data_collection(loc, collection_products, collection_id):
     collection_labels = get_collection_labels(collection_path, collection_id)
     logging.debug(collection_labels)
 
-    start_dates = [x.keywords['start_date'] for x in collection_products if 'start_date' in x.keywords] + multilookup(collection_labels, 'start_date')
-    stop_dates = [x.keywords['stop_date'] for x in collection_products if 'stop_date' in x.keywords] + multilookup(collection_labels, 'stop_date')
+    start_dates = [x.start_date() for x in collection_products + collection_labels if x.start_date()]
+    stop_dates = [x.stop_date() for x in collection_products + collection_labels if x.stop_date()]
     start_date = min(start_dates) if start_dates else None
     stop_date = max(stop_dates) if stop_dates else None
     
@@ -299,7 +359,7 @@ def merge_inventories(collection_path, collection_id, collection_products, colle
     Produces a new collection inventory file, and returns the lidvid for the
     new collection
     '''
-    product_lidvids = [x.keywords['lidvid'] for x in collection_products]
+    product_lidvids = [x.lidvid() for x in collection_products]
 
     old_lidvid = get_last_version_number(collection_id, collection_labels)
     old_inv = inventory.read_inventory(old_lidvid, collection_path)
@@ -311,19 +371,13 @@ def merge_inventories(collection_path, collection_id, collection_products, colle
 
     return new_lidvid
 
-def multilookup(labels, keyword):
-    '''
-    Gets a value from every collection label passed in
-    '''
-    return [x.keywords[keyword] for x in labels if keyword in x.keywords]
-
 def get_last_version_number(collection_id, collection_labels):
     '''
     Gets the most recent known version number for a collection
     '''
     if collection_labels:
         collection_versions = [
-            (x.keywords['major'], x.keywords['minor'])
+            (x.majorversion(), x.minorversion())
             for x in collection_labels]
         major, minor = max(collection_versions)
         return make_collection_lidvid(collection_id, major, minor)

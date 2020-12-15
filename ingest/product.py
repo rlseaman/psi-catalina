@@ -6,6 +6,7 @@ import os
 from bs4 import BeautifulSoup
 import label
 import logging
+import sys
 
 def extract_label(xmldoc):
     '''
@@ -19,6 +20,15 @@ def extract_label(xmldoc):
     print ("Unknown product type")
     return {}
 
+def extract_keywords(infile):
+    xmldoc = BeautifulSoup(infile, 'lxml-xml')
+    if xmldoc:
+        keywords = extract_label(xmldoc)
+        xmldoc.decompose()
+        return keywords
+    else:
+        return {}
+
 class Product:
     '''
     Represents the product itself.
@@ -30,18 +40,38 @@ class Product:
         '''
         logging.debug("Creating product for: %s", filepath)
         with open(filepath) as infile:
-            xmldoc = BeautifulSoup(infile, 'lxml-xml')
-            if xmldoc:
-                self.keywords = extract_label(xmldoc)
-                self.inst = inst
-                self.year = year
-                self.date = date
-                self.labelfilename = os.path.basename(filepath)
-                self.labeldir = os.path.dirname(filepath)
-                self.labelpath = filepath
-                self.datadir = datadir
-                if 'lidvid' not in self.keywords:
-                    raise Exception("no lidvid in file:" + filepath)
+            self.keywords = extract_keywords(infile)
+            self.inst = inst
+            self.year = year
+            self.date = date
+            self.labelfilename = os.path.basename(filepath)
+            self.labeldir = os.path.dirname(filepath)
+            self.labelpath = filepath
+            self.datadir = datadir
 
-    def file_names(self):
+
+    def lidvid(self):
+        return self.keywords['lidvid']
+
+    def filenames(self):
         return self.keywords['file_names'] if 'file_names' in self.keywords else [self.keywords['file_name']]
+
+    def start_date(self):
+        return self.keywords.get('start_date')
+
+    def stop_date(self):
+        return self.keywords.get('stop_date')
+
+    def majorversion(self):
+        return self.keywords.get('majorversion')
+
+    def minorversion(self):
+        return self.keywords.get('minorversion')
+
+    def collection_id(self):
+        return self.keywords.get('collection_id')
+
+    def software(self):
+        return self.keywords.get('software')
+
+
