@@ -122,17 +122,20 @@ def survey(night_id):
 
     coordinates = [(ra, 90 - dec) for (ra, dec) in surveyfields]
 
-    im = Image.new("RGB", (360, 180))
-    d = ImageDraw.Draw(im)
-    d.point(coordinates, fill=(255,255,255))
-
-    b = io.BytesIO()
-    #im.save('temp.png', format='PNG')
-    im.save(b, format='png')
+    b = generate_coordinate_plot(coordinates)
     
     #return str(len(b.getvalue()))
     #return send_file('temp.png', mimetype='image/png')
     return Response(b.getvalue(), mimetype='image/png')
+
+def generate_coordinate_plot(coordinates):
+    im = Image.new("RGB", (360, 180))
+    d = ImageDraw.Draw(im)
+    d.point(coordinates, fill=(255,255,255))
+    b = io.BytesIO()
+    #im.save('temp.png', format='PNG')
+    im.save(b, format='png')
+    return b
 
 
 def get_connection():
