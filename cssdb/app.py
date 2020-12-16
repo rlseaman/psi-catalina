@@ -27,24 +27,12 @@ def night(night_id):
     with get_connection() as conn:
         c = conn.cursor()
 
-        c.execute("select * from obsnight where night_id = ?", term)
-        night = c.fetchall()[0]
-
-        c.execute("select * from userfields where night_id = ?", term)
-        userfields = c.fetchall()
-
-        c.execute("select * from followups where night_id = ?", term)
-        followups = c.fetchall()
-
-        c.execute("select * from observations where night_id = ?", term)
-        observations = c.fetchall()
-
-        c.execute("select * from surveyfields where night_id = ?", term)
-        surveyfields = c.fetchall()
-
-        c.execute("select * from neo where night_id = ?", term)
-        neos = c.fetchall()
-
+        night = query(c, "select * from obsnight where night_id = ?", term)[0]
+        userfields = query(c, "select * from userfields where night_id = ?", term)
+        followups = query(c, "select * from followups where night_id = ?", term)
+        observations = query(c, "select * from observations where night_id = ?", term)
+        surveyfields = query(c, "select * from surveyfields where night_id = ?", term)
+        neos = query(c, "select * from neo where night_id = ?", term)
 
     return render_template(
         'night.html', 
@@ -61,17 +49,10 @@ def obj(object_id):
     with get_connection() as conn:
         c = conn.cursor()
 
-        c.execute("select * from userfields join obsnight using(night_id) where userfield_name = ?", objid)
-        userfields = c.fetchall()
-
-        c.execute("select * from followups join obsnight using(night_id) where followup_name = ?", objid)
-        followups = c.fetchall()
-
-        c.execute("select * from astrometry join obsnight using(night_id) where astr_code = ?", objid)
-        astrometries = c.fetchall()
-
-        c.execute("select * from neo join obsnight using(night_id) where neo_code = ?", objid)
-        neos = c.fetchall()
+        userfields = query(c, "select * from userfields join obsnight using(night_id) where userfield_name = ?", objid)
+        followups = query(c, "select * from followups join obsnight using(night_id) where followup_name = ?", objid)
+        astrometries = query(c, "select * from astrometry join obsnight using(night_id) where astr_code = ?", objid)
+        neos = query(c, "select * from neo join obsnight using(night_id) where neo_code = ?", objid)
 
     return render_template(
         'object.html', 
@@ -89,19 +70,10 @@ def field(field_id):
     with get_connection() as conn:
         c = conn.cursor()
 
-        c.execute("select * from surveyfields join obsnight using(night_id) where surveyfield_code = ?", match_param)
-        surveyfields = c.fetchall()
-
-        c.execute("select * from followups join obsnight using(night_id) where field_code = ?", match_param)
-        followups = c.fetchall()
-
-        c.execute("select * from userfields join obsnight using(night_id) where comment = ?", match_param)
-        userfields = c.fetchall()
-
-        c.execute("select * from observations join obsnight using(night_id) where obsfile like ?", like_param)
-        observations = c.fetchall()
-
-
+        surveyfields = query(c, "select * from surveyfields join obsnight using(night_id) where surveyfield_code = ?", match_param)
+        followups = query(c, "select * from followups join obsnight using(night_id) where field_code = ?", match_param)
+        userfields = query(c, "select * from userfields join obsnight using(night_id) where comment = ?", match_param)
+        observations = query(c, "select * from observations join obsnight using(night_id) where obsfile like ?", like_param)
 
     return render_template(
         'field.html', 
@@ -117,8 +89,8 @@ def survey(night_id):
     with get_connection() as conn:
         c = conn.cursor()
 
-        c.execute("select ra, declination from surveyfields where night_id = ?", match_param)
-        surveyfields = [(float(ra), float(dec)) for (ra, dec) in c.fetchall()]
+        result = query(c, "select ra, declination from surveyfields where night_id = ?", match_param)
+        surveyfields = [(float(ra), float(dec)) for (ra, dec) in result]
 
     coordinates = [(ra, 90 - dec) for (ra, dec) in surveyfields]
 
@@ -142,3 +114,7 @@ def get_connection():
     conn = sqlite3.connect(DB_FILE)
     conn.row_factory = sqlite3.Row
     return conn
+
+def query(c:sqlite3.Cursor, sql:str, param):
+    c.execute(sql, param)
+    return c.fetchall()
