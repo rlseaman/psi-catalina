@@ -146,7 +146,7 @@ def process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, po
         for collection_id in collection_lids:
             collection_products = [x for x in products if x.collection_id() == collection_id]
             if collection_products:
-                process_data_collection(loc, collection_products, collection_id)
+                update_data_collection(loc, collection_products, collection_id)
 
     #deletion_area_dest = os.path.join(DELETION_BASE, "placeholder")
     # delete files from temporary directory/move to deletion area
@@ -186,10 +186,10 @@ def discover_products(loc):
     to product objects
     '''
     return itertools.chain.from_iterable(
-        process_inst_directory(loc, instrument) for instrument in INSTRUMENTS)
+        discover_inst_products(loc, instrument) for instrument in INSTRUMENTS)
 
 
-def process_inst_directory(loc, instrument):
+def discover_inst_products(loc, instrument):
     '''
     Processes the given instrument directory
 
@@ -205,10 +205,10 @@ def process_inst_directory(loc, instrument):
     years = (x.name for x in os.scandir(instdir) if x.is_dir())
 
     return itertools.chain.from_iterable(
-        process_year_directory(loc, instrument, year) for year in years)
+        discover_year_products(loc, instrument, year) for year in years)
 
 
-def process_year_directory(loc, instrument, year):
+def discover_year_products(loc, instrument, year):
     '''
     Processes the given year directory.
 
@@ -224,9 +224,9 @@ def process_year_directory(loc, instrument, year):
     logging.info("dates found: %s", dates)
 
     return itertools.chain.from_iterable(
-        process_data(loc, instrument, year, date) for date in dates)
+        discover_date_products(loc, instrument, year, date) for date in dates)
 
-def process_data(loc, instrument, year, date):
+def discover_date_products(loc, instrument, year, date):
     '''
     Processes the data in a given data directory and label directory pair.
 
@@ -240,12 +240,12 @@ def process_data(loc, instrument, year, date):
     datadir = loc.datadir(instrument, year, date)
     labeldir = loc.labeldir(instrument, year, date)
     if semaphore_exists(datadir) and semaphore_exists(labeldir):
-        return process_labels(datadir, labeldir, instrument, year, date)
+        return labels_to_products(datadir, labeldir, instrument, year, date)
     
     logging.warning("no semaphore: %s and %s", labeldir, datadir)
     return []
 
-def process_labels(datadir, labeldir, instrument, year, date):
+def labels_to_products(datadir, labeldir, instrument, year, date):
     '''
     Processes the data in a given data directory and label directory pair.
 
@@ -329,7 +329,7 @@ def move_product(product, loc):
         os.rename(src_data, dest_data)
 
 
-def process_data_collection(loc, collection_products, collection_id):
+def update_data_collection(loc, collection_products, collection_id):
     '''
     Create the collection inventory and label.
     '''
