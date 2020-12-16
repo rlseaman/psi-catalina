@@ -1,3 +1,5 @@
+#! /usr/bin/env python3
+
 import sys
 import os
 import os.path
@@ -23,6 +25,10 @@ def main(argv=None):
     write_directory(extracted, directory_name)
 
 def extract_directory(directory_name):
+    '''
+    Extract information from the files in a single directory (which should correspond to
+    a combination of instrument and observing night), and return it as a single dictionary.
+    '''
     print(directory_name)
     pointing_file = get_file_with_extension(directory_name, ".point")
     pointing = process_pointing_file(directory_name, pointing_file)
@@ -58,6 +64,9 @@ def extract_directory(directory_name):
 
 
 def process_pointing_file(directory_name, pointing_file_name):
+    '''
+    Convert the contents of the pointing file to a dictionary
+    '''
     lines = get_lines(directory_name, pointing_file_name)
     
     obslines = [x for x in lines if '|' in x]
@@ -69,11 +78,17 @@ def process_pointing_file(directory_name, pointing_file_name):
     
 
 def process_coverage_file(directory_name, coverage_file_name):
+    '''
+    Convert the contents of the coverage file to a dictionary
+    '''
     lines = get_lines(directory_name, coverage_file_name)
     keywords = extract_keywords(lines, COV_KEYWORDS, ":")
     return keywords
 
 def process_control_file(directory_name, control_file_name):
+    '''
+    Convert the contents of the control file to a dictionary
+    '''
     with open(os.path.join(directory_name, control_file_name)) as infile:
         contents = json.load(infile)
     return {
@@ -82,6 +97,9 @@ def process_control_file(directory_name, control_file_name):
     }
 
 def process_field_file(directory_name, field_file_name):
+    '''
+    Convert the contents of the fields file to a list of fields.
+    '''
     lines = get_lines(directory_name, field_file_name)
     field_lines = [x for x in lines if not x.startswith("#")]
     fields = [to_field(x) for x in field_lines]
@@ -89,6 +107,9 @@ def process_field_file(directory_name, field_file_name):
 
     
 def to_field(line):
+    '''
+    Convert a line from the fields file to a dictionary
+    '''
     meta = line[37:].strip()
     keywords = dict([[y.strip() for y in x.split('=')] for x in meta.split(";") if x])
     keywords["id"] = line[0:11].strip()
@@ -105,11 +126,17 @@ def to_field(line):
     return (keywords)
 
 def process_plan_file(directory_name, plan_file_name):
+    '''
+    Convert the observing plan file to a list of plan items.
+    '''
     lines = get_lines(directory_name, plan_file_name)
     plan_lines = [x for x in lines if not x.startswith("#")]
     return [to_plan(x) for x in plan_lines]
 
 def to_plan(line):
+    '''
+    Convert a line from the observing plan file into a dictionary
+    '''
     tokens = line.split()
     return {
         "surveyfield_code": tokens[0],
@@ -119,11 +146,17 @@ def to_plan(line):
     }
 
 def process_astrometry_file(directory_name, file_name):
+    '''
+    Convert the astrometry file into a list of astrometry items.
+    '''
     lines = get_lines(directory_name, file_name)
     astr_lines = [x for x in lines if not any([x.startswith(h) for h in ASTR_HEADERS])]
     return [to_astrometry(x) for x in astr_lines]
 
 def to_astrometry(line):
+    '''
+    Convert an astrometry line into a dictionary.
+    '''
     return {
         "code": line[:12].strip(),
         "date": line[14:32].strip(),
@@ -133,6 +166,9 @@ def to_astrometry(line):
     }
 
 def get_lines(directory_name, file_name):
+    '''
+    Extract all of the lines from a file.
+    '''
     filepath = os.path.join(directory_name, file_name)
     if os.path.exists(filepath):
         with open(filepath) as infile:
@@ -142,12 +178,18 @@ def get_lines(directory_name, file_name):
 
 
 def get_file_with_extension(directory_name, extension):
+    '''
+    Locates the first file in a directory with a given extension.
+    '''
     candidates = [x for x in os.listdir(directory_name) if x.endswith(extension)]
     if candidates:
         return candidates[0]
     return None
 
 def get_file_with_prefix(directory_name, prefix):
+    '''
+    Locates the first file in a directory with a given prefix.
+    '''
     candidates = [x for x in os.listdir(directory_name) if x.startswith(prefix)]
     if candidates:
         return candidates[0]
@@ -155,11 +197,18 @@ def get_file_with_prefix(directory_name, prefix):
 
 
 def extract_keywords(lines, keywords, delimiter):
+    '''
+    Treates a list of lines as a list of delimited name-value pairs.
+    Finds all of the name-value pairs that match the provied list, and converts them into a dictionary.
+    '''
     keyword_lines = [l for l in lines if any([k in l for k in keywords])]
     keyword_pairs = [[v.strip() for v in l.split(delimiter)] for l in keyword_lines]
     return dict(keyword_pairs)
 
 def write_directory(extracted, directory_name):
+    '''
+    Writes all of the information extracted from the files in the directory to the database.
+    '''
     conn = sqlite3.connect("cssdb.sqlite")
     c = conn.cursor()
 
