@@ -6,6 +6,7 @@ import os.path
 import cssextract
 
 import cssdb
+import json
 
 def main(argv=None):
     if argv is None:
@@ -14,6 +15,8 @@ def main(argv=None):
     directory_name = argv[1]
     
     extracted = extract_directory(directory_name)
+    
+    print(json.dumps(extracted))
     cssdb.write_directory(extracted, directory_name)
 
 def extract_directory(directory_name):
