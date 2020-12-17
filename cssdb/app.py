@@ -1,7 +1,9 @@
 import sqlite3
 import json
 import io
-from PIL import Image, ImageDraw
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+
 from flask import Flask, escape, request, render_template, send_file, Response
 
 
@@ -92,31 +94,21 @@ def survey(night_id):
         result = query(c, "select ra, declination from surveyfields where night_id = ?", match_param)
         surveyfields = [(float(ra), float(dec)) for (ra, dec) in result]
 
-    coordinates = [(ra, 90 - dec) for (ra, dec) in surveyfields]
-
-    b = generate_coordinate_plot(coordinates)
+    b = generate_coordinate_scatter_plot(surveyfields)
     
-    #return str(len(b.getvalue()))
-    #return send_file('temp.png', mimetype='image/png')
     return Response(b.getvalue(), mimetype='image/png')
 
-def generate_coordinate_plot(coordinates):
-    im = Image.new("RGB", (360, 180))
-    d = ImageDraw.Draw(im)
-    #d.point(coordinates, fill=(255,255,255))
-    for coordinate in coordinates:
-        d.rectangle(coordinate_to_box(coordinate), fill=(255,255,255))
+def generate_coordinate_scatter_plot(coordinates):
+    ras = [coordinate[0] for coordinate in coordinates]
+    decs = [coordinate[1] for coordinate in coordinates]
+    fig = Figure()
+    subplot = fig.add_subplot(1,1,1)
+    subplot.set_xlabel("Right Ascension (degrees)")
+    subplot.set_ylabel("Declination (degrees)")
+    subplot.scatter(ras, decs, s=3, color='blue', alpha=0.5)
     b = io.BytesIO()
-    #im.save('temp.png', format='PNG')
-    im.save(b, format='png')
+    FigureCanvas(fig).print_png(b)
     return b
-
-def coordinate_to_box(coordinate):
-    ra = coordinate[0]
-    dec = coordinate[1]
-    return (ra-0.5, dec-0.5, ra+0.5, dec+0.5)
-
-
 
 def get_connection():
     conn = sqlite3.connect(DB_FILE)
