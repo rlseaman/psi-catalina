@@ -103,11 +103,19 @@ def survey(night_id):
 def generate_coordinate_plot(coordinates):
     im = Image.new("RGB", (360, 180))
     d = ImageDraw.Draw(im)
-    d.point(coordinates, fill=(255,255,255))
+    #d.point(coordinates, fill=(255,255,255))
+    for coordinate in coordinates:
+        d.rectangle(coordinate_to_box(coordinate), fill=(255,255,255))
     b = io.BytesIO()
     #im.save('temp.png', format='PNG')
     im.save(b, format='png')
     return b
+
+def coordinate_to_box(coordinate):
+    ra = coordinate[0]
+    dec = coordinate[1]
+    return (ra-0.5, dec-0.5, ra+0.5, dec+0.5)
+
 
 
 def get_connection():
