@@ -22,7 +22,7 @@ def main(argv=None):
     directory_name = argv[1]
     
     extracted = extract_directory(directory_name)
-    write_directory(extracted, directory_name)
+    cssdb.write_directory(extracted, directory_name)
 
 def extract_directory(directory_name):
     '''
@@ -205,119 +205,6 @@ def extract_keywords(lines, keywords, delimiter):
     keyword_pairs = [[v.strip() for v in l.split(delimiter)] for l in keyword_lines]
     return dict(keyword_pairs)
 
-def write_directory(extracted, directory_name):
-    '''
-    Writes all of the information extracted from the files in the directory to the database.
-    '''
-    conn = sqlite3.connect("cssdb.sqlite")
-    c = conn.cursor()
-
-    night_id = write_obsnight(c, extracted, directory_name)
-
-    for followup in extracted["followup"]:
-        write_followup(c, night_id, followup)
-
-    for userfield in extracted["fields"]:
-        write_userfield(c, night_id, userfield)
-
-    for observation in extracted["pointing"]["Observations"]:
-        write_observation(c, night_id, observation)
-
-    for surveyplan in extracted["surveyplan"]:
-        write_plan(c, night_id, surveyplan)
-
-    for astr in extracted["astrometry"]:
-        write_astr(c, night_id, astr)
-
-    for neo in extracted["neos"]:
-        write_neo(c, night_id, neo)
-
-    conn.commit()
-    conn.close()
-
-
-def write_obsnight(c, extracted, directory_name):
-    params = ('CSS',
-        extracted['coverage']['Source'],
-        extracted['control']['Telescope'],
-        extracted['control']['Detector'],
-        extracted['coverage']['Date'],
-        extracted['pointing']['Observer'],
-        extracted['coverage']['Limiting Magnitude'],
-        directory_name
-    )
-
-    return exec_insert_key(c, cssdb.OBSNIGHT_INSERT, params)
-
-def write_followup(c, night_id, followup):
-    params = (
-        followup["id"],
-        followup.get("NAME", None),
-        followup["ra"],
-        followup["dec"],
-        followup["MAG"],
-        followup["COM"],
-        followup.get("field", None),
-        night_id
-    )
-
-    c.execute(cssdb.FOLLOWUP_INSERT, params)
-
-def write_userfield(c, night_id, userfield):
-    params = (
-        userfield["id"],
-        userfield.get("NAME", None),
-        userfield["ra"],
-        userfield["dec"],
-        userfield["MAG"],
-        userfield.get("COM", None),
-        userfield.get("field", None),
-        night_id
-    )
-
-    c.execute(cssdb.USERFIELD_INSERT, params)
-
-def write_observation(c, night_id, obsfile):
-    params = (night_id, obsfile)
-    c.execute(cssdb.OBS_INSERT, params)
-
-def write_plan(c, night_id, plan):
-    params = (
-        plan["surveyfield_code"],
-        plan["mjd"],
-        plan["ra"],
-        plan["dec"],
-        night_id
-    )
-    c.execute(cssdb.SURVEYFIELD_INSERT, params)
-
-def write_astr(c, night_id, astr):
-    params = (
-        astr["code"],
-        astr["date"],
-        astr["ra"],
-        astr["dec"],
-        astr["mag"],        
-        night_id
-    )
-    c.execute(cssdb.ASTR_INSERT, params)
-
-def write_neo(c, night_id, neo):
-    params = (
-        neo["code"],
-        neo["date"],
-        neo["ra"],
-        neo["dec"],
-        neo["mag"],        
-        night_id
-    )
-    c.execute(cssdb.NEO_INSERT, params)
-
-
-def exec_insert_key(c, sql, params):
-    c.execute(sql, params)
-    c.execute("select last_insert_rowid()")
-    return c.fetchone()[0]
 
 if __name__ == '__main__':
     sys.exit(main())

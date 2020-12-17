@@ -1,3 +1,5 @@
+import sqlite3
+
 def make_insert_template(tablename, fields):
     return "INSERT INTO {}({}) VALUES ({})".format(
         tablename,
@@ -34,3 +36,117 @@ OBS_INSERT = make_insert_template("observations", OBS_FIELDS)
 SURVEYFIELD_INSERT = make_insert_template("surveyfields", SURVEYFIELD_FIELDS)
 ASTR_INSERT = make_insert_template("astrometry", ASTR_FIELDS)
 NEO_INSERT = make_insert_template("neo", NEO_FIELDS)
+
+def write_directory(extracted, directory_name):
+    '''
+    Writes all of the information extracted from the files in the directory to the database.
+    '''
+    conn = sqlite3.connect("sqlite")
+    c = conn.cursor()
+
+    night_id = write_obsnight(c, extracted, directory_name)
+
+    for followup in extracted["followup"]:
+        write_followup(c, night_id, followup)
+
+    for userfield in extracted["fields"]:
+        write_userfield(c, night_id, userfield)
+
+    for observation in extracted["pointing"]["Observations"]:
+        write_observation(c, night_id, observation)
+
+    for surveyplan in extracted["surveyplan"]:
+        write_plan(c, night_id, surveyplan)
+
+    for astr in extracted["astrometry"]:
+        write_astr(c, night_id, astr)
+
+    for neo in extracted["neos"]:
+        write_neo(c, night_id, neo)
+
+    conn.commit()
+    conn.close()
+
+
+def write_obsnight(c, extracted, directory_name):
+    params = ('CSS',
+        extracted['coverage']['Source'],
+        extracted['control']['Telescope'],
+        extracted['control']['Detector'],
+        extracted['coverage']['Date'],
+        extracted['pointing']['Observer'],
+        extracted['coverage']['Limiting Magnitude'],
+        directory_name
+    )
+
+    return exec_insert_key(c, OBSNIGHT_INSERT, params)
+
+def write_followup(c, night_id, followup):
+    params = (
+        followup["id"],
+        followup.get("NAME", None),
+        followup["ra"],
+        followup["dec"],
+        followup["MAG"],
+        followup["COM"],
+        followup.get("field", None),
+        night_id
+    )
+
+    c.execute(FOLLOWUP_INSERT, params)
+
+def write_userfield(c, night_id, userfield):
+    params = (
+        userfield["id"],
+        userfield.get("NAME", None),
+        userfield["ra"],
+        userfield["dec"],
+        userfield["MAG"],
+        userfield.get("COM", None),
+        userfield.get("field", None),
+        night_id
+    )
+
+    c.execute(USERFIELD_INSERT, params)
+
+def write_observation(c, night_id, obsfile):
+    params = (night_id, obsfile)
+    c.execute(OBS_INSERT, params)
+
+def write_plan(c, night_id, plan):
+    params = (
+        plan["surveyfield_code"],
+        plan["mjd"],
+        plan["ra"],
+        plan["dec"],
+        night_id
+    )
+    c.execute(SURVEYFIELD_INSERT, params)
+
+def write_astr(c, night_id, astr):
+    params = (
+        astr["code"],
+        astr["date"],
+        astr["ra"],
+        astr["dec"],
+        astr["mag"],        
+        night_id
+    )
+    c.execute(ASTR_INSERT, params)
+
+def write_neo(c, night_id, neo):
+    params = (
+        neo["code"],
+        neo["date"],
+        neo["ra"],
+        neo["dec"],
+        neo["mag"],        
+        night_id
+    )
+    c.execute(NEO_INSERT, params)
+
+
+def exec_insert_key(c, sql, params):
+    c.execute(sql, params)
+    c.execute("select last_insert_rowid()")
+    return c.fetchone()[0]
