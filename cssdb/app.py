@@ -101,11 +101,23 @@ def survey(night_id):
 def generate_coordinate_scatter_plot(coordinates):
     ras = [coordinate[0] for coordinate in coordinates]
     decs = [coordinate[1] for coordinate in coordinates]
-    fig = Figure()
-    subplot = fig.add_subplot(1,1,1)
-    subplot.set_xlabel("Right Ascension (degrees)")
-    subplot.set_ylabel("Declination (degrees)")
-    subplot.scatter(ras, decs, s=3, color='blue', alpha=0.5)
+    fig = Figure(figsize=(10, 5))
+
+    summary = fig.add_subplot(1,2,1)
+    summary.set_xlabel("Right Ascension (degrees)")
+    summary.set_ylabel("Declination (degrees)")
+    summary.set_title("Survey Plan")
+    summary.set_xlim(0,360)
+    summary.set_ylim(-90, 90)
+    summary.scatter(ras, decs, s=3, color='blue', alpha=0.5)
+
+    detail = fig.add_subplot(1,2,2)
+    detail.set_xlabel("Right Ascension (degrees)")
+    detail.set_ylabel("Declination (degrees)")
+    detail.set_title("Survey Plan Detail")
+    detail.scatter(ras, decs, s=3, color='blue', alpha=0.5)
+
+
     b = io.BytesIO()
     FigureCanvas(fig).print_png(b)
     return b
