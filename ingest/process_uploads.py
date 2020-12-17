@@ -58,6 +58,7 @@ def main(argv=None):
     parser.add_argument('--permissive-validation', action='store_true', dest='permissive_validation', help='If enabled, will continue even if there are validation errors')
     parser.add_argument('--skip-data-validation', action='store_true', dest='skip_data_validation', help='If enabled, will not validate the data')
     parser.add_argument('--skip-move', action='store_true', dest='skip_move', help='If enabled, will not move the data')
+    parser.add_argument('--dry-move', action='store_true', dest='dry_move', help='If enabled, will not move the data, but will log the calculated destination')
     parser.add_argument('--skip-collection-update', action='store_true', dest='skip_collection_update', help='If enabled, will update the collection inventory or label')
     args = parser.parse_args()
 
@@ -82,6 +83,7 @@ def main(argv=None):
     
     postprocessing_opts = SimpleNamespace(
         skip_move=args.skip_move,
+        dry_move=args.dry_move,
         skip_collection_update=args.skip_collection_update
     )
 
@@ -138,7 +140,7 @@ def process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, po
         logging.info("Skipping move")
     else:
         for product in products:
-            move_product(product, loc)
+            move_product(product, loc, postprocesing_opts.dry_move)
 
     if postprocesing_opts.skip_collection_update:
         logging.info("Skipping collection update")
@@ -299,7 +301,7 @@ def preprocess_product(product, loc, skip_data_preprocessing, skip_label_preproc
 
 
 
-def move_product(product, loc):
+def move_product(product, loc, dry_move):
     '''
     move a product to the archive directory. For the current workflow, this will be a
     temporary directory on the processing server that will then get synced over
@@ -320,13 +322,24 @@ def move_product(product, loc):
     src_label = product.labelpath
     dest_label = os.path.join(dest_directory, product.labelfilename)
     logging.info('Moved from %s to %s', src_label, dest_label)
-    os.rename(src_label, dest_label)
+    if not dry_move:
+        os.rename(src_label, dest_label)
 
     for file_name in file_names:
-        src_data = os.path.join(datadir, file_name)
-        dest_data = os.path.join(dest_directory, file_name)
+        actual_file_name = get_actual_file_name(datadir, file_name)
+        src_data = os.path.join(datadir, actual_file_name)
+        dest_data = os.path.join(dest_directory, actual_file_name)
         logging.info('Moved from %s to %s', src_data, dest_data)
-        os.rename(src_data, dest_data)
+        if not dry_move:
+            os.rename(src_data, dest_data)
+
+def get_actual_file_name(data_dir, file_name):
+    suffixes = ['', '.gz', '.fz']
+    file_names = [file_name + suffix for suffix in suffixes if os.path.exists(os.path.join(data_dir, file_name + suffix))]
+    if file_names:
+        return file_names[0]
+    raise(Exception('cannot find file:' + os.path.join(data_dir, file_name)))
+
 
 
 def update_data_collection(loc, collection_products, collection_id):
