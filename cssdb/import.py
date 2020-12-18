@@ -25,43 +25,26 @@ def extract_directory(directory_name):
     a combination of instrument and observing night), and return it as a single dictionary.
     '''
     print(directory_name)
-    pointing_file = get_file_with_extension(directory_name, ".point")
-    coverage_file = get_file_with_extension(directory_name, ".cov")
-    control_file = os.path.join(directory_name, "controlconfig.json")
-    followup_file = os.path.join(directory_name, "followup.txt")
-    fields_file = os.path.join(directory_name, "userfields.txt")
-    surveyplan_file = get_file_with_prefix(directory_name, "survey")
-    astrometry_file = get_file_with_extension(directory_name, ".mpcd.mrpt")
-    neo_file = get_file_with_extension(directory_name, ".neos.mrpt")
     
-    return extract_files(pointing_file, 
-                        coverage_file, 
-                        control_file, 
-                        followup_file, 
-                        fields_file, 
-                        surveyplan_file, 
-                        astrometry_file, 
-                        neo_file)
+    return extract_files(pointing_file=get_file_with_extension(directory_name, ".point"),
+                        coverage_file=get_file_with_extension(directory_name, ".cov"), 
+                        control_file=os.path.join(directory_name, "controlconfig.json"), 
+                        followup_file=os.path.join(directory_name, "followup.txt"), 
+                        fields_file=os.path.join(directory_name, "userfields.txt"), 
+                        surveyplan_file=get_file_with_prefix(directory_name, "survey"), 
+                        astrometry_file=get_file_with_extension(directory_name, ".mpcd.mrpt"), 
+                        neo_file=get_file_with_extension(directory_name, ".neos.mrpt"))
 
 def extract_files(pointing_file, coverage_file, control_file, followup_file, fields_file, surveyplan_file, astrometry_file, neo_file):
-    pointing = cssextract.process_pointing_file(pointing_file)
-    coverage = cssextract.process_coverage_file(coverage_file)
-    control = cssextract.process_control_file(control_file)
-    followup = cssextract.process_field_file(followup_file)
-    fields = cssextract.process_field_file(fields_file)
-    surveyplan = cssextract.process_plan_file(surveyplan_file) if surveyplan_file else []
-    astrometry = cssextract.process_astrometry_file(astrometry_file)  if astrometry_file else []
-    neos = cssextract.process_astrometry_file(neo_file)  if neo_file else []
-
     return {
-        "pointing": pointing,
-        "coverage": coverage,
-        "control": control,
-        "followup": followup,
-        "fields": fields,
-        "surveyplan": surveyplan,
-        "neos": neos,
-        "astrometry": astrometry
+        "pointing": cssextract.process_pointing_file(pointing_file),
+        "coverage": cssextract.process_coverage_file(coverage_file),
+        "control": cssextract.process_control_file(control_file),
+        "followup": cssextract.process_field_file(followup_file),
+        "fields": cssextract.process_field_file(fields_file),
+        "surveyplan": cssextract.process_plan_file(surveyplan_file) if surveyplan_file else [],
+        "neos": cssextract.process_astrometry_file(astrometry_file)  if astrometry_file else [],
+        "astrometry": cssextract.process_astrometry_file(neo_file)  if neo_file else []
     }
 
     
