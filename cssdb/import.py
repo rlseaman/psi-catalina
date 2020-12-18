@@ -4,6 +4,7 @@ import sys
 import os
 import os.path
 import cssextract
+import itertools
 
 import cssdb
 import json
@@ -53,7 +54,7 @@ def get_file_with_extension(directory_name, extension):
     '''
     Locates the first file in a directory with a given extension.
     '''
-    candidates = [x for x in os.listdir(directory_name) if x.endswith(extension)]
+    candidates = [x for x in get_files_in_directory(directory_name) if x.endswith(extension)]
     if candidates:
         return os.path.join(directory_name, candidates[0])
     return None
@@ -62,10 +63,17 @@ def get_file_with_prefix(directory_name, prefix):
     '''
     Locates the first file in a directory with a given prefix.
     '''
-    candidates = [x for x in os.listdir(directory_name) if x.startswith(prefix)]
+    candidates = [x for x in get_files_in_directory(directory_name) if x.startswith(prefix)]
     if candidates:
         return os.path.join(directory_name, candidates[0])
     return None
+
+def get_files_in_directory(path):
+    return itertools.chain.fromiterable(
+        [[os.path.join(dirpath, filename) for filename in filenames] 
+            for dirpath, _, filenames 
+            in os.walk(path)]
+    )
 
 
 if __name__ == '__main__':
