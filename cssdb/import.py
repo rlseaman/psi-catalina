@@ -9,32 +9,40 @@ import itertools
 import cssdb
 import json
 
+COLLECTIONS=['data_calibrated', 'data_derived', 'data_partially_processed', 'data_raw', 'data_reduced']
+
 def main(argv=None):
     if argv is None:
         argv = sys.argv
 
-    directory_name = argv[1]
+    print(argv)
+    basedir = argv[1]
+    inst = argv[2]
+    year = argv[3]
+    night = argv[4]
     
-    extracted = extract_directory(directory_name)
+    extracted = extract_night(basedir, inst, year, night)
     
     print(json.dumps(extracted))
-    cssdb.write_directory(extracted, directory_name)
+    #cssdb.write_directory(extracted, directory_name)
 
-def extract_directory(directory_name):
+def extract_night(directory_name, inst, year, night):
     '''
     Extract information from the files in a single directory (which should correspond to
     a combination of instrument and observing night), and return it as a single dictionary.
     '''
     print(directory_name)
+
+    files_for_night=get_files_for_night(directory_name, inst, year, night)
     
-    return extract_files(pointing_file=get_file_with_extension(directory_name, ".point"),
-                        coverage_file=get_file_with_extension(directory_name, ".cov"), 
-                        control_file=os.path.join(directory_name, "controlconfig.json"), 
-                        followup_file=os.path.join(directory_name, "followup.txt"), 
-                        fields_file=os.path.join(directory_name, "userfields.txt"), 
-                        surveyplan_file=get_file_with_prefix(directory_name, "survey"), 
-                        astrometry_file=get_file_with_extension(directory_name, ".mpcd.mrpt"), 
-                        neo_file=get_file_with_extension(directory_name, ".neos.mrpt"))
+    return extract_files(pointing_file=filter_files(files_for_night, has_extension(".point")),
+                        coverage_file=filter_files(files_for_night, has_extension(".cov")), 
+                        control_file=filter_files(files_for_night, has_name("controlconfig.json")), 
+                        followup_file=filter_files(files_for_night, has_name("followup.txt")), 
+                        fields_file=filter_files(files_for_night, has_name("userfields.txt")), 
+                        surveyplan_file=filter_files(directory_name, has_prefix("survey")), 
+                        astrometry_file=filter_files(files_for_night, has_extension(".mpcd.mrpt")), 
+                        neo_file=filter_files(files_for_night, has_extension(".neos.mrpt")))
 
 def extract_files(pointing_file, coverage_file, control_file, followup_file, fields_file, surveyplan_file, astrometry_file, neo_file):
     return {
@@ -48,33 +56,31 @@ def extract_files(pointing_file, coverage_file, control_file, followup_file, fie
         "astrometry": cssextract.process_astrometry_file(neo_file)  if neo_file else []
     }
 
-    
+def has_extension(extension):
+    return lambda x: x.endswith(extension)
 
-def get_file_with_extension(directory_name, extension):
-    '''
-    Locates the first file in a directory with a given extension.
-    '''
-    candidates = [x for x in get_files_in_directory(directory_name) if x.endswith(extension)]
+def has_prefix(prefix):
+    return lambda x: os.path.basename(x).startswith(prefix)
+
+def has_name(name):
+    return lambda x: os.path.basename(x) == name
+
+def filter_files(filelist, filter):
+    candidates = [x for x in filelist if filter(x)]
     if candidates:
-        return os.path.join(directory_name, candidates[0])
+        return candidates[0]
     return None
 
-def get_file_with_prefix(directory_name, prefix):
-    '''
-    Locates the first file in a directory with a given prefix.
-    '''
-    candidates = [x for x in get_files_in_directory(directory_name) if x.startswith(prefix)]
-    if candidates:
-        return os.path.join(directory_name, candidates[0])
-    return None
-
-def get_files_in_directory(path):
-    return itertools.chain.fromiterable(
-        [[os.path.join(dirpath, filename) for filename in filenames] 
-            for dirpath, _, filenames 
-            in os.walk(path)]
+def get_files_for_night(search_dir, inst, year, night):
+    return list(itertools.chain.from_iterable(
+        get_files_in_path(path) for path in get_directories_for_night(search_dir, inst, year, night))
     )
 
+def get_files_in_path(path):
+    return (os.path.join(path, filename) for filename in os.listdir(path))
+
+def get_directories_for_night(search_dir, inst, year, night):
+    return (os.path.join(search_dir, collection, inst, year, night) for collection in COLLECTIONS)
 
 if __name__ == '__main__':
     sys.exit(main())
