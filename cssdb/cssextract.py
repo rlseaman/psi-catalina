@@ -12,11 +12,11 @@ def extract_keywords(lines, keywords, delimiter):
     return dict(keyword_pairs)
 
 
-def process_pointing_file(directory_name, pointing_file_name):
+def process_pointing_file(filepath):
     '''
     Convert the contents of the pointing file to a dictionary
     '''
-    lines = get_lines(directory_name, pointing_file_name)
+    lines = get_lines(filepath)
     
     obslines = [x for x in lines if '|' in x]
     obsfiles = [x.split("|")[0].strip() for x in obslines]
@@ -26,30 +26,30 @@ def process_pointing_file(directory_name, pointing_file_name):
     return keywords
     
 
-def process_coverage_file(directory_name, coverage_file_name):
+def process_coverage_file(filepath):
     '''
     Convert the contents of the coverage file to a dictionary
     '''
-    lines = get_lines(directory_name, coverage_file_name)
+    lines = get_lines(filepath)
     keywords = extract_keywords(lines, COV_KEYWORDS, ":")
     return keywords
 
-def process_control_file(directory_name, control_file_name):
+def process_control_file(filepath):
     '''
     Convert the contents of the control file to a dictionary
     '''
-    with open(os.path.join(directory_name, control_file_name)) as infile:
+    with open(os.path.join(filepath)) as infile:
         contents = json.load(infile)
     return {
         "Detector": contents["fits"]["detector"],
         "Telescope": contents["fits"]["telescope"]
     }
 
-def process_field_file(directory_name, field_file_name):
+def process_field_file(filepath):
     '''
     Convert the contents of the fields file to a list of fields.
     '''
-    lines = get_lines(directory_name, field_file_name)
+    lines = get_lines(filepath)
     field_lines = [x for x in lines if not x.startswith("#")]
     fields = [to_field(x) for x in field_lines]
     return fields
@@ -74,11 +74,11 @@ def to_field(line):
 
     return (keywords)
 
-def process_plan_file(directory_name, plan_file_name):
+def process_plan_file(filepath):
     '''
     Convert the observing plan file to a list of plan items.
     '''
-    lines = get_lines(directory_name, plan_file_name)
+    lines = get_lines(filepath)
     plan_lines = [x for x in lines if not x.startswith("#")]
     return [to_plan(x) for x in plan_lines]
 
@@ -94,11 +94,11 @@ def to_plan(line):
         "dec": tokens[3]
     }
 
-def process_astrometry_file(directory_name, file_name):
+def process_astrometry_file(filepath):
     '''
     Convert the astrometry file into a list of astrometry items.
     '''
-    lines = get_lines(directory_name, file_name)
+    lines = get_lines(filepath)
     astr_lines = [x for x in lines if not any([x.startswith(h) for h in ASTR_HEADERS])]
     return [to_astrometry(x) for x in astr_lines]
 
@@ -114,16 +114,17 @@ def to_astrometry(line):
         "mag": line[65:69].strip()
     }
 
-def get_lines(directory_name, file_name):
+def get_lines(filepath):
     '''
     Extract all of the lines from a file.
     '''
-    filepath = os.path.join(directory_name, file_name)
     if os.path.exists(filepath):
         with open(filepath) as infile:
             return infile.readlines()
     
     return []
+
+
 
 COV_KEYWORDS=['Source:', 'Date:', 'Limiting Magnitude:']
 POINT_KEYWORDS=['Observer:']

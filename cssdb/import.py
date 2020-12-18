@@ -26,25 +26,28 @@ def extract_directory(directory_name):
     '''
     print(directory_name)
     pointing_file = get_file_with_extension(directory_name, ".point")
-    pointing = cssextract.process_pointing_file(directory_name, pointing_file)
+    pointing = cssextract.process_pointing_file(pointing_file)
 
     coverage_file = get_file_with_extension(directory_name, ".cov")
-    coverage = cssextract.process_coverage_file(directory_name, coverage_file)
+    coverage = cssextract.process_coverage_file(coverage_file)
 
-    control = cssextract.process_control_file(directory_name, "controlconfig.json")
+    control_file = os.path.join(directory_name, "controlconfig.json")
+    control = cssextract.process_control_file(control_file)
 
-    followup = cssextract.process_field_file(directory_name, "followup.txt")
-    fields = cssextract.process_field_file(directory_name, "userfields.txt")
+    followup_file = os.path.join(directory_name, "followup.txt")
+    followup = cssextract.process_field_file(followup_file)
+
+    fields_file = os.path.join(directory_name, "userfields.txt")
+    fields = cssextract.process_field_file(fields_file)
 
     surveyplan_file = get_file_with_prefix(directory_name, "survey")
-
-    surveyplan = cssextract.process_plan_file(directory_name, surveyplan_file) if surveyplan_file else []
+    surveyplan = cssextract.process_plan_file(surveyplan_file) if surveyplan_file else []
 
     astrometry_file = get_file_with_extension(directory_name, ".mpcd.mrpt")
-    astrometry = cssextract.process_astrometry_file(directory_name, astrometry_file)  if astrometry_file else []
+    astrometry = cssextract.process_astrometry_file(astrometry_file)  if astrometry_file else []
 
     neo_file = get_file_with_extension(directory_name, ".neos.mrpt")
-    neos = cssextract.process_astrometry_file(directory_name, neo_file)  if neo_file else []
+    neos = cssextract.process_astrometry_file(neo_file)  if neo_file else []
 
     return {
         "pointing": pointing,
@@ -57,7 +60,7 @@ def extract_directory(directory_name):
         "astrometry": astrometry
     }
 
-
+    
 
 def get_file_with_extension(directory_name, extension):
     '''
@@ -65,7 +68,7 @@ def get_file_with_extension(directory_name, extension):
     '''
     candidates = [x for x in os.listdir(directory_name) if x.endswith(extension)]
     if candidates:
-        return candidates[0]
+        return os.path.join(directory_name, candidates[0])
     return None
 
 def get_file_with_prefix(directory_name, prefix):
@@ -74,7 +77,7 @@ def get_file_with_prefix(directory_name, prefix):
     '''
     candidates = [x for x in os.listdir(directory_name) if x.startswith(prefix)]
     if candidates:
-        return candidates[0]
+        return os.path.join(directory_name, candidates[0])
     return None
 
 
