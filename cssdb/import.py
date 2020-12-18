@@ -26,27 +26,31 @@ def extract_directory(directory_name):
     '''
     print(directory_name)
     pointing_file = get_file_with_extension(directory_name, ".point")
-    pointing = cssextract.process_pointing_file(pointing_file)
-
     coverage_file = get_file_with_extension(directory_name, ".cov")
-    coverage = cssextract.process_coverage_file(coverage_file)
-
     control_file = os.path.join(directory_name, "controlconfig.json")
-    control = cssextract.process_control_file(control_file)
-
     followup_file = os.path.join(directory_name, "followup.txt")
-    followup = cssextract.process_field_file(followup_file)
-
     fields_file = os.path.join(directory_name, "userfields.txt")
-    fields = cssextract.process_field_file(fields_file)
-
     surveyplan_file = get_file_with_prefix(directory_name, "survey")
-    surveyplan = cssextract.process_plan_file(surveyplan_file) if surveyplan_file else []
-
     astrometry_file = get_file_with_extension(directory_name, ".mpcd.mrpt")
-    astrometry = cssextract.process_astrometry_file(astrometry_file)  if astrometry_file else []
-
     neo_file = get_file_with_extension(directory_name, ".neos.mrpt")
+    
+    return extract_files(pointing_file, 
+                        coverage_file, 
+                        control_file, 
+                        followup_file, 
+                        fields_file, 
+                        surveyplan_file, 
+                        astrometry_file, 
+                        neo_file)
+
+def extract_files(pointing_file, coverage_file, control_file, followup_file, fields_file, surveyplan_file, astrometry_file, neo_file):
+    pointing = cssextract.process_pointing_file(pointing_file)
+    coverage = cssextract.process_coverage_file(coverage_file)
+    control = cssextract.process_control_file(control_file)
+    followup = cssextract.process_field_file(followup_file)
+    fields = cssextract.process_field_file(fields_file)
+    surveyplan = cssextract.process_plan_file(surveyplan_file) if surveyplan_file else []
+    astrometry = cssextract.process_astrometry_file(astrometry_file)  if astrometry_file else []
     neos = cssextract.process_astrometry_file(neo_file)  if neo_file else []
 
     return {
