@@ -6,7 +6,6 @@ import os.path
 import itertools
 import argparse
 
-import cssdb
 import json
 import cssextract
 
