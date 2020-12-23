@@ -3,28 +3,28 @@
 import sys
 import os
 import os.path
-import cssextract
 import itertools
+import argparse
 
 import cssdb
 import json
+import cssextract
+
 
 COLLECTIONS=['data_calibrated', 'data_derived', 'data_partially_processed', 'data_raw', 'data_reduced']
 
 def main(argv=None):
-    if argv is None:
-        argv = sys.argv
 
-    print(argv)
-    basedir = argv[1]
-    inst = argv[2]
-    year = argv[3]
-    night = argv[4]
-    
-    extracted = extract_night(basedir, inst, year, night)
+    parser = argparse.ArgumentParser(description='Convert the nightly files from the CSS archive into json format')
+    parser.add_argument('--basedir', help='The base directory for the delivered data', required=True)
+    parser.add_argument('--inst', help='The instrument code for the batch', required=True)
+    parser.add_argument('--year', help='The year that the data was delivered')
+    parser.add_argument('--night', help='The observaton night for the data')
+    args = parser.parse_args()
+
+    extracted = extract_night( args.basedir, args.inst, args.year, args.night)
     
     print(json.dumps(extracted))
-    #cssdb.write_directory(extracted, directory_name)
 
 def extract_night(directory_name, inst, year, night):
     '''
