@@ -17,13 +17,15 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description='Convert the nightly files from the CSS archive into json format')
     parser.add_argument('--basedir', help='The base directory for the delivered data', required=True)
     parser.add_argument('--inst', help='The instrument code for the batch', required=True)
-    parser.add_argument('--year', help='The year that the data was delivered')
-    parser.add_argument('--night', help='The observaton night for the data')
+    parser.add_argument('--year', help='The year that the data was delivered', required=True)
+    parser.add_argument('--night', help='The observaton night for the data', required=True)
+    parser.add_argument('--outfilename', help='The destination file for the JSON output', required=True)
     args = parser.parse_args()
 
     extracted = extract_night( args.basedir, args.inst, args.year, args.night)
     
-    print(json.dumps(extracted))
+    with open(args.outfilename, 'w') as f:
+        json.dump(extracted, f)
 
 def extract_night(directory_name, inst, year, night):
     '''
