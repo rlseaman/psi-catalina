@@ -14,7 +14,7 @@
         <product_class>Product_Collection</product_class>   
         <Citation_Information>
             <author_list>Seaman, R., Christensen, E., Gibbs, A., and Shelly, F.</author_list>
-            <publication_year>2020</publication_year>
+            <publication_year>2021</publication_year>
             <description>
                 Raw Data files for Catalina Sky Survey
             </description>
@@ -22,7 +22,7 @@
    
         <Modification_History>
             <Modification_Detail>
-              <modification_date>2020-09-16</modification_date>
+              <modification_date>2021-01-04</modification_date>
               <version_id>1.0</version_id>
               <description>Initial Revision</description>
             </Modification_Detail>
