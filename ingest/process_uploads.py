@@ -51,6 +51,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description='Validate a PDS4 collection inventory against the directory')
     parser.add_argument('--basedir', help='The base directory for the delivered data', required=True)
     parser.add_argument('--destdir', help='The destination directory for the processed data', required=True)
+    parser.add_argument('--specific-date', dest='specific_date', help='If provided, will only process the specified date')
     parser.add_argument('--skip-preprocessing', action='store_true', dest='skip_preprocessing', help='If enabled, will not preprocess the data and label files')
     parser.add_argument('--skip-data-preprocessing', action='store_true', dest='skip_data_preprocessing', help='If enabled, will not preprocess the data files')
     parser.add_argument('--skip-label-preprocessing', action='store_true', dest='skip_label_preprocessing', help='If enabled, will not preprocess the label files')
@@ -88,11 +89,11 @@ def main(argv=None):
     )
 
     logging.info("Basedir: %s, Destdir: %s", args.basedir, args.destdir)
-    lockfile_run(args.basedir, args.destdir, preprocessing_opts, validation_opts, postprocessing_opts)
+    lockfile_run(args.basedir, args.destdir, preprocessing_opts, validation_opts, postprocessing_opts, args.specific_date)
 
     return 0
 
-def lockfile_run(basedir, destdir, preprocessing_opts, validation_opts, postprocesing_opts):
+def lockfile_run(basedir, destdir, preprocessing_opts, validation_opts, postprocesing_opts, specific_date=None):
     '''
     Run a function on this directory if one isn't already running. This is
     enforced with a lockfile.
@@ -104,18 +105,18 @@ def lockfile_run(basedir, destdir, preprocessing_opts, validation_opts, postproc
         with open(lockfile, "w") as lock:
             lock.write(".")
         try:
-            process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, postprocesing_opts)
+            process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, postprocesing_opts, specific_date)
         finally:
             os.remove(lockfile)
 
 
-def process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, postprocesing_opts):
+def process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, postprocesing_opts, specific_date):
     '''
     process an upload directory, assuming it has been validated.
     '''
     logging.info("Discovering products at: %s", basedir)
     loc = paths.Paths(basedir, destdir)
-    discovered_products = discover_products(loc)
+    discovered_products = discover_products(loc, specific_date)
     logging.info("Discovey complete, consolidating: %s", basedir)
     products = list(discovered_products)
 
@@ -182,16 +183,16 @@ def validate_products(products, loc, preprocessing_opts, validation_opts):
 
 
 
-def discover_products(loc):
+def discover_products(loc, specific_date):
     '''
     Find all of the product labels in the directory and convert them
     to product objects
     '''
     return itertools.chain.from_iterable(
-        discover_inst_products(loc, instrument) for instrument in INSTRUMENTS)
+        process_inst_directory(loc, instrument, specific_date) for instrument in INSTRUMENTS)
 
 
-def discover_inst_products(loc, instrument):
+def process_inst_directory(loc, instrument, specific_date):
     '''
     Processes the given instrument directory
 
@@ -207,10 +208,10 @@ def discover_inst_products(loc, instrument):
     years = (x.name for x in os.scandir(instdir) if x.is_dir())
 
     return itertools.chain.from_iterable(
-        discover_year_products(loc, instrument, year) for year in years)
+        process_year_directory(loc, instrument, year, specific_date) for year in years)
 
 
-def discover_year_products(loc, instrument, year):
+def process_year_directory(loc, instrument, year, specific_date):
     '''
     Processes the given year directory.
 
@@ -222,7 +223,7 @@ def discover_year_products(loc, instrument, year):
     '''
     logging.info("processing year directory %s/%s", instrument, year)
     yeardir = loc.datadir(instrument, year)
-    dates = [x.name for x in os.scandir(yeardir) if x.is_dir() and x.name not in IGNORE_DATES]
+    dates = [specific_date] if specific_date else [x.name for x in os.scandir(yeardir) if x.is_dir() and x.name not in IGNORE_DATES]
     logging.info("dates found: %s", dates)
 
     return itertools.chain.from_iterable(
