@@ -48,6 +48,14 @@ def validate_products(products, skip_data):
 
 
 def create_temp_copy(temp_dir, product, skip_data):
+    '''
+    Creates temporary copies of the files for a product. Temporary copies are
+    needed because the real copies are compressed, and the labels also need
+    to be copied so that they can be modified to point to these copies.
+
+    The labels are not changed in place because they should not be changed
+    until they are validated.
+    '''
     label_file_name = product.labelfilename
     label_path = product.labelpath
     data_dir = product.datadir
