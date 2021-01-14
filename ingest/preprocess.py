@@ -2,6 +2,9 @@ import subprocess
 import logging
 
 def linefeed_to_crlf(filename):
+    '''
+    Normalize the line feeds in a data file, replacing them with CRLFs
+    '''
     logging.info("Normalizing whitespace for: %s", filename)
     with open(filename) as f:
         lines = [x.strip() for x in f.readlines()]
@@ -42,6 +45,12 @@ LABEL_FUNCS = {
 }
 
 def preprocess_datafile(filename):
+    '''
+    Preprocesses the file. If the file is of an appropriate type 
+    (defined by membership in DATA_FUNCS), decompress the file,
+    run the preprocessing routine indicated in DATA_FUNCS, and
+    recompress the file.
+    '''
     newfilename = filename.replace(".gz", "")
     extension = newfilename.split(".")[-1]
 
@@ -52,6 +61,12 @@ def preprocess_datafile(filename):
             recompress(newfilename)
 
 def preprocess_labelfile(filename, datafilenames):
+    '''
+    Preproesses the label. If the file is of an appropriate type
+    (defined in LABEL_FUNCS), apply the appropriate transformation
+    to the contents. In most cases, this will remove the gz of fz
+    extensions from the data file names.
+    '''
     with open(filename) as f:
         labelcontents = f.read()
 
@@ -65,11 +80,17 @@ def preprocess_labelfile(filename, datafilenames):
     
 
 def decompress(datafilename):
+    '''
+    Decompress a data file with gzip, if it is compressed
+    '''
     if datafilename.endswith(".gz"):
         logging.info("Decompressing: %s", datafilename)
         subprocess.run(['gunzip', datafilename])
 
 def recompress(datafilename):
+    '''
+    Compress a data file with gzip (if it is not already compressed)
+    '''
     if not datafilename.endswith(".gz") or datafilename.endswith(".fz"):
         logging.info("Recompressing: %s", datafilename)
         subprocess.run(['gzip', datafilename])
