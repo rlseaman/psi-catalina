@@ -128,5 +128,5 @@ class Validation:
     and failures
     '''
     def __init__(self, dirname):
-        result = run_validator(dirname, true)
+        result = run_validator(dirname, True)
         self.failures, self.successes = result
