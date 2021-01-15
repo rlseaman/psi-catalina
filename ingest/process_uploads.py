@@ -506,6 +506,9 @@ def index(items, indexfunc):
     return dictionary
 
 def chunk(items, size):
+    '''
+    Subdivides a list into chunks of the given size
+    '''
     for i in range(0, len(items), size):
         yield items[i:i+size]
 
