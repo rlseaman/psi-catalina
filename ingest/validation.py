@@ -55,6 +55,9 @@ def create_temp_copy(temp_dir, product, skip_data):
 
     The labels are not changed in place because they should not be changed
     until they are validated.
+
+    If data validation is being skipped, this will still create an empty
+    dummy file, so that the validator will not fail.
     '''
     label_file_name = product.labelfilename
     label_path = product.labelpath
