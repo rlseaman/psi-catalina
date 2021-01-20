@@ -48,20 +48,7 @@ def main(argv=None):
     Extract command line arguments, ensure that the script is not already running,
     and process the current upload directory.
     '''
-    parser = argparse.ArgumentParser(description='Validate a PDS4 collection inventory against the directory')
-    parser.add_argument('--basedir', help='The base directory for the delivered data', required=True)
-    parser.add_argument('--destdir', help='The destination directory for the processed data', required=True)
-    parser.add_argument('--specific-date', dest='specific_date', help='If provided, will only process the specified date')
-    parser.add_argument('--skip-preprocessing', action='store_true', dest='skip_preprocessing', help='If enabled, will not preprocess the data and label files')
-    parser.add_argument('--skip-data-preprocessing', action='store_true', dest='skip_data_preprocessing', help='If enabled, will not preprocess the data files')
-    parser.add_argument('--skip-label-preprocessing', action='store_true', dest='skip_label_preprocessing', help='If enabled, will not preprocess the label files')
-    parser.add_argument('--skip-validation', action='store_true', dest='skip_validation', help='If enabled, will not validate the data')
-    parser.add_argument('--permissive-validation', action='store_true', dest='permissive_validation', help='If enabled, will continue even if there are validation errors')
-    parser.add_argument('--skip-data-validation', action='store_true', dest='skip_data_validation', help='If enabled, will not validate the data')
-    parser.add_argument('--skip-move', action='store_true', dest='skip_move', help='If enabled, will not move the data')
-    parser.add_argument('--dry-move', action='store_true', dest='dry_move', help='If enabled, will not move the data, but will log the calculated destination')
-    parser.add_argument('--skip-collection-update', action='store_true', dest='skip_collection_update', help='If enabled, will update the collection inventory or label')
-    args = parser.parse_args()
+    args = get_args()
 
     logfilename="process_uploads_%s.log" % time.time()
     print(logfilename)
@@ -92,6 +79,53 @@ def main(argv=None):
     lockfile_run(args.basedir, args.destdir, preprocessing_opts, validation_opts, postprocessing_opts, args.specific_date)
 
     return 0
+
+def get_args():
+    parser = argparse.ArgumentParser(description='Validate a PDS4 collection inventory against the directory')
+    parser.add_argument('--basedir', 
+                        help='The base directory for the delivered data', 
+                        required=True)
+    parser.add_argument('--destdir', 
+                        help='The destination directory for the processed data', 
+                        required=True)
+    parser.add_argument('--specific-date', 
+                        dest='specific_date', 
+                        help='If provided, will only process the specified date')
+    parser.add_argument('--skip-preprocessing', 
+                        action='store_true', dest='skip_preprocessing', 
+                        help='If enabled, will not preprocess the data and label files')
+    parser.add_argument('--skip-data-preprocessing', 
+                        action='store_true', dest='skip_data_preprocessing', 
+                        help='If enabled, will not preprocess the data files')
+    parser.add_argument('--skip-label-preprocessing', 
+                        action='store_true', 
+                        dest='skip_label_preprocessing', 
+                        help='If enabled, will not preprocess the label files')
+    parser.add_argument('--skip-validation', 
+                        action='store_true', 
+                        dest='skip_validation', 
+                        help='If enabled, will not validate the data')
+    parser.add_argument('--permissive-validation', 
+                        action='store_true', dest='permissive_validation', 
+                        help='If enabled, will continue even if there are validation errors')
+    parser.add_argument('--skip-data-validation', 
+                        action='store_true', 
+                        dest='skip_data_validation', 
+                        help='If enabled, will not validate the data')
+    parser.add_argument('--skip-move', 
+                        action='store_true', 
+                        dest='skip_move', 
+                        help='If enabled, will not move the data')
+    parser.add_argument('--dry-move', 
+                        action='store_true', 
+                        dest='dry_move', 
+                        help='If enabled, will not move the data, but will log the calculated destination')
+    parser.add_argument('--skip-collection-update', 
+                        action='store_true', 
+                        dest='skip_collection_update', 
+                        help='If enabled, will update the collection inventory or label')
+    return parser.parse_args()
+
 
 def lockfile_run(basedir, destdir, preprocessing_opts, validation_opts, postprocesing_opts, specific_date=None):
     '''
