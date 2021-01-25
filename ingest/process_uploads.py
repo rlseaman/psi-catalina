@@ -190,31 +190,6 @@ def process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, po
     #logging.info("moving to %s", deletion_area_dest)
     logging.info("done")
 
-def validate_products(products, loc, preprocessing_opts, validation_opts):
-    '''
-    Preprocess and validates the products. 
-    The files will be preprocessed in the same manner as after validation. This prevents the original 
-    files from being altered if there are validation errors.
-    '''
-    all_validation_failures = []
-
-    if preprocessing_opts.skip_preprocessing:
-        logging.info("Skipping temp preprocessing")
-    if validation_opts.skip_validation:
-        logging.info("Skipping validation")
-
-    for batch in chunk(products, BATCH_SIZE):
-        logging.info("Validating a batch of %s...", len(batch))
-        if not preprocessing_opts.skip_preprocessing:
-            for product in batch:
-                preprocess_product(product, loc, preprocessing_opts.skip_data_preprocessing, preprocessing_opts.skip_label_preprocessing)
-        if not validation_opts.skip_validation:
-            validation_failures,_,_ = validation.validate_products(batch, validation_opts.skip_data_validation)
-            if validation_failures:
-                all_validation_failures.extend(validation_failures)
-    if all_validation_failures and not validation_opts.permissive_validation:
-        raise Exception('There were validation errors')
-
 
 
 def discover_products(loc, specific_date):
@@ -282,6 +257,16 @@ def discover_date_products(loc, instrument, year, date):
     logging.warning("no semaphore: %s and %s", labeldir, datadir)
     return []
 
+
+def semaphore_exists(dirname):
+    '''
+    Verifies that a semaphore file exists in the given directory.
+    '''
+    logging.info("checking for semaphore in %s", dirname)
+    semaphore_file = os.path.join(dirname, '.autoxfer')
+    return os.path.exists(semaphore_file)
+
+
 def labels_to_products(datadir, labeldir, instrument, year, date):
     '''
     Processes the data in a given data directory and label directory pair.
@@ -300,6 +285,7 @@ def labels_to_products(datadir, labeldir, instrument, year, date):
     logging.info("discovery complete in %s/%s/%s", instrument, year, date)
     return products
 
+
 def product_whitelisted(product):
     '''
     determines if all of the software for the product has been approved
@@ -308,11 +294,65 @@ def product_whitelisted(product):
         return all([software_whitelisted(x) for x in product.software()])
     return True
 
+
 def software_whitelisted(software):
     '''
     determines if a single piece of software has been approved
     '''
     return True
+
+
+def index(items, indexfunc):
+    '''
+    Indexes a list of objects based on the output of a supplied function
+    '''
+    dictionary = {}
+    for item in items:
+        key = indexfunc(item)
+        dictionary.setdefault(key, []).append(item)
+    return dictionary
+
+
+def extract_collection_id(lid):
+    '''
+    Extracts the collection id component from a LID
+    '''
+    return lid.split(':')[4]
+
+
+def validate_products(products, loc, preprocessing_opts, validation_opts):
+    '''
+    Preprocess and validates the products. 
+    The files will be preprocessed in the same manner as after validation. This prevents the original 
+    files from being altered if there are validation errors.
+    '''
+    all_validation_failures = []
+
+    if preprocessing_opts.skip_preprocessing:
+        logging.info("Skipping temp preprocessing")
+    if validation_opts.skip_validation:
+        logging.info("Skipping validation")
+
+    for batch in chunk(products, BATCH_SIZE):
+        logging.info("Validating a batch of %s...", len(batch))
+        if not preprocessing_opts.skip_preprocessing:
+            for product in batch:
+                preprocess_product(product, loc, preprocessing_opts.skip_data_preprocessing, preprocessing_opts.skip_label_preprocessing)
+        if not validation_opts.skip_validation:
+            validation_failures,_,_ = validation.validate_products(batch, validation_opts.skip_data_validation)
+            if validation_failures:
+                all_validation_failures.extend(validation_failures)
+    if all_validation_failures and not validation_opts.permissive_validation:
+        raise Exception('There were validation errors')
+
+
+def chunk(items, size):
+    '''
+    Subdivides a list into chunks of the given size
+    '''
+    for i in range(0, len(items), size):
+        yield items[i:i+size]
+
 
 def preprocess_product(product, loc, skip_data_preprocessing, skip_label_preprocessing):
     logging.debug("Preprocessing files for: %s", product.labelfilename)
@@ -368,6 +408,7 @@ def move_product(product, loc, dry_move):
         if not dry_move:
             os.rename(src_data, dest_data)
 
+
 def get_actual_file_name(data_dir, file_name):
     suffixes = ['', '.gz', '.fz']
     file_names = [file_name + suffix for suffix in suffixes if os.path.exists(os.path.join(data_dir, file_name + suffix))]
@@ -402,6 +443,22 @@ def update_data_collection(loc, collection_products, collection_id):
                      start_date,
                      stop_date)
 
+
+def get_collection_labels(collection_path, collection_id):
+    '''
+    Gets the most recent known version number for a collection
+    '''
+    collection_files = [x for x in os.scandir(collection_path) if is_collection_file(x)]
+    return [Collection(collection_path, x.name) for x in collection_files]
+    
+
+def is_collection_file(candidate):
+    '''
+    Determine if the passed in file is a collection file.
+    '''
+    return candidate.name.startswith('collection') and candidate.name.endswith('.xml')
+
+
 def merge_inventories(collection_path, collection_id, collection_products, collection_labels):
     '''
     Produces a new collection inventory file, and returns the lidvid for the
@@ -419,6 +476,7 @@ def merge_inventories(collection_path, collection_id, collection_products, colle
 
     return new_lidvid
 
+
 def get_last_version_number(collection_id, collection_labels):
     '''
     Gets the most recent known version number for a collection
@@ -431,13 +489,6 @@ def get_last_version_number(collection_id, collection_labels):
         return make_collection_lidvid(collection_id, major, minor)
     return make_collection_lidvid(collection_id, 0, 0)
 
-def get_collection_labels(collection_path, collection_id):
-    '''
-    Gets the most recent known version number for a collection
-    '''
-    collection_files = [x for x in os.scandir(collection_path) if is_collection_file(x)]
-    return [Collection(collection_path, x.name) for x in collection_files]
-    
 
 
 def make_collection_lidvid(collection_id, major, minor):
@@ -449,15 +500,6 @@ def make_collection_lidvid(collection_id, major, minor):
         'minor': minor,
         'collection_id': collection_id
     }
-
-
-def is_collection_file(candidate):
-    '''
-    Determine if the passed in file is a collection file.
-    '''
-    return candidate.name.startswith('collection') and candidate.name.endswith('.xml')
-
-
 
 
 def write_collection(template_filename,
@@ -484,42 +526,12 @@ def write_collection(template_filename,
     iotools.write_file(collection_path, contents)
 
 
-def semaphore_exists(dirname):
-    '''
-    Verifies that a semaphore file exists in the given directory.
-    '''
-    logging.info("checking for semaphore in %s", dirname)
-    semaphore_file = os.path.join(dirname, '.autoxfer')
-    return os.path.exists(semaphore_file)
 
 def is_label(candidate):
     '''
     Determines if the given file is a label file.
     '''
     return candidate.name.endswith('.xml')
-
-def extract_collection_id(lid):
-    '''
-    Extracts the collection id component from a LID
-    '''
-    return lid.split(':')[4]
-
-def index(items, indexfunc):
-    '''
-    Indexes a list of objects based on the output of a supplied function
-    '''
-    dictionary = {}
-    for item in items:
-        key = indexfunc(item)
-        dictionary.setdefault(key, []).append(item)
-    return dictionary
-
-def chunk(items, size):
-    '''
-    Subdivides a list into chunks of the given size
-    '''
-    for i in range(0, len(items), size):
-        yield items[i:i+size]
 
 
 if __name__ == '__main__':
