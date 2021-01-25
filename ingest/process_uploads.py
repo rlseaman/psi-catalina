@@ -498,31 +498,6 @@ def is_label(candidate):
     '''
     return candidate.name.endswith('.xml')
 
-def find_files(dirname):
-    '''
-    Gets all of the files in a directory.
-    '''
-    filelists = [[os.path.join(subdir, f) for f in files] for subdir, _, files in os.walk(dirname)]
-    return itertools.chain.from_iterable(filelists)
-
-def extract_version(label):
-    '''
-    Extracts the version number from a collection label.
-    '''
-    product_element = label.Product_Collection
-    if product_element:
-        identification_area = product_element.Identification_Area
-        version = identification_area.version_id.string
-        return [int(x) for x in version.split(".")]
-
-    return (0, 0)
-
-def ignore(file):
-    '''
-    Determines if a file should be ignored when processing.
-    '''
-    return any((file.endswith(name) for name in IGNORE_FILES))
-
 def extract_collection_id(lid):
     '''
     Extracts the collection id component from a LID
