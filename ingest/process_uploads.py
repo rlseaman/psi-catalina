@@ -50,8 +50,11 @@ def main(argv=None):
     '''
     args = get_args()
 
-    logfilename="process_uploads_%s.log" % time.time()
-    print(logfilename)
+    if args.console:
+        logfilename = None
+    else:
+        logfilename="process_uploads_%s.log" % time.time()
+        print(logfilename)
 
     logging.basicConfig(level=logging.INFO,
         format='%(asctime)s|%(levelname)s|%(message)s', 
@@ -132,6 +135,11 @@ def get_args():
                         action='store_true', 
                         dest='skip_collection_update', 
                         help='If enabled, will update the collection inventory or label')
+    parser.add_argument('--console', 
+                        action='store_true', 
+                        dest='console', 
+                        help='If enabled, will log to console instead of log file')
+
     return parser.parse_args()
 
 
