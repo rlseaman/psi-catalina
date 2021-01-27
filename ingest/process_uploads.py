@@ -76,7 +76,8 @@ def main(argv=None):
     )
 
     filter_opts = SimpleNamespace(
-        specific_date = args.specific_date
+        specific_date = args.specific_date,
+        specific_instrument = args.specific_instrument
     )
 
     logging.info("Basedir: %s, Destdir: %s", args.basedir, args.destdir)
@@ -95,6 +96,9 @@ def get_args():
     parser.add_argument('--specific-date', 
                         dest='specific_date', 
                         help='If provided, will only process the specified date')
+    parser.add_argument('--specific-instrument', 
+                        dest='specific_instrument', 
+                        help='If provided, will only process the specified instrument')
     parser.add_argument('--skip-preprocessing', 
                         action='store_true', dest='skip_preprocessing', 
                         help='If enabled, will not preprocess the data and label files')
@@ -201,8 +205,9 @@ def discover_products(loc, filter_opts):
     Find all of the product labels in the directory and convert them
     to product objects
     '''
+    instruments = [filter_opts.specific_instrument] if filter_opts.specific_instrument else INSTRUMENTS
     return itertools.chain.from_iterable(
-        process_inst_directory(loc, instrument, filter_opts.specific_date) for instrument in INSTRUMENTS)
+        process_inst_directory(loc, instrument, filter_opts.specific_date) for instrument in instruments)
 
 
 def process_inst_directory(loc, instrument, specific_date):
