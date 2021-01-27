@@ -75,8 +75,12 @@ def main(argv=None):
         skip_collection_update=args.skip_collection_update
     )
 
+    filter_opts = SimpleNamespace(
+        specific_date = args.specific_date
+    )
+
     logging.info("Basedir: %s, Destdir: %s", args.basedir, args.destdir)
-    lockfile_run(args.basedir, args.destdir, preprocessing_opts, validation_opts, postprocessing_opts, args.specific_date)
+    lockfile_run(args.basedir, args.destdir, preprocessing_opts, validation_opts, postprocessing_opts, filter_opts)
 
     return 0
 
@@ -127,7 +131,7 @@ def get_args():
     return parser.parse_args()
 
 
-def lockfile_run(basedir, destdir, preprocessing_opts, validation_opts, postprocesing_opts, specific_date=None):
+def lockfile_run(basedir, destdir, preprocessing_opts, validation_opts, postprocesing_opts, filter_opts):
     '''
     Run a function on this directory if one isn't already running. This is
     enforced with a lockfile.
@@ -139,18 +143,18 @@ def lockfile_run(basedir, destdir, preprocessing_opts, validation_opts, postproc
         with open(lockfile, "w") as lock:
             lock.write(".")
         try:
-            process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, postprocesing_opts, specific_date)
+            process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, postprocesing_opts, filter_opts)
         finally:
             os.remove(lockfile)
 
 
-def process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, postprocesing_opts, specific_date):
+def process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, postprocesing_opts, filter_opts):
     '''
     process an upload directory, assuming it has been validated.
     '''
     logging.info("Discovering products at: %s", basedir)
     loc = paths.Paths(basedir, destdir)
-    discovered_products = discover_products(loc, specific_date)
+    discovered_products = discover_products(loc, filter_opts)
     logging.info("Discovey complete, consolidating: %s", basedir)
     products = list(discovered_products)
 
@@ -192,13 +196,13 @@ def process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, po
 
 
 
-def discover_products(loc, specific_date):
+def discover_products(loc, filter_opts):
     '''
     Find all of the product labels in the directory and convert them
     to product objects
     '''
     return itertools.chain.from_iterable(
-        process_inst_directory(loc, instrument, specific_date) for instrument in INSTRUMENTS)
+        process_inst_directory(loc, instrument, filter_opts.specific_date) for instrument in INSTRUMENTS)
 
 
 def process_inst_directory(loc, instrument, specific_date):
@@ -261,6 +265,8 @@ def discover_date_products(loc, instrument, year, date):
 def semaphore_exists(dirname):
     '''
     Verifies that a semaphore file exists in the given directory.
+
+    dirname: the absolute path of the directory to check
     '''
     logging.info("checking for semaphore in %s", dirname)
     semaphore_file = os.path.join(dirname, '.autoxfer')
