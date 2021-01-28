@@ -14,6 +14,7 @@ import functools
 import argparse
 import logging
 import time
+import math
 from types import SimpleNamespace
 
 
@@ -352,8 +353,10 @@ def validate_products(products, loc, preprocessing_opts, validation_opts):
     if validation_opts.skip_validation:
         logging.info("Skipping validation")
 
-    for batch in chunk(products, BATCH_SIZE):
-        logging.info("Validating a batch of %s...", len(batch))
+    batch_count = math.ceil(len(products)/BATCH_SIZE)
+
+    for (batch_num, batch) in enumerate(chunk(products, BATCH_SIZE)):
+        logging.info("Validating a batch of %s (%s/%s)...", len(batch), batch_num + 1, batch_count)
         if not preprocessing_opts.skip_preprocessing:
             for product in batch:
                 preprocess_product(product, loc, preprocessing_opts.skip_data_preprocessing, preprocessing_opts.skip_label_preprocessing)
