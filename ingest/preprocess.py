@@ -1,5 +1,7 @@
+from genericpath import exists
 import subprocess
 import logging
+import os
 
 def linefeed_to_crlf(filename):
     '''
@@ -8,6 +10,9 @@ def linefeed_to_crlf(filename):
     logging.info("Normalizing whitespace for: %s", filename)
     with open(filename) as f:
         lines = [x.strip() for x in f.readlines()]
+
+    os.rename(filename, filename + ".bak")
+
     with open(filename, "w") as f2:
         f2.write("\r\n".join(lines) + "\r\n")
 
@@ -55,9 +60,9 @@ def preprocess_datafile(filename):
     extension = newfilename.split(".")[-1]
 
     if extension in DATA_FUNCS:
-        decompress(filename)
+        compressed = decompress(filename)
         DATA_FUNCS[extension](newfilename)
-        if not newfilename == filename:
+        if compressed:
             recompress(newfilename)
 
 def preprocess_labelfile(filename, datafilenames):
@@ -75,6 +80,8 @@ def preprocess_labelfile(filename, datafilenames):
         if extension in LABEL_FUNCS:
             labelcontents = LABEL_FUNCS[extension](labelcontents, datafilename)
 
+    os.rename(filename, filename + ".bak")
+
     with open(filename, "w") as f2:
         f2.write(labelcontents)
     
@@ -85,7 +92,14 @@ def decompress(datafilename):
     '''
     if datafilename.endswith(".gz"):
         logging.info("Decompressing: %s", datafilename)
-        subprocess.run(['gunzip', datafilename])
+        gunzip(datafilename)
+        return True
+    elif os.path.exists(datafilename + ".gz"):
+        logging.info("Decompressing: %s", datafilename + ".gz")
+        gunzip(datafilename + ".gz")
+        return True
+    return False
+
 
 def recompress(datafilename):
     '''
@@ -93,4 +107,14 @@ def recompress(datafilename):
     '''
     if not datafilename.endswith(".gz") or datafilename.endswith(".fz"):
         logging.info("Recompressing: %s", datafilename)
-        subprocess.run(['gzip', datafilename])
+        gzip(datafilename)
+
+def gunzip(filename):
+    result = subprocess.run(['gunzip', filename], encoding="utf-8")
+    if not result.returncode == 0:
+        raise Exception("gunzip failed", result.stdout)
+            
+def gzip(filename):
+    result = subprocess.run(['gzip', filename], encoding="utf-8")
+    if not result.returncode == 0:
+        raise Exception("gzip failed", result.stdout)
