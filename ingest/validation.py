@@ -125,10 +125,9 @@ def run_validator(file_name, skip_data):
                           if x['status'] == "PASS"]
 
     if failures:
-        logging.info("Failures encountered")
-        for failure in failures:
-            logging.error(failure)
-            #logging.error(result)
+        logging.info("%s Failures encountered", len(failures))
+        #logging.error(failure)
+        #logging.error(result)
     else:
         logging.info("Validation passed")
     return (failures, successes, output)

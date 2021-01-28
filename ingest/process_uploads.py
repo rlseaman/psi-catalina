@@ -15,6 +15,7 @@ import argparse
 import logging
 import time
 import math
+import json
 from types import SimpleNamespace
 
 
@@ -186,7 +187,7 @@ def process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, po
     #    raise Exception('Some products used software not on the whitelist')
 
 
-    validate_products(products, loc, preprocessing_opts, validation_opts)
+    validate_products(products, loc, preprocessing_opts, validation_opts, destdir)
 
     if postprocesing_opts.skip_move:
         logging.info("Skipping move")
@@ -340,13 +341,17 @@ def extract_collection_id(lid):
     return lid.split(':')[4]
 
 
-def validate_products(products, loc, preprocessing_opts, validation_opts):
+def validate_products(products, loc, preprocessing_opts, validation_opts, destdir):
     '''
     Preprocess and validates the products. 
     The files will be preprocessed in the same manner as after validation. This prevents the original 
     files from being altered if there are validation errors.
     '''
     all_validation_failures = []
+
+    logdir = os.path.join(destdir,"validation")
+    os.makedirs(logdir, exist_ok=True)
+
 
     if preprocessing_opts.skip_preprocessing:
         logging.info("Skipping temp preprocessing")
@@ -363,6 +368,11 @@ def validate_products(products, loc, preprocessing_opts, validation_opts):
         if not validation_opts.skip_validation:
             validation_failures,_,_ = validation.validate_products(batch, validation_opts.skip_data_validation)
             if validation_failures:
+                for failure in validation_failures:
+                    failfile = os.path.basename(failure['label'])
+                    faillogpath = os.path.join(logdir, failfile + ".log")
+                    with open(faillogpath, "w") as f:
+                        json.dump(failure, f)
                 all_validation_failures.extend(validation_failures)
     if all_validation_failures and not validation_opts.permissive_validation:
         raise Exception('There were validation errors')
