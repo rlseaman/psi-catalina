@@ -1,6 +1,7 @@
 '''
 Performs validation on a PDS4 label
 '''
+from json.decoder import JSONDecodeError
 import subprocess
 import os.path
 import json
@@ -9,6 +10,7 @@ import tempfile
 import shutil
 import gzip
 import logging
+import re
 
 SCHEMA_PATH = '../schemas'
 
@@ -101,16 +103,22 @@ def run_validator(file_name, skip_data):
     '''
 
     logging.info("Running the validator...")
-    params = [VALIDATE_CMD, '-s', 'json'] + (['-D'] if skip_data else []) + ['-x', *SCHEMA_PATHS, '-S', *SCHEMATRON_PATHS, '-t', file_name]
+    params = [VALIDATE_CMD, '-s', 'json', '-E', '1000'] + (['-D'] if skip_data else []) + ['-x', *SCHEMA_PATHS, '-S', *SCHEMATRON_PATHS, '-t', file_name]
 
-    process = subprocess.run(params, stdout=subprocess.PIPE)
+    process = subprocess.run(params, stdout=subprocess.PIPE, encoding="utf-8")
 
     logging.info("Validation complete, processing results...")
 
-    stdout = process.stdout
+    output = re.sub('\}\.+', '}', process.stdout)
+    output = re.sub('\.+\{', '{', output)
     
+    try:
+        result = json.loads(output)
+    except JSONDecodeError:
+        logging.error(output)
+        print(output)
+        raise
 
-    result = json.loads(stdout)
     failures = [x for x in result['productLevelValidationResults']
                          if x['status'] == "FAIL"]
     successes = [x for x in result['productLevelValidationResults']
@@ -123,7 +131,7 @@ def run_validator(file_name, skip_data):
             #logging.error(result)
     else:
         logging.info("Validation passed")
-    return (failures, successes, stdout)
+    return (failures, successes, output)
 
 class Validation:
     '''
