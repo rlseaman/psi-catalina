@@ -25,7 +25,7 @@ def linefeed_to_crlf(filename):
         filename = filename + ".gz"
 
     with file_open(filename) as f:
-        lines = [x.strip() for x in f.readlines()]
+        lines = [x.strip("\r\n") for x in f.readlines()]
 
     os.rename(filename, filename + ".bak")
 
