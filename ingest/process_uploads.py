@@ -58,7 +58,9 @@ def main(argv=None):
         logfilename="process_uploads_%s.log" % time.time()
         print(logfilename)
 
-    logging.basicConfig(level=logging.INFO,
+    loglevel = logging.DEBUG if args.verbose else logging.INFO
+
+    logging.basicConfig(level=loglevel,
         format='%(asctime)s|%(levelname)s|%(message)s', 
         filename=logfilename)
 
@@ -142,6 +144,10 @@ def get_args():
                         action='store_true', 
                         dest='console', 
                         help='If enabled, will log to console instead of log file')
+    parser.add_argument('--verbose', 
+                        action='store_true', 
+                        dest='verbose', 
+                        help='If enabled, will add more info to logs')
     parser.add_argument('--max-products', 
                         type=int,
                         dest='max_products', 
@@ -260,7 +266,7 @@ def process_year_directory(loc, instrument, year, specific_date):
     logging.info("processing year directory %s/%s", instrument, year)
     yeardir = loc.datadir(instrument, year)
     dates = [specific_date] if specific_date else [x.name for x in os.scandir(yeardir) if x.is_dir() and x.name not in IGNORE_DATES]
-    logging.info("dates found: %s", dates)
+    logging.debug("dates found: %s", dates)
 
     return itertools.chain.from_iterable(
         discover_date_products(loc, instrument, year, date) for date in dates)
@@ -432,7 +438,7 @@ def move_product(product, loc, dry_move):
 
     src_label = product.labelpath
     dest_label = os.path.join(dest_directory, product.labelfilename)
-    logging.info('Moved from %s to %s', src_label, dest_label)
+    logging.debug('Moved from %s to %s', src_label, dest_label)
     if not dry_move:
         os.rename(src_label, dest_label)
 
@@ -440,7 +446,7 @@ def move_product(product, loc, dry_move):
         actual_file_name = get_actual_file_name(datadir, file_name)
         src_data = os.path.join(datadir, actual_file_name)
         dest_data = os.path.join(dest_directory, actual_file_name)
-        logging.info('Moved from %s to %s', src_data, dest_data)
+        logging.debug('Moved from %s to %s', src_data, dest_data)
         if not dry_move:
             os.rename(src_data, dest_data)
 

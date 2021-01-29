@@ -76,17 +76,17 @@ def create_temp_copy(temp_dir, product, skip_data):
         temp_data_path = os.path.join(temp_dir, data_file_name)
 
         if skip_data:
-            logging.info("Creating dummy copy of %s", data_path)
+            logging.debug("Creating dummy copy of %s", data_path)
             with open(temp_data_path, "w") as f: pass
         elif os.path.exists(data_path):
-            logging.info("Copying temporary %s to %s", data_path, temp_data_path)
+            logging.debug("Copying temporary %s to %s", data_path, temp_data_path)
             shutil.copy(data_path, temp_data_path)
         elif os.path.exists(data_path + ".gz"):
-            logging.info("Gunzipping temporary %s to %s", data_path + ".gz", temp_data_path)
+            logging.debug("Gunzipping temporary %s to %s", data_path + ".gz", temp_data_path)
             with open(temp_data_path, "wb") as uncompressed, gzip.open(data_path + ".gz", "rb") as compressed:
                 shutil.copyfileobj(compressed, uncompressed)
         elif os.path.exists(data_path + ".fz"):
-            logging.info("Funpacking temporary %s to %s", data_path + ".fz", temp_data_path)
+            logging.debug("Funpacking temporary %s to %s", data_path + ".fz", temp_data_path)
             subprocess.run([FUNPACK_CMD, '-C', '-O', temp_data_path, data_path + ".fz"])
         else:
             logging.error("could not find data file: %s", temp_data_path)
