@@ -2,19 +2,37 @@ from genericpath import exists
 import subprocess
 import logging
 import os
+import gzip
+
+
+def has_compressed(filename):
+    return os.path.exists(filename + ".gz")
+
+def file_open(filename, mode="rt"):
+    logging.info("Opening: %s with mode: %s", filename, mode)
+    if filename.endswith(".gz"):
+        return gzip.open(filename, mode)
+    return open(filename, mode)
 
 def linefeed_to_crlf(filename):
     '''
     Normalize the line feeds in a data file, replacing them with CRLFs
     '''
+
     logging.info("Normalizing whitespace for: %s", filename)
-    with open(filename) as f:
+    if has_compressed(filename):
+        logging.info("Using compressed version: %s", filename)
+        filename = filename + ".gz"
+
+    with file_open(filename) as f:
         lines = [x.strip() for x in f.readlines()]
 
     os.rename(filename, filename + ".bak")
 
-    with open(filename, "w") as f2:
+    with file_open(filename, "wt") as f2:
         f2.write("\r\n".join(lines) + "\r\n")
+
+    os.remove(filename + ".bak")
 
 def strip_label_fz_extension(contents, datafilename):
     uncompressed_datafilename = datafilename.replace(".fz", "")
@@ -60,10 +78,7 @@ def preprocess_datafile(filename):
     extension = newfilename.split(".")[-1]
 
     if extension in DATA_FUNCS:
-        compressed = decompress(filename)
-        DATA_FUNCS[extension](newfilename)
-        if compressed:
-            recompress(newfilename)
+        DATA_FUNCS[extension](filename)
 
 def preprocess_labelfile(filename, datafilenames):
     '''
@@ -86,35 +101,3 @@ def preprocess_labelfile(filename, datafilenames):
         f2.write(labelcontents)
     
 
-def decompress(datafilename):
-    '''
-    Decompress a data file with gzip, if it is compressed
-    '''
-    if datafilename.endswith(".gz"):
-        logging.info("Decompressing: %s", datafilename)
-        gunzip(datafilename)
-        return True
-    elif os.path.exists(datafilename + ".gz"):
-        logging.info("Decompressing: %s", datafilename + ".gz")
-        gunzip(datafilename + ".gz")
-        return True
-    return False
-
-
-def recompress(datafilename):
-    '''
-    Compress a data file with gzip (if it is not already compressed)
-    '''
-    if not datafilename.endswith(".gz") or datafilename.endswith(".fz"):
-        logging.info("Recompressing: %s", datafilename)
-        gzip(datafilename)
-
-def gunzip(filename):
-    result = subprocess.run(['gunzip', filename], encoding="utf-8")
-    if not result.returncode == 0:
-        raise Exception("gunzip failed", result.stdout)
-            
-def gzip(filename):
-    result = subprocess.run(['gzip', filename], encoding="utf-8")
-    if not result.returncode == 0:
-        raise Exception("gzip failed", result.stdout)
