@@ -28,7 +28,7 @@ import preprocess
 import paths
 
 
-
+BUNDLE_ID = "gbo.ast.catalina.survey"
 LABEL_FILENAME_TEMPLATE = 'collection_{collection_id}_{major}.{minor}.xml'
 INSTRUMENTS = ['703','G96','I52','V06']
 IGNORE_FILES = ['signature.md5', '.autoxfer']
@@ -82,7 +82,8 @@ def main(argv=None):
 
     filter_opts = SimpleNamespace(
         specific_date = args.specific_date,
-        specific_instrument = args.specific_instrument
+        specific_instrument = args.specific_instrument,
+        max_products = args.max_products
     )
 
     logging.info("Basedir: %s, Destdir: %s", args.basedir, args.destdir)
@@ -141,6 +142,10 @@ def get_args():
                         action='store_true', 
                         dest='console', 
                         help='If enabled, will log to console instead of log file')
+    parser.add_argument('--max-products', 
+                        type=int,
+                        dest='max_products', 
+                        help='The maximum number of products to process in a single run')
 
     return parser.parse_args()
 
@@ -167,10 +172,11 @@ def process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, po
     process an upload directory, assuming it has been validated.
     '''
     logging.info("Discovering products at: %s", basedir)
-    loc = paths.Paths(basedir, destdir)
+    bundle_dir = os.path.join(destdir, BUNDLE_ID)
+    loc = paths.Paths(basedir, bundle_dir)
     discovered_products = discover_products(loc, filter_opts)
     logging.info("Discovey complete, consolidating: %s", basedir)
-    products = list(discovered_products)
+    products = list(itertools.islice(discovered_products, filter_opts.max_products))
 
 
     logging.info("%i products discovered", len(products))
@@ -186,8 +192,10 @@ def process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, po
     #if not all(product_whitelisted(x) for x in products):
     #    raise Exception('Some products used software not on the whitelist')
 
+    logdir = os.path.join(destdir,"validation")
+    os.makedirs(logdir, exist_ok=True)
 
-    validate_products(products, loc, preprocessing_opts, validation_opts, destdir)
+    validate_products(products, loc, preprocessing_opts, validation_opts, logdir)
 
     if postprocesing_opts.skip_move:
         logging.info("Skipping move")
@@ -341,17 +349,13 @@ def extract_collection_id(lid):
     return lid.split(':')[4]
 
 
-def validate_products(products, loc, preprocessing_opts, validation_opts, destdir):
+def validate_products(products, loc, preprocessing_opts, validation_opts, logdir):
     '''
     Preprocess and validates the products. 
     The files will be preprocessed in the same manner as after validation. This prevents the original 
     files from being altered if there are validation errors.
     '''
     all_validation_failures = []
-
-    logdir = os.path.join(destdir,"validation")
-    os.makedirs(logdir, exist_ok=True)
-
 
     if preprocessing_opts.skip_preprocessing:
         logging.info("Skipping temp preprocessing")
