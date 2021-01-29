@@ -1,6 +1,7 @@
 '''
 Performs validation on a PDS4 label
 '''
+from json.decoder import JSONDecodeError
 import subprocess
 import os.path
 import json
@@ -9,6 +10,7 @@ import tempfile
 import shutil
 import gzip
 import logging
+import re
 
 SCHEMA_PATH = '../schemas'
 
@@ -48,6 +50,17 @@ def validate_products(products, skip_data):
 
 
 def create_temp_copy(temp_dir, product, skip_data):
+    '''
+    Creates temporary copies of the files for a product. Temporary copies are
+    needed because the real copies are compressed, and the labels also need
+    to be copied so that they can be modified to point to these copies.
+
+    The labels are not changed in place because they should not be changed
+    until they are validated.
+
+    If data validation is being skipped, this will still create an empty
+    dummy file, so that the validator will not fail.
+    '''
     label_file_name = product.labelfilename
     label_path = product.labelpath
     data_dir = product.datadir
@@ -63,17 +76,17 @@ def create_temp_copy(temp_dir, product, skip_data):
         temp_data_path = os.path.join(temp_dir, data_file_name)
 
         if skip_data:
-            logging.info("Creating dummy copy of %s", data_path)
+            logging.debug("Creating dummy copy of %s", data_path)
             with open(temp_data_path, "w") as f: pass
         elif os.path.exists(data_path):
-            logging.info("Copying temporary %s to %s", data_path, temp_data_path)
+            logging.debug("Copying temporary %s to %s", data_path, temp_data_path)
             shutil.copy(data_path, temp_data_path)
         elif os.path.exists(data_path + ".gz"):
-            logging.info("Gunzipping temporary %s to %s", data_path + ".gz", temp_data_path)
-            with open(temp_data_path, "wb") as uncompressed, open(data_path + ".gz", "rb") as compressed:
+            logging.debug("Gunzipping temporary %s to %s", data_path + ".gz", temp_data_path)
+            with open(temp_data_path, "wb") as uncompressed, gzip.open(data_path + ".gz", "rb") as compressed:
                 shutil.copyfileobj(compressed, uncompressed)
         elif os.path.exists(data_path + ".fz"):
-            logging.info("Funpacking temporary %s to %s", data_path + ".fz", temp_data_path)
+            logging.debug("Funpacking temporary %s to %s", data_path + ".fz", temp_data_path)
             subprocess.run([FUNPACK_CMD, '-C', '-O', temp_data_path, data_path + ".fz"])
         else:
             logging.error("could not find data file: %s", temp_data_path)
@@ -90,29 +103,34 @@ def run_validator(file_name, skip_data):
     '''
 
     logging.info("Running the validator...")
-    params = [VALIDATE_CMD, '-s', 'json'] + (['-D'] if skip_data else []) + ['-x', *SCHEMA_PATHS, '-S', *SCHEMATRON_PATHS, '-t', file_name]
+    params = [VALIDATE_CMD, '-s', 'json', '-E', '1000'] + (['-D'] if skip_data else []) + ['-x', *SCHEMA_PATHS, '-S', *SCHEMATRON_PATHS, '-t', file_name]
 
-    process = subprocess.run(params, stdout=subprocess.PIPE)
+    process = subprocess.run(params, stdout=subprocess.PIPE, encoding="utf-8")
 
     logging.info("Validation complete, processing results...")
 
-    stdout = process.stdout
+    output = re.sub('\}\.+', '}', process.stdout)
+    output = re.sub('\.+\{', '{', output)
     
+    try:
+        result = json.loads(output)
+    except JSONDecodeError:
+        logging.error(output)
+        print(output)
+        raise
 
-    result = json.loads(stdout)
     failures = [x for x in result['productLevelValidationResults']
                          if x['status'] == "FAIL"]
     successes = [x for x in result['productLevelValidationResults']
                           if x['status'] == "PASS"]
 
     if failures:
-        logging.info("Failures encountered")
-        for failure in failures:
-            logging.error(failure)
-            #logging.error(result)
+        logging.info("%s Failures encountered", len(failures))
+        #logging.error(failure)
+        #logging.error(result)
     else:
         logging.info("Validation passed")
-    return (failures, successes, stdout)
+    return (failures, successes, output)
 
 class Validation:
     '''
@@ -120,5 +138,5 @@ class Validation:
     and failures
     '''
     def __init__(self, dirname):
-        result = run_validator(dirname, true)
+        result = run_validator(dirname, True)
         self.failures, self.successes = result
