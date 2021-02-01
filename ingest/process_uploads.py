@@ -18,6 +18,7 @@ import math
 import json
 from types import SimpleNamespace
 import datetime
+import shutil
 
 from product import Product
 from collection import Collection
@@ -79,6 +80,7 @@ def main(argv=None):
     postprocessing_opts = SimpleNamespace(
         skip_move=args.skip_move,
         dry_move=args.dry_move,
+        copy_files=args.copy_files,
         skip_collection_update=args.skip_collection_update
     )
 
@@ -137,6 +139,10 @@ def get_args():
                         action='store_true', 
                         dest='dry_move', 
                         help='If enabled, will not move the data, but will log the calculated destination')
+    parser.add_argument('--copy-files', 
+                        action='store_true', 
+                        dest='copy_files', 
+                        help='If enabled, will not move the data, but will copy it instead')
     parser.add_argument('--skip-collection-update', 
                         action='store_true', 
                         dest='skip_collection_update', 
@@ -213,7 +219,7 @@ def process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, po
         logging.info("Skipping move")
     else:
         for product in products:
-            move_product(product, loc, postprocesing_opts.dry_move)
+            move_product(product, loc, postprocesing_opts)
 
     if postprocesing_opts.skip_collection_update:
         logging.info("Skipping collection update")
@@ -436,7 +442,7 @@ def preprocess_product(product, loc, skip_data_preprocessing, skip_label_preproc
 
 
 
-def move_product(product, loc, dry_move):
+def move_product(product, loc, postprocessing_opts):
     '''
     move a product to the archive directory. For the current workflow, this will be a
     temporary directory on the processing server that will then get synced over
@@ -456,17 +462,25 @@ def move_product(product, loc, dry_move):
 
     src_label = product.labelpath
     dest_label = os.path.join(dest_directory, product.labelfilename)
-    logging.debug('Moved from %s to %s', src_label, dest_label)
-    if not dry_move:
-        os.rename(src_label, dest_label)
+    transfer_file(src_label, dest_label, postprocessing_opts)
 
     for file_name in file_names:
         actual_file_name = get_actual_file_name(datadir, file_name)
         src_data = os.path.join(datadir, actual_file_name)
         dest_data = os.path.join(dest_directory, actual_file_name)
-        logging.debug('Moved from %s to %s', src_data, dest_data)
-        if not dry_move:
-            os.rename(src_data, dest_data)
+        transfer_file(src_data, dest_data, postprocessing_opts)
+
+
+def transfer_file(src, dest, postprocessing_opts):
+    if postprocessing_opts.dry_move:
+        logging.debug('Simulating move from %s to %s', src, dest)
+    else:   
+        if postprocessing_opts.copy_files:
+            logging.debug('Copying from %s to %s', src, dest)
+            shutil.copy(src, dest)
+        else:
+            logging.debug('Moving from %s to %s', src, dest)
+            os.rename(src, dest)        
 
 
 def get_actual_file_name(data_dir, file_name):
