@@ -17,7 +17,7 @@ import time
 import math
 import json
 from types import SimpleNamespace
-
+import datetime
 
 from product import Product
 from collection import Collection
@@ -85,7 +85,8 @@ def main(argv=None):
     filter_opts = SimpleNamespace(
         specific_date = args.specific_date,
         specific_instrument = args.specific_instrument,
-        max_products = args.max_products
+        max_products = args.max_products,
+        ignore_past_days = args.ignore_past_days
     )
 
     logging.info("Basedir: %s, Destdir: %s", args.basedir, args.destdir)
@@ -152,6 +153,11 @@ def get_args():
                         type=int,
                         dest='max_products', 
                         help='The maximum number of products to process in a single run')
+    parser.add_argument('--ignore-past-days', 
+                        type=int,
+                        default=0,
+                        dest='ignore_past_days', 
+                        help='Ignores products dated in the past x number of days. This will give products time to accumulate before processing')
 
     return parser.parse_args()
 
@@ -231,10 +237,10 @@ def discover_products(loc, filter_opts):
     '''
     instruments = [filter_opts.specific_instrument] if filter_opts.specific_instrument else INSTRUMENTS
     return itertools.chain.from_iterable(
-        process_inst_directory(loc, instrument, filter_opts.specific_date) for instrument in instruments)
+        process_inst_directory(loc, instrument, filter_opts) for instrument in instruments)
 
 
-def process_inst_directory(loc, instrument, specific_date):
+def process_inst_directory(loc, instrument, filter_opts):
     '''
     Processes the given instrument directory
 
@@ -250,10 +256,10 @@ def process_inst_directory(loc, instrument, specific_date):
     years = (x.name for x in os.scandir(instdir) if x.is_dir())
 
     return itertools.chain.from_iterable(
-        process_year_directory(loc, instrument, year, specific_date) for year in years)
+        process_year_directory(loc, instrument, year, filter_opts) for year in years)
 
 
-def process_year_directory(loc, instrument, year, specific_date):
+def process_year_directory(loc, instrument, year, filter_opts):
     '''
     Processes the given year directory.
 
@@ -265,11 +271,23 @@ def process_year_directory(loc, instrument, year, specific_date):
     '''
     logging.info("processing year directory %s/%s", instrument, year)
     yeardir = loc.datadir(instrument, year)
-    dates = [specific_date] if specific_date else [x.name for x in os.scandir(yeardir) if x.is_dir() and x.name not in IGNORE_DATES]
+    days_to_ignore = IGNORE_DATES + build_ignore_dates(filter_opts.ignore_past_days)
+    dates = [filter_opts.specific_date] if filter_opts.specific_date else [x.name for x in os.scandir(yeardir) if x.is_dir() and x.name not in days_to_ignore]
     logging.debug("dates found: %s", dates)
 
     return itertools.chain.from_iterable(
         discover_date_products(loc, instrument, year, date) for date in dates)
+
+
+def build_ignore_dates(num_days):
+    '''
+    Builds a list of days to ignore when processing. This will be the past n days
+    '''
+    deltas = [datetime.timedelta(days=x) for x in range (0, num_days)]
+    dates=[datetime.datetime.now() - delta for delta in deltas]
+    datestrs = [dt.strftime("%y%b%d") for dt in dates]
+    return datestrs
+
 
 def discover_date_products(loc, instrument, year, date):
     '''
