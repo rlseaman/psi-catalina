@@ -81,7 +81,8 @@ def main(argv=None):
         skip_move=args.skip_move,
         dry_move=args.dry_move,
         copy_files=args.copy_files,
-        skip_collection_update=args.skip_collection_update
+        skip_collection_update=args.skip_collection_update,
+        preserve_collection_version=args.preserve_collection_version
     )
 
     filter_opts = SimpleNamespace(
@@ -146,7 +147,11 @@ def get_args():
     parser.add_argument('--skip-collection-update', 
                         action='store_true', 
                         dest='skip_collection_update', 
-                        help='If enabled, will update the collection inventory or label')
+                        help='If enabled, will not update the collection inventory or label')
+    parser.add_argument('--preserve-collection-version', 
+                        action='store_true', 
+                        dest='preserve_collection_version', 
+                        help='If enabled, will not update the collection version numbers')
     parser.add_argument('--console', 
                         action='store_true', 
                         dest='console', 
@@ -227,7 +232,7 @@ def process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, po
         for collection_id in collection_lids:
             collection_products = [x for x in products if x.collection_id() == collection_id]
             if collection_products:
-                update_data_collection(loc, collection_products, collection_id)
+                update_data_collection(loc, collection_products, collection_id, postprocesing_opts.preserve_collection_version)
 
     #deletion_area_dest = os.path.join(DELETION_BASE, "placeholder")
     # delete files from temporary directory/move to deletion area
@@ -492,7 +497,7 @@ def get_actual_file_name(data_dir, file_name):
 
 
 
-def update_data_collection(loc, collection_products, collection_id):
+def update_data_collection(loc, collection_products, collection_id, preserve_collection_version):
     '''
     Create the collection inventory and label.
     '''
@@ -508,7 +513,7 @@ def update_data_collection(loc, collection_products, collection_id):
     start_date = min(start_dates) if start_dates else None
     stop_date = max(stop_dates) if stop_dates else None
     
-    new_lidvid = merge_inventories(collection_path, collection_id, collection_products, collection_labels)
+    new_lidvid = merge_inventories(collection_path, collection_id, collection_products, collection_labels, preserve_collection_version)
 
     template_filename = COLLECTION_FILES.get(collection_id, "other_collection_template.xml")
     write_collection(template_filename,
@@ -533,7 +538,7 @@ def is_collection_file(candidate):
     return candidate.name.startswith('collection') and candidate.name.endswith('.xml')
 
 
-def merge_inventories(collection_path, collection_id, collection_products, collection_labels):
+def merge_inventories(collection_path, collection_id, collection_products, collection_labels, preserve_collection_version):
     '''
     Produces a new collection inventory file, and returns the lidvid for the
     new collection
@@ -544,7 +549,16 @@ def merge_inventories(collection_path, collection_id, collection_products, colle
     old_inv = inventory.read_inventory(old_lidvid, collection_path)
     new_inv = inventory.from_lidvids('P', product_lidvids)
 
-    new_lidvid = make_collection_lidvid(collection_id, old_lidvid['major'] + 1, 0)
+    
+    if preserve_collection_version:
+        new_major = old_lidvid['major']
+        new_minor = old_lidvid['minor']
+    else:
+        new_major = old_lidvid['major'] + 1
+        new_minor = 0
+
+
+    new_lidvid = make_collection_lidvid(collection_id, new_major, new_minor)
 
     inventory.write_inventory(inventory.merge(old_inv, new_inv), new_lidvid, collection_path)
 
