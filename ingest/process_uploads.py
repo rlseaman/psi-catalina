@@ -218,13 +218,14 @@ def process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, po
     logdir = os.path.join(destdir,"validation")
     os.makedirs(logdir, exist_ok=True)
 
-    validate_products(products, loc, preprocessing_opts, validation_opts, logdir)
+    failures = validate_products(products, loc, preprocessing_opts, validation_opts, logdir)
+    failed_files = set([x['label'] for x in failures])
 
     if postprocesing_opts.skip_move:
         logging.info("Skipping move")
     else:
         for product in products:
-            move_product(product, loc, postprocesing_opts)
+            move_product(product, loc, postprocesing_opts, product.labelfilename in failed_files)
 
     if postprocesing_opts.skip_collection_update:
         logging.info("Skipping collection update")
@@ -416,6 +417,8 @@ def validate_products(products, loc, preprocessing_opts, validation_opts, logdir
     if all_validation_failures and not validation_opts.permissive_validation:
         raise Exception('There were validation errors')
 
+    return all_validation_failures
+
 
 def chunk(items, size):
     '''
@@ -447,7 +450,7 @@ def preprocess_product(product, loc, skip_data_preprocessing, skip_label_preproc
 
 
 
-def move_product(product, loc, postprocessing_opts):
+def move_product(product, loc, postprocessing_opts, failed):
     '''
     move a product to the archive directory. For the current workflow, this will be a
     temporary directory on the processing server that will then get synced over
@@ -458,7 +461,7 @@ def move_product(product, loc, postprocessing_opts):
     collection_id = product.collection_id()
 
     datadir = loc.datadir(product.inst, product.year, product.date)
-    dest_directory = loc.destdir(collection_id, product.inst, product.year, product.date)
+    dest_directory = loc.destdir(collection_id, product.inst, product.year, product.date, failed)
     os.makedirs(dest_directory, exist_ok=True)
 
     file_names=product.filenames()
@@ -506,7 +509,7 @@ def update_data_collection(loc, collection_products, collection_id, preserve_col
     os.makedirs(collection_path, exist_ok=True)
 
     collection_labels = get_collection_labels(collection_path, collection_id)
-    logging.debug(collection_labels)
+    logging.debug("%s labels found", len(collection_labels))
 
     start_dates = [x.start_date() for x in collection_products + collection_labels if x.start_date()]
     stop_dates = [x.stop_date() for x in collection_products + collection_labels if x.stop_date()]
@@ -551,7 +554,7 @@ def merge_inventories(collection_path, collection_id, collection_products, colle
 
     
     if preserve_collection_version:
-        new_major = old_lidvid['major']
+        new_major = max(old_lidvid['major'], 1)
         new_minor = old_lidvid['minor']
     else:
         new_major = old_lidvid['major'] + 1
@@ -574,6 +577,7 @@ def get_last_version_number(collection_id, collection_labels):
             (x.majorversion(), x.minorversion())
             for x in collection_labels]
         major, minor = max(collection_versions)
+        logging.debug("%s previous collection version: %s.%s", collection_id, major, minor)
         return make_collection_lidvid(collection_id, major, minor)
     return make_collection_lidvid(collection_id, 0, 0)
 
