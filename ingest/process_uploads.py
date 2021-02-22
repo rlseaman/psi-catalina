@@ -219,7 +219,8 @@ def process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, po
     os.makedirs(logdir, exist_ok=True)
 
     failures = validate_products(products, loc, preprocessing_opts, validation_opts, logdir)
-    failed_files = set([x['label'] for x in failures])
+    failed_files = set([os.path.basename(x['label']) for x in failures])
+    logging.info(failed_files)
 
     if postprocesing_opts.skip_move:
         logging.info("Skipping move")
