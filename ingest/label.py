@@ -22,7 +22,8 @@ def extract_product_observational(product_observational):
     result.update(extract_identification_area(product_observational.Identification_Area))
     result.update(extract_file_area(product_observational.File_Area_Observational))
     result.update(extract_observation_area(product_observational.Observation_Area))
-    result.update(extract_discipline_area(product_observational.Discipline_Area))
+    if product_observational.Discipline_Area:
+        result.update(extract_discipline_area(product_observational.Discipline_Area))
     return result
 
 def extract_product_document(product_document):

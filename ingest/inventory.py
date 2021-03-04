@@ -5,8 +5,9 @@ and merging inventories.
 '''
 import os
 import iotools
+import logging
 
-INVENTORY_FILENAME_TEMPLATE = 'collection_{collection_id}_{major}.{minor}.csv'
+INVENTORY_FILENAME_TEMPLATE = 'collection_inventory_{collection_id}.csv'
 
 
 def write_inventory(inventory, collection_lidvid, collection_dir):
@@ -16,8 +17,7 @@ def write_inventory(inventory, collection_lidvid, collection_dir):
     collection_filename = INVENTORY_FILENAME_TEMPLATE.format(**collection_lidvid)
     collection_path = os.path.join(collection_dir, collection_filename)
     
-    print ("writing to: ", collection_path)
-    #print('\r\n'.join(inventory) + '\r\n')
+    logging.info("writing to: " + collection_path)
     iotools.write_file(collection_path, '\r\n'.join(sorted(inventory)) + '\r\n')
 
 def read_inventory(collection_lidvid, collection_dir):
@@ -27,7 +27,15 @@ def read_inventory(collection_lidvid, collection_dir):
     if collection_lidvid['major']:
         collection_filename = INVENTORY_FILENAME_TEMPLATE.format(**collection_lidvid)
         collection_path = os.path.join(collection_dir, collection_filename)
-        return [x.strip() for x in open(collection_path).readlines() if x]
+        logging.info("Searching for collection file: " + collection_filename)
+
+        if os.path.exists(collection_path):
+            with open(collection_path) as collection_file:
+                return [x.strip() for x in collection_file.readlines() if x]
+        else:
+            logging.info("Collection file not found: " + collection_filename)
+            return []
+    logging.info("No previous collection found, starting a new collection...")            
     return []
 
 def from_lidvids(member_type, product_lidvids):

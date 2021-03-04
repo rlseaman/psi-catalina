@@ -17,7 +17,8 @@ import time
 import math
 import json
 from types import SimpleNamespace
-
+import datetime
+import shutil
 
 from product import Product
 from collection import Collection
@@ -29,7 +30,7 @@ import paths
 
 
 BUNDLE_ID = "gbo.ast.catalina.survey"
-LABEL_FILENAME_TEMPLATE = 'collection_{collection_id}_{major}.{minor}.xml'
+LABEL_FILENAME_TEMPLATE = 'collection_{collection_id}.xml'
 INSTRUMENTS = ['703','G96','I52','V06']
 IGNORE_FILES = ['signature.md5', '.autoxfer']
 IGNORE_DATES = ['pds4', 'other']
@@ -79,13 +80,16 @@ def main(argv=None):
     postprocessing_opts = SimpleNamespace(
         skip_move=args.skip_move,
         dry_move=args.dry_move,
-        skip_collection_update=args.skip_collection_update
+        copy_files=args.copy_files,
+        skip_collection_update=args.skip_collection_update,
+        preserve_collection_version=args.preserve_collection_version
     )
 
     filter_opts = SimpleNamespace(
         specific_date = args.specific_date,
         specific_instrument = args.specific_instrument,
-        max_products = args.max_products
+        max_products = args.max_products,
+        ignore_past_days = args.ignore_past_days
     )
 
     logging.info("Basedir: %s, Destdir: %s", args.basedir, args.destdir)
@@ -136,10 +140,18 @@ def get_args():
                         action='store_true', 
                         dest='dry_move', 
                         help='If enabled, will not move the data, but will log the calculated destination')
+    parser.add_argument('--copy-files', 
+                        action='store_true', 
+                        dest='copy_files', 
+                        help='If enabled, will not move the data, but will copy it instead')
     parser.add_argument('--skip-collection-update', 
                         action='store_true', 
                         dest='skip_collection_update', 
-                        help='If enabled, will update the collection inventory or label')
+                        help='If enabled, will not update the collection inventory or label')
+    parser.add_argument('--preserve-collection-version', 
+                        action='store_true', 
+                        dest='preserve_collection_version', 
+                        help='If enabled, will not update the collection version numbers')
     parser.add_argument('--console', 
                         action='store_true', 
                         dest='console', 
@@ -152,6 +164,11 @@ def get_args():
                         type=int,
                         dest='max_products', 
                         help='The maximum number of products to process in a single run')
+    parser.add_argument('--ignore-past-days', 
+                        type=int,
+                        default=0,
+                        dest='ignore_past_days', 
+                        help='Ignores products dated in the past x number of days. This will give products time to accumulate before processing')
 
     return parser.parse_args()
 
@@ -201,13 +218,15 @@ def process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, po
     logdir = os.path.join(destdir,"validation")
     os.makedirs(logdir, exist_ok=True)
 
-    validate_products(products, loc, preprocessing_opts, validation_opts, logdir)
+    failures = validate_products(products, loc, preprocessing_opts, validation_opts, logdir)
+    failed_files = set([os.path.basename(x['label']) for x in failures])
+    logging.info(failed_files)
 
     if postprocesing_opts.skip_move:
         logging.info("Skipping move")
     else:
         for product in products:
-            move_product(product, loc, postprocesing_opts.dry_move)
+            move_product(product, loc, postprocesing_opts, product.labelfilename in failed_files)
 
     if postprocesing_opts.skip_collection_update:
         logging.info("Skipping collection update")
@@ -215,7 +234,7 @@ def process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, po
         for collection_id in collection_lids:
             collection_products = [x for x in products if x.collection_id() == collection_id]
             if collection_products:
-                update_data_collection(loc, collection_products, collection_id)
+                update_data_collection(loc, collection_products, collection_id, postprocesing_opts.preserve_collection_version)
 
     #deletion_area_dest = os.path.join(DELETION_BASE, "placeholder")
     # delete files from temporary directory/move to deletion area
@@ -231,10 +250,10 @@ def discover_products(loc, filter_opts):
     '''
     instruments = [filter_opts.specific_instrument] if filter_opts.specific_instrument else INSTRUMENTS
     return itertools.chain.from_iterable(
-        process_inst_directory(loc, instrument, filter_opts.specific_date) for instrument in instruments)
+        process_inst_directory(loc, instrument, filter_opts) for instrument in instruments)
 
 
-def process_inst_directory(loc, instrument, specific_date):
+def process_inst_directory(loc, instrument, filter_opts):
     '''
     Processes the given instrument directory
 
@@ -250,10 +269,10 @@ def process_inst_directory(loc, instrument, specific_date):
     years = (x.name for x in os.scandir(instdir) if x.is_dir())
 
     return itertools.chain.from_iterable(
-        process_year_directory(loc, instrument, year, specific_date) for year in years)
+        process_year_directory(loc, instrument, year, filter_opts) for year in years)
 
 
-def process_year_directory(loc, instrument, year, specific_date):
+def process_year_directory(loc, instrument, year, filter_opts):
     '''
     Processes the given year directory.
 
@@ -265,11 +284,23 @@ def process_year_directory(loc, instrument, year, specific_date):
     '''
     logging.info("processing year directory %s/%s", instrument, year)
     yeardir = loc.datadir(instrument, year)
-    dates = [specific_date] if specific_date else [x.name for x in os.scandir(yeardir) if x.is_dir() and x.name not in IGNORE_DATES]
+    days_to_ignore = IGNORE_DATES + build_ignore_dates(filter_opts.ignore_past_days)
+    dates = [filter_opts.specific_date] if filter_opts.specific_date else [x.name for x in os.scandir(yeardir) if x.is_dir() and x.name not in days_to_ignore]
     logging.debug("dates found: %s", dates)
 
     return itertools.chain.from_iterable(
         discover_date_products(loc, instrument, year, date) for date in dates)
+
+
+def build_ignore_dates(num_days):
+    '''
+    Builds a list of days to ignore when processing. This will be the past n days
+    '''
+    deltas = [datetime.timedelta(days=x) for x in range (0, num_days)]
+    dates=[datetime.datetime.now() - delta for delta in deltas]
+    datestrs = [dt.strftime("%y%b%d") for dt in dates]
+    return datestrs
+
 
 def discover_date_products(loc, instrument, year, date):
     '''
@@ -387,6 +418,8 @@ def validate_products(products, loc, preprocessing_opts, validation_opts, logdir
     if all_validation_failures and not validation_opts.permissive_validation:
         raise Exception('There were validation errors')
 
+    return all_validation_failures
+
 
 def chunk(items, size):
     '''
@@ -418,7 +451,7 @@ def preprocess_product(product, loc, skip_data_preprocessing, skip_label_preproc
 
 
 
-def move_product(product, loc, dry_move):
+def move_product(product, loc, postprocessing_opts, failed):
     '''
     move a product to the archive directory. For the current workflow, this will be a
     temporary directory on the processing server that will then get synced over
@@ -429,7 +462,7 @@ def move_product(product, loc, dry_move):
     collection_id = product.collection_id()
 
     datadir = loc.datadir(product.inst, product.year, product.date)
-    dest_directory = loc.destdir(collection_id, product.inst, product.year, product.date)
+    dest_directory = loc.destdir(collection_id, product.inst, product.year, product.date, failed)
     os.makedirs(dest_directory, exist_ok=True)
 
     file_names=product.filenames()
@@ -438,17 +471,25 @@ def move_product(product, loc, dry_move):
 
     src_label = product.labelpath
     dest_label = os.path.join(dest_directory, product.labelfilename)
-    logging.debug('Moved from %s to %s', src_label, dest_label)
-    if not dry_move:
-        os.rename(src_label, dest_label)
+    transfer_file(src_label, dest_label, postprocessing_opts)
 
     for file_name in file_names:
         actual_file_name = get_actual_file_name(datadir, file_name)
         src_data = os.path.join(datadir, actual_file_name)
         dest_data = os.path.join(dest_directory, actual_file_name)
-        logging.debug('Moved from %s to %s', src_data, dest_data)
-        if not dry_move:
-            os.rename(src_data, dest_data)
+        transfer_file(src_data, dest_data, postprocessing_opts)
+
+
+def transfer_file(src, dest, postprocessing_opts):
+    if postprocessing_opts.dry_move:
+        logging.debug('Simulating move from %s to %s', src, dest)
+    else:   
+        if postprocessing_opts.copy_files:
+            logging.debug('Copying from %s to %s', src, dest)
+            shutil.copy(src, dest)
+        else:
+            logging.debug('Moving from %s to %s', src, dest)
+            os.rename(src, dest)        
 
 
 def get_actual_file_name(data_dir, file_name):
@@ -460,7 +501,7 @@ def get_actual_file_name(data_dir, file_name):
 
 
 
-def update_data_collection(loc, collection_products, collection_id):
+def update_data_collection(loc, collection_products, collection_id, preserve_collection_version):
     '''
     Create the collection inventory and label.
     '''
@@ -469,14 +510,14 @@ def update_data_collection(loc, collection_products, collection_id):
     os.makedirs(collection_path, exist_ok=True)
 
     collection_labels = get_collection_labels(collection_path, collection_id)
-    logging.debug(collection_labels)
+    logging.debug("%s labels found", len(collection_labels))
 
     start_dates = [x.start_date() for x in collection_products + collection_labels if x.start_date()]
     stop_dates = [x.stop_date() for x in collection_products + collection_labels if x.stop_date()]
     start_date = min(start_dates) if start_dates else None
     stop_date = max(stop_dates) if stop_dates else None
     
-    new_lidvid = merge_inventories(collection_path, collection_id, collection_products, collection_labels)
+    new_lidvid = merge_inventories(collection_path, collection_id, collection_products, collection_labels, preserve_collection_version)
 
     template_filename = COLLECTION_FILES.get(collection_id, "other_collection_template.xml")
     write_collection(template_filename,
@@ -501,7 +542,7 @@ def is_collection_file(candidate):
     return candidate.name.startswith('collection') and candidate.name.endswith('.xml')
 
 
-def merge_inventories(collection_path, collection_id, collection_products, collection_labels):
+def merge_inventories(collection_path, collection_id, collection_products, collection_labels, preserve_collection_version):
     '''
     Produces a new collection inventory file, and returns the lidvid for the
     new collection
@@ -512,7 +553,16 @@ def merge_inventories(collection_path, collection_id, collection_products, colle
     old_inv = inventory.read_inventory(old_lidvid, collection_path)
     new_inv = inventory.from_lidvids('P', product_lidvids)
 
-    new_lidvid = make_collection_lidvid(collection_id, old_lidvid['major'] + 1, 0)
+    
+    if preserve_collection_version:
+        new_major = max(old_lidvid['major'], 1)
+        new_minor = old_lidvid['minor']
+    else:
+        new_major = old_lidvid['major'] + 1
+        new_minor = 0
+
+
+    new_lidvid = make_collection_lidvid(collection_id, new_major, new_minor)
 
     inventory.write_inventory(inventory.merge(old_inv, new_inv), new_lidvid, collection_path)
 
@@ -528,6 +578,7 @@ def get_last_version_number(collection_id, collection_labels):
             (x.majorversion(), x.minorversion())
             for x in collection_labels]
         major, minor = max(collection_versions)
+        logging.debug("%s previous collection version: %s.%s", collection_id, major, minor)
         return make_collection_lidvid(collection_id, major, minor)
     return make_collection_lidvid(collection_id, 0, 0)
 

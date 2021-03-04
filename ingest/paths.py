@@ -24,11 +24,14 @@ class Paths:
         subdir = "other/pds4" if date else None
         return self._buildpath((self.basedir, inst, year, subdir, date, filename))
         
-    def destdir(self, collection_id, inst=None, year=None, date=None):
+    def destdir(self, collection_id, inst=None, year=None, date=None, failed=False):
         '''
         Returns the destination directory
         '''
-        return self._buildpath((self.dest, collection_id, inst, year, date))
+        if failed:
+            return self._buildpath((self.dest, collection_id, "failed", inst, year, date))
+        else:
+            return self._buildpath((self.dest, collection_id, inst, year, date))
 
     def _buildpath(self, elements):
         return os.path.join(*self._filledElements(elements))
