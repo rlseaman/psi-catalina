@@ -23,15 +23,12 @@
         <start_date>1998</start_date>
         <stop_date xsi:nil="true" nilReason="inapplicable"/>
         <description>The Catalina Sky Survey (CSS) is a NASA funded project supported by the Near-Earth Object
-            Observation Program (NEOO) under the Planetary Defense Coordination Offices (PDCO). We
-            are based at the University of Arizona's Lunar and Planetary Laboratory in Tucson,
-            Arizona. Our mission at CSS is fully dedicated to the discovery and tracking of near-Earth
-            objects (NEOs) in an effort to meet the U.S. Congressional mandate " to catalogue at least 90
+            Observation Program (NEOO) under the Planetary Defense Coordination Offices (PDCO). It
+            is based at the University of Arizona's Lunar and Planetary Laboratory in Tucson,
+            Arizona. The mission at CSS is fully dedicated to the discovery and tracking of near-Earth
+            objects (NEOs) in an effort to meet the U.S. Congressional mandate to catalogue at least 90
             percent of the estimated population of NEOs larger than 140 meters, some of which classify as
             potentially hazardous asteroids (PHAs) which pose a potential impact threat to Earth.
-            Longstanding success of the project is attributable to our comprehensive sky coverage, continued
-            development and application of innovative software and our NEO detection pipeline, and the
-            inclusion of near real-time human attention to the NEO discovery and follow-up process.
             </description>
     </Investigation>
 </Product_Context>
