@@ -7,6 +7,24 @@ def make_insert_template(tablename, fields):
         ",".join(["?"] * len(fields))
     )
 
+def make_update_templates(tablename, fields, pk_fields):
+    assigns = [x + " = ?" for x in fields]
+    wheres = [x + " = ?" for x in pk_fields]
+    return "UPDATE {} SET {} WHERE {}".format(
+        tablename,
+        ",".join(assigns),
+        " AND ".join(wheres)
+    )
+
+def make_search_template(tablename, fields, search_fields):
+    wheres = [x + " = ?" for x in search_fields]
+    return "SELECT {} FROM {} WHERE {}".format(
+        ",".join(fields),
+        tablename,
+        " AND ".join(wheres)
+    )
+    
+
 OBSNIGHT_FIELDS = ['survey', 'observatory', 'telescope', 'camera', 'obsdate', 'operator', 'limiting_magnitude', 'directory']
 OBSNIGHT_FIELDS_PK = ['night_id'] + OBSNIGHT_FIELDS
 
