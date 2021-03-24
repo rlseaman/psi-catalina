@@ -15,7 +15,7 @@
         
         <Citation_Information>
             <author_list>Seaman, R.;Neese, C.;Stone, J.;Christensen, E.</author_list>
-            <publication_year>2020</publication_year>
+            <publication_year>2021</publication_year>
             <description>
                 An outline of the directories and data products in the Catalina Sky Survey Bundle
             </description>
@@ -23,7 +23,7 @@
         
         <Modification_History>
             <Modification_Detail>
-                <modification_date>2020-11-23</modification_date>
+                <modification_date>2021-01-04</modification_date>
                 <version_id>1.0</version_id>
                 <description>Initial creation of PDS label for this document</description>
             </Modification_Detail>

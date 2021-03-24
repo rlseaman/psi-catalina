@@ -29,13 +29,25 @@ class Collection:
                 self.keywords = extract_label(xmldoc)
 
     def start_date(self):
+        '''
+        Retrieves the start date of the collection
+        '''
         return self.keywords.get('start_date')
 
     def stop_date(self):
+        '''
+        Retrieves the stop date of the collection
+        '''
         return self.keywords.get('stop_date')
 
     def majorversion(self):
+        '''
+        Retrieves the major version of the collection
+        '''
         return self.keywords.get('major')
 
     def minorversion(self):
+        '''
+        Retrieves the minor of the collection
+        '''
         return self.keywords.get('minor')

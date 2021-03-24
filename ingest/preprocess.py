@@ -1,12 +1,38 @@
+from genericpath import exists
 import subprocess
 import logging
+import os
+import gzip
+
+
+def has_compressed(filename):
+    return os.path.exists(filename + ".gz")
+
+def file_open(filename, mode="rt"):
+    logging.debug("Opening: %s with mode: %s", filename, mode)
+    if filename.endswith(".gz"):
+        return gzip.open(filename, mode)
+    return open(filename, mode)
 
 def linefeed_to_crlf(filename):
+    '''
+    Normalize the line feeds in a data file, replacing them with CRLFs
+    '''
+
     logging.info("Normalizing whitespace for: %s", filename)
-    with open(filename) as f:
-        lines = [x.strip() for x in f.readlines()]
-    with open(filename, "w") as f2:
+    if has_compressed(filename):
+        logging.debug("Using compressed version: %s", filename)
+        filename = filename + ".gz"
+
+    with file_open(filename) as f:
+        lines = [x.strip("\r\n") for x in f.readlines()]
+
+    os.rename(filename, filename + ".bak")
+
+    with file_open(filename, "wt") as f2:
         f2.write("\r\n".join(lines) + "\r\n")
+
+    os.remove(filename + ".bak")
 
 def strip_label_fz_extension(contents, datafilename):
     uncompressed_datafilename = datafilename.replace(".fz", "")
@@ -42,16 +68,25 @@ LABEL_FUNCS = {
 }
 
 def preprocess_datafile(filename):
+    '''
+    Preprocesses the file. If the file is of an appropriate type 
+    (defined by membership in DATA_FUNCS), decompress the file,
+    run the preprocessing routine indicated in DATA_FUNCS, and
+    recompress the file.
+    '''
     newfilename = filename.replace(".gz", "")
     extension = newfilename.split(".")[-1]
 
     if extension in DATA_FUNCS:
-        decompress(filename)
-        DATA_FUNCS[extension](newfilename)
-        if not newfilename == filename:
-            recompress(newfilename)
+        DATA_FUNCS[extension](filename)
 
 def preprocess_labelfile(filename, datafilenames):
+    '''
+    Preproesses the label. If the file is of an appropriate type
+    (defined in LABEL_FUNCS), apply the appropriate transformation
+    to the contents. In most cases, this will remove the gz of fz
+    extensions from the data file names.
+    '''
     with open(filename) as f:
         labelcontents = f.read()
 
@@ -60,16 +95,9 @@ def preprocess_labelfile(filename, datafilenames):
         if extension in LABEL_FUNCS:
             labelcontents = LABEL_FUNCS[extension](labelcontents, datafilename)
 
+    os.rename(filename, filename + ".bak")
+
     with open(filename, "w") as f2:
         f2.write(labelcontents)
     
 
-def decompress(datafilename):
-    if datafilename.endswith(".gz"):
-        logging.info("Decompressing: %s", datafilename)
-        subprocess.run(['gunzip', datafilename])
-
-def recompress(datafilename):
-    if not datafilename.endswith(".gz") or datafilename.endswith(".fz"):
-        logging.info("Recompressing: %s", datafilename)
-        subprocess.run(['gzip', datafilename])

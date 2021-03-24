@@ -14,8 +14,11 @@ import functools
 import argparse
 import logging
 import time
+import math
+import json
 from types import SimpleNamespace
-
+import datetime
+import shutil
 
 from product import Product
 from collection import Collection
@@ -26,8 +29,8 @@ import preprocess
 import paths
 
 
-
-LABEL_FILENAME_TEMPLATE = 'collection_{collection_id}_{major}.{minor}.xml'
+BUNDLE_ID = "gbo.ast.catalina.survey"
+LABEL_FILENAME_TEMPLATE = 'collection_{collection_id}.xml'
 INSTRUMENTS = ['703','G96','I52','V06']
 IGNORE_FILES = ['signature.md5', '.autoxfer']
 IGNORE_DATES = ['pds4', 'other']
@@ -40,6 +43,7 @@ COLLECTION_FILES = {
     "data_reduced": "collection_data_reduced.xml",
     "data_partially_processed": "collection_data_partially_processed.xml",
     "data_calibrated": "collection_data_calibrated.xml",
+    "calibration": "collection_calibration.xml",
     "document" : "collection_document.xml",
 }
 
@@ -48,23 +52,17 @@ def main(argv=None):
     Extract command line arguments, ensure that the script is not already running,
     and process the current upload directory.
     '''
-    parser = argparse.ArgumentParser(description='Validate a PDS4 collection inventory against the directory')
-    parser.add_argument('--basedir', help='The base directory for the delivered data', required=True)
-    parser.add_argument('--destdir', help='The destination directory for the processed data', required=True)
-    parser.add_argument('--skip-preprocessing', action='store_true', dest='skip_preprocessing', help='If enabled, will not preprocess the data and label files')
-    parser.add_argument('--skip-data-preprocessing', action='store_true', dest='skip_data_preprocessing', help='If enabled, will not preprocess the data files')
-    parser.add_argument('--skip-label-preprocessing', action='store_true', dest='skip_label_preprocessing', help='If enabled, will not preprocess the label files')
-    parser.add_argument('--skip-validation', action='store_true', dest='skip_validation', help='If enabled, will not validate the data')
-    parser.add_argument('--permissive-validation', action='store_true', dest='permissive_validation', help='If enabled, will continue even if there are validation errors')
-    parser.add_argument('--skip-data-validation', action='store_true', dest='skip_data_validation', help='If enabled, will not validate the data')
-    parser.add_argument('--skip-move', action='store_true', dest='skip_move', help='If enabled, will not move the data')
-    parser.add_argument('--skip-collection-update', action='store_true', dest='skip_collection_update', help='If enabled, will update the collection inventory or label')
-    args = parser.parse_args()
+    args = get_args()
 
-    logfilename="process_uploads_%s.log" % time.time()
-    print(logfilename)
+    if args.console:
+        logfilename = None
+    else:
+        logfilename="process_uploads_%s.log" % time.time()
+        print(logfilename)
 
-    logging.basicConfig(level=logging.INFO,
+    loglevel = logging.DEBUG if args.verbose else logging.INFO
+
+    logging.basicConfig(level=loglevel,
         format='%(asctime)s|%(levelname)s|%(message)s', 
         filename=logfilename)
 
@@ -82,15 +80,101 @@ def main(argv=None):
     
     postprocessing_opts = SimpleNamespace(
         skip_move=args.skip_move,
-        skip_collection_update=args.skip_collection_update
+        dry_move=args.dry_move,
+        copy_files=args.copy_files,
+        skip_collection_update=args.skip_collection_update,
+        preserve_collection_version=args.preserve_collection_version
+    )
+
+    filter_opts = SimpleNamespace(
+        specific_date = args.specific_date,
+        specific_instrument = args.specific_instrument,
+        max_products = args.max_products,
+        ignore_past_days = args.ignore_past_days
     )
 
     logging.info("Basedir: %s, Destdir: %s", args.basedir, args.destdir)
-    lockfile_run(args.basedir, args.destdir, preprocessing_opts, validation_opts, postprocessing_opts)
+    lockfile_run(args.basedir, args.destdir, preprocessing_opts, validation_opts, postprocessing_opts, filter_opts)
 
     return 0
 
-def lockfile_run(basedir, destdir, preprocessing_opts, validation_opts, postprocesing_opts):
+def get_args():
+    parser = argparse.ArgumentParser(description='Validate a PDS4 collection inventory against the directory')
+    parser.add_argument('--basedir', 
+                        help='The base directory for the delivered data', 
+                        required=True)
+    parser.add_argument('--destdir', 
+                        help='The destination directory for the processed data', 
+                        required=True)
+    parser.add_argument('--specific-date', 
+                        dest='specific_date', 
+                        help='If provided, will only process the specified date')
+    parser.add_argument('--specific-instrument', 
+                        dest='specific_instrument', 
+                        help='If provided, will only process the specified instrument')
+    parser.add_argument('--skip-preprocessing', 
+                        action='store_true', dest='skip_preprocessing', 
+                        help='If enabled, will not preprocess the data and label files')
+    parser.add_argument('--skip-data-preprocessing', 
+                        action='store_true', dest='skip_data_preprocessing', 
+                        help='If enabled, will not preprocess the data files')
+    parser.add_argument('--skip-label-preprocessing', 
+                        action='store_true', 
+                        dest='skip_label_preprocessing', 
+                        help='If enabled, will not preprocess the label files')
+    parser.add_argument('--skip-validation', 
+                        action='store_true', 
+                        dest='skip_validation', 
+                        help='If enabled, will not validate the data')
+    parser.add_argument('--permissive-validation', 
+                        action='store_true', dest='permissive_validation', 
+                        help='If enabled, will continue even if there are validation errors')
+    parser.add_argument('--skip-data-validation', 
+                        action='store_true', 
+                        dest='skip_data_validation', 
+                        help='If enabled, will not validate the data')
+    parser.add_argument('--skip-move', 
+                        action='store_true', 
+                        dest='skip_move', 
+                        help='If enabled, will not move the data')
+    parser.add_argument('--dry-move', 
+                        action='store_true', 
+                        dest='dry_move', 
+                        help='If enabled, will not move the data, but will log the calculated destination')
+    parser.add_argument('--copy-files', 
+                        action='store_true', 
+                        dest='copy_files', 
+                        help='If enabled, will not move the data, but will copy it instead')
+    parser.add_argument('--skip-collection-update', 
+                        action='store_true', 
+                        dest='skip_collection_update', 
+                        help='If enabled, will not update the collection inventory or label')
+    parser.add_argument('--preserve-collection-version', 
+                        action='store_true', 
+                        dest='preserve_collection_version', 
+                        help='If enabled, will not update the collection version numbers')
+    parser.add_argument('--console', 
+                        action='store_true', 
+                        dest='console', 
+                        help='If enabled, will log to console instead of log file')
+    parser.add_argument('--verbose', 
+                        action='store_true', 
+                        dest='verbose', 
+                        help='If enabled, will add more info to logs')
+    parser.add_argument('--max-products', 
+                        type=int,
+                        dest='max_products', 
+                        help='The maximum number of products to process in a single run')
+    parser.add_argument('--ignore-past-days', 
+                        type=int,
+                        default=0,
+                        dest='ignore_past_days', 
+                        help='Ignores products dated in the past x number of days. This will give products time to accumulate before processing')
+
+    return parser.parse_args()
+
+
+def lockfile_run(basedir, destdir, preprocessing_opts, validation_opts, postprocesing_opts, filter_opts):
     '''
     Run a function on this directory if one isn't already running. This is
     enforced with a lockfile.
@@ -102,20 +186,21 @@ def lockfile_run(basedir, destdir, preprocessing_opts, validation_opts, postproc
         with open(lockfile, "w") as lock:
             lock.write(".")
         try:
-            process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, postprocesing_opts)
+            process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, postprocesing_opts, filter_opts)
         finally:
             os.remove(lockfile)
 
 
-def process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, postprocesing_opts):
+def process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, postprocesing_opts, filter_opts):
     '''
     process an upload directory, assuming it has been validated.
     '''
     logging.info("Discovering products at: %s", basedir)
-    loc = paths.Paths(basedir, destdir)
-    discovered_products = discover_products(loc)
+    bundle_dir = os.path.join(destdir, BUNDLE_ID)
+    loc = paths.Paths(basedir, bundle_dir)
+    discovered_products = discover_products(loc, filter_opts)
     logging.info("Discovey complete, consolidating: %s", basedir)
-    products = list(discovered_products)
+    products = list(itertools.islice(discovered_products, filter_opts.max_products))
 
 
     logging.info("%i products discovered", len(products))
@@ -131,14 +216,18 @@ def process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, po
     #if not all(product_whitelisted(x) for x in products):
     #    raise Exception('Some products used software not on the whitelist')
 
+    logdir = os.path.join(destdir,"validation")
+    os.makedirs(logdir, exist_ok=True)
 
-    validate_products(products, loc, preprocessing_opts, validation_opts)
+    failures = validate_products(products, loc, preprocessing_opts, validation_opts, logdir)
+    failed_files = set([os.path.basename(x['label']) for x in failures])
+    logging.info(failed_files)
 
     if postprocesing_opts.skip_move:
         logging.info("Skipping move")
     else:
         for product in products:
-            move_product(product, loc)
+            move_product(product, loc, postprocesing_opts, product.labelfilename in failed_files)
 
     if postprocesing_opts.skip_collection_update:
         logging.info("Skipping collection update")
@@ -146,50 +235,26 @@ def process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, po
         for collection_id in collection_lids:
             collection_products = [x for x in products if x.collection_id() == collection_id]
             if collection_products:
-                process_data_collection(loc, collection_products, collection_id)
+                update_data_collection(loc, collection_products, collection_id, postprocesing_opts.preserve_collection_version)
 
     #deletion_area_dest = os.path.join(DELETION_BASE, "placeholder")
     # delete files from temporary directory/move to deletion area
     #logging.info("moving to %s", deletion_area_dest)
     logging.info("done")
 
-def validate_products(products, loc, preprocessing_opts, validation_opts):
-    '''
-    Preprocess and validates the products. 
-    The files will be preprocessed in the same manner as after validation. This prevents the original 
-    files from being altered if there are validation errors.
-    '''
-    all_validation_failures = []
-
-    if preprocessing_opts.skip_preprocessing:
-        logging.info("Skipping temp preprocessing")
-    if validation_opts.skip_validation:
-        logging.info("Skipping validation")
-
-    for batch in chunk(products, BATCH_SIZE):
-        logging.info("Validating a batch of %s...", len(batch))
-        if not preprocessing_opts.skip_preprocessing:
-            for product in batch:
-                preprocess_product(product, loc, preprocessing_opts.skip_data_preprocessing, preprocessing_opts.skip_label_preprocessing)
-        if not validation_opts.skip_validation:
-            validation_failures,_,_ = validation.validate_products(batch, validation_opts.skip_data_validation)
-            if validation_failures:
-                all_validation_failures.extend(validation_failures)
-    if all_validation_failures and not validation_opts.permissive_validation:
-        raise Exception('There were validation errors')
 
 
-
-def discover_products(loc):
+def discover_products(loc, filter_opts):
     '''
     Find all of the product labels in the directory and convert them
     to product objects
     '''
+    instruments = [filter_opts.specific_instrument] if filter_opts.specific_instrument else INSTRUMENTS
     return itertools.chain.from_iterable(
-        process_inst_directory(loc, instrument) for instrument in INSTRUMENTS)
+        process_inst_directory(loc, instrument, filter_opts) for instrument in instruments)
 
 
-def process_inst_directory(loc, instrument):
+def process_inst_directory(loc, instrument, filter_opts):
     '''
     Processes the given instrument directory
 
@@ -205,10 +270,10 @@ def process_inst_directory(loc, instrument):
     years = (x.name for x in os.scandir(instdir) if x.is_dir())
 
     return itertools.chain.from_iterable(
-        process_year_directory(loc, instrument, year) for year in years)
+        process_year_directory(loc, instrument, year, filter_opts) for year in years)
 
 
-def process_year_directory(loc, instrument, year):
+def process_year_directory(loc, instrument, year, filter_opts):
     '''
     Processes the given year directory.
 
@@ -220,13 +285,25 @@ def process_year_directory(loc, instrument, year):
     '''
     logging.info("processing year directory %s/%s", instrument, year)
     yeardir = loc.datadir(instrument, year)
-    dates = [x.name for x in os.scandir(yeardir) if x.is_dir() and x.name not in IGNORE_DATES]
-    logging.info("dates found: %s", dates)
+    days_to_ignore = IGNORE_DATES + build_ignore_dates(filter_opts.ignore_past_days)
+    dates = [filter_opts.specific_date] if filter_opts.specific_date else [x.name for x in os.scandir(yeardir) if x.is_dir() and x.name not in days_to_ignore]
+    logging.debug("dates found: %s", dates)
 
     return itertools.chain.from_iterable(
-        process_data(loc, instrument, year, date) for date in dates)
+        discover_date_products(loc, instrument, year, date) for date in dates)
 
-def process_data(loc, instrument, year, date):
+
+def build_ignore_dates(num_days):
+    '''
+    Builds a list of days to ignore when processing. This will be the past n days
+    '''
+    deltas = [datetime.timedelta(days=x) for x in range (0, num_days)]
+    dates=[datetime.datetime.now() - delta for delta in deltas]
+    datestrs = [dt.strftime("%y%b%d") for dt in dates]
+    return datestrs
+
+
+def discover_date_products(loc, instrument, year, date):
     '''
     Processes the data in a given data directory and label directory pair.
 
@@ -240,12 +317,24 @@ def process_data(loc, instrument, year, date):
     datadir = loc.datadir(instrument, year, date)
     labeldir = loc.labeldir(instrument, year, date)
     if semaphore_exists(datadir) and semaphore_exists(labeldir):
-        return process_labels(datadir, labeldir, instrument, year, date)
+        return labels_to_products(datadir, labeldir, instrument, year, date)
     
     logging.warning("no semaphore: %s and %s", labeldir, datadir)
     return []
 
-def process_labels(datadir, labeldir, instrument, year, date):
+
+def semaphore_exists(dirname):
+    '''
+    Verifies that a semaphore file exists in the given directory.
+
+    dirname: the absolute path of the directory to check
+    '''
+    logging.info("checking for semaphore in %s", dirname)
+    semaphore_file = os.path.join(dirname, '.autoxfer')
+    return os.path.exists(semaphore_file)
+
+
+def labels_to_products(datadir, labeldir, instrument, year, date):
     '''
     Processes the data in a given data directory and label directory pair.
 
@@ -263,6 +352,7 @@ def process_labels(datadir, labeldir, instrument, year, date):
     logging.info("discovery complete in %s/%s/%s", instrument, year, date)
     return products
 
+
 def product_whitelisted(product):
     '''
     determines if all of the software for the product has been approved
@@ -271,11 +361,74 @@ def product_whitelisted(product):
         return all([software_whitelisted(x) for x in product.software()])
     return True
 
+
 def software_whitelisted(software):
     '''
     determines if a single piece of software has been approved
     '''
     return True
+
+
+def index(items, indexfunc):
+    '''
+    Indexes a list of objects based on the output of a supplied function
+    '''
+    dictionary = {}
+    for item in items:
+        key = indexfunc(item)
+        dictionary.setdefault(key, []).append(item)
+    return dictionary
+
+
+def extract_collection_id(lid):
+    '''
+    Extracts the collection id component from a LID
+    '''
+    return lid.split(':')[4]
+
+
+def validate_products(products, loc, preprocessing_opts, validation_opts, logdir):
+    '''
+    Preprocess and validates the products. 
+    The files will be preprocessed in the same manner as after validation. This prevents the original 
+    files from being altered if there are validation errors.
+    '''
+    all_validation_failures = []
+
+    if preprocessing_opts.skip_preprocessing:
+        logging.info("Skipping temp preprocessing")
+    if validation_opts.skip_validation:
+        logging.info("Skipping validation")
+
+    batch_count = math.ceil(len(products)/BATCH_SIZE)
+
+    for (batch_num, batch) in enumerate(chunk(products, BATCH_SIZE)):
+        logging.info("Validating a batch of %s (%s/%s)...", len(batch), batch_num + 1, batch_count)
+        if not preprocessing_opts.skip_preprocessing:
+            for product in batch:
+                preprocess_product(product, loc, preprocessing_opts.skip_data_preprocessing, preprocessing_opts.skip_label_preprocessing)
+        if not validation_opts.skip_validation:
+            validation_failures,_,_ = validation.validate_products(batch, validation_opts.skip_data_validation)
+            if validation_failures:
+                for failure in validation_failures:
+                    failfile = os.path.basename(failure['label'])
+                    faillogpath = os.path.join(logdir, failfile + ".log")
+                    with open(faillogpath, "w") as f:
+                        json.dump(failure, f)
+                all_validation_failures.extend(validation_failures)
+    if all_validation_failures and not validation_opts.permissive_validation:
+        raise Exception('There were validation errors')
+
+    return all_validation_failures
+
+
+def chunk(items, size):
+    '''
+    Subdivides a list into chunks of the given size
+    '''
+    for i in range(0, len(items), size):
+        yield items[i:i+size]
+
 
 def preprocess_product(product, loc, skip_data_preprocessing, skip_label_preprocessing):
     logging.debug("Preprocessing files for: %s", product.labelfilename)
@@ -299,7 +452,7 @@ def preprocess_product(product, loc, skip_data_preprocessing, skip_label_preproc
 
 
 
-def move_product(product, loc):
+def move_product(product, loc, postprocessing_opts, failed):
     '''
     move a product to the archive directory. For the current workflow, this will be a
     temporary directory on the processing server that will then get synced over
@@ -310,7 +463,7 @@ def move_product(product, loc):
     collection_id = product.collection_id()
 
     datadir = loc.datadir(product.inst, product.year, product.date)
-    dest_directory = loc.destdir(collection_id, product.inst, product.year, product.date)
+    dest_directory = loc.destdir(collection_id, product.inst, product.year, product.date, failed)
     os.makedirs(dest_directory, exist_ok=True)
 
     file_names=product.filenames()
@@ -319,17 +472,37 @@ def move_product(product, loc):
 
     src_label = product.labelpath
     dest_label = os.path.join(dest_directory, product.labelfilename)
-    logging.info('Moved from %s to %s', src_label, dest_label)
-    os.rename(src_label, dest_label)
+    transfer_file(src_label, dest_label, postprocessing_opts)
 
     for file_name in file_names:
-        src_data = os.path.join(datadir, file_name)
-        dest_data = os.path.join(dest_directory, file_name)
-        logging.info('Moved from %s to %s', src_data, dest_data)
-        os.rename(src_data, dest_data)
+        actual_file_name = get_actual_file_name(datadir, file_name)
+        src_data = os.path.join(datadir, actual_file_name)
+        dest_data = os.path.join(dest_directory, actual_file_name)
+        transfer_file(src_data, dest_data, postprocessing_opts)
 
 
-def process_data_collection(loc, collection_products, collection_id):
+def transfer_file(src, dest, postprocessing_opts):
+    if postprocessing_opts.dry_move:
+        logging.debug('Simulating move from %s to %s', src, dest)
+    else:   
+        if postprocessing_opts.copy_files:
+            logging.debug('Copying from %s to %s', src, dest)
+            shutil.copy(src, dest)
+        else:
+            logging.debug('Moving from %s to %s', src, dest)
+            os.rename(src, dest)        
+
+
+def get_actual_file_name(data_dir, file_name):
+    suffixes = ['', '.gz', '.fz']
+    file_names = [file_name + suffix for suffix in suffixes if os.path.exists(os.path.join(data_dir, file_name + suffix))]
+    if file_names:
+        return file_names[0]
+    raise(Exception('cannot find file:' + os.path.join(data_dir, file_name)))
+
+
+
+def update_data_collection(loc, collection_products, collection_id, preserve_collection_version):
     '''
     Create the collection inventory and label.
     '''
@@ -338,14 +511,14 @@ def process_data_collection(loc, collection_products, collection_id):
     os.makedirs(collection_path, exist_ok=True)
 
     collection_labels = get_collection_labels(collection_path, collection_id)
-    logging.debug(collection_labels)
+    logging.debug("%s labels found", len(collection_labels))
 
     start_dates = [x.start_date() for x in collection_products + collection_labels if x.start_date()]
     stop_dates = [x.stop_date() for x in collection_products + collection_labels if x.stop_date()]
     start_date = min(start_dates) if start_dates else None
     stop_date = max(stop_dates) if stop_dates else None
     
-    new_lidvid = merge_inventories(collection_path, collection_id, collection_products, collection_labels)
+    new_lidvid = merge_inventories(collection_path, collection_id, collection_products, collection_labels, preserve_collection_version)
 
     template_filename = COLLECTION_FILES.get(collection_id, "other_collection_template.xml")
     write_collection(template_filename,
@@ -354,7 +527,23 @@ def process_data_collection(loc, collection_products, collection_id):
                      start_date,
                      stop_date)
 
-def merge_inventories(collection_path, collection_id, collection_products, collection_labels):
+
+def get_collection_labels(collection_path, collection_id):
+    '''
+    Gets the most recent known version number for a collection
+    '''
+    collection_files = [x for x in os.scandir(collection_path) if is_collection_file(x)]
+    return [Collection(collection_path, x.name) for x in collection_files]
+    
+
+def is_collection_file(candidate):
+    '''
+    Determine if the passed in file is a collection file.
+    '''
+    return candidate.name.startswith('collection') and candidate.name.endswith('.xml')
+
+
+def merge_inventories(collection_path, collection_id, collection_products, collection_labels, preserve_collection_version):
     '''
     Produces a new collection inventory file, and returns the lidvid for the
     new collection
@@ -365,11 +554,21 @@ def merge_inventories(collection_path, collection_id, collection_products, colle
     old_inv = inventory.read_inventory(old_lidvid, collection_path)
     new_inv = inventory.from_lidvids('P', product_lidvids)
 
-    new_lidvid = make_collection_lidvid(collection_id, old_lidvid['major'] + 1, 0)
+    
+    if preserve_collection_version:
+        new_major = max(old_lidvid['major'], 1)
+        new_minor = old_lidvid['minor']
+    else:
+        new_major = old_lidvid['major'] + 1
+        new_minor = 0
+
+
+    new_lidvid = make_collection_lidvid(collection_id, new_major, new_minor)
 
     inventory.write_inventory(inventory.merge(old_inv, new_inv), new_lidvid, collection_path)
 
     return new_lidvid
+
 
 def get_last_version_number(collection_id, collection_labels):
     '''
@@ -380,16 +579,10 @@ def get_last_version_number(collection_id, collection_labels):
             (x.majorversion(), x.minorversion())
             for x in collection_labels]
         major, minor = max(collection_versions)
+        logging.debug("%s previous collection version: %s.%s", collection_id, major, minor)
         return make_collection_lidvid(collection_id, major, minor)
     return make_collection_lidvid(collection_id, 0, 0)
 
-def get_collection_labels(collection_path, collection_id):
-    '''
-    Gets the most recent known version number for a collection
-    '''
-    collection_files = [x for x in os.scandir(collection_path) if is_collection_file(x)]
-    return [Collection(collection_path, x.name) for x in collection_files]
-    
 
 
 def make_collection_lidvid(collection_id, major, minor):
@@ -401,15 +594,6 @@ def make_collection_lidvid(collection_id, major, minor):
         'minor': minor,
         'collection_id': collection_id
     }
-
-
-def is_collection_file(candidate):
-    '''
-    Determine if the passed in file is a collection file.
-    '''
-    return candidate.name.startswith('collection') and candidate.name.endswith('.xml')
-
-
 
 
 def write_collection(template_filename,
@@ -436,64 +620,12 @@ def write_collection(template_filename,
     iotools.write_file(collection_path, contents)
 
 
-def semaphore_exists(dirname):
-    '''
-    Verifies that a semaphore file exists in the given directory.
-    '''
-    logging.info("checking for semaphore in %s", dirname)
-    semaphore_file = os.path.join(dirname, '.autoxfer')
-    return os.path.exists(semaphore_file)
 
 def is_label(candidate):
     '''
     Determines if the given file is a label file.
     '''
     return candidate.name.endswith('.xml')
-
-def find_files(dirname):
-    '''
-    Gets all of the files in a directory.
-    '''
-    filelists = [[os.path.join(subdir, f) for f in files] for subdir, _, files in os.walk(dirname)]
-    return itertools.chain.from_iterable(filelists)
-
-def extract_version(label):
-    '''
-    Extracts the version number from a collection label.
-    '''
-    product_element = label.Product_Collection
-    if product_element:
-        identification_area = product_element.Identification_Area
-        version = identification_area.version_id.string
-        return [int(x) for x in version.split(".")]
-
-    return (0, 0)
-
-def ignore(file):
-    '''
-    Determines if a file should be ignored when processing.
-    '''
-    return any((file.endswith(name) for name in IGNORE_FILES))
-
-def extract_collection_id(lid):
-    '''
-    Extracts the collection id component from a LID
-    '''
-    return lid.split(':')[4]
-
-def index(items, indexfunc):
-    '''
-    Indexes a list of objects based on the output of a supplied function
-    '''
-    dictionary = {}
-    for item in items:
-        key = indexfunc(item)
-        dictionary.setdefault(key, []).append(item)
-    return dictionary
-
-def chunk(items, size):
-    for i in range(0, len(items), size):
-        yield items[i:i+size]
 
 
 if __name__ == '__main__':

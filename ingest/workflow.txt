@@ -1,0 +1,22 @@
+Search upload directory:
+By instrument, then by year, then by night
+Return all products
+
+Preprocess files
+Create temporary copies of files:
+    Decompress compressed files
+    Correct line endings
+    Correct file pointers in labels
+
+Validate files
+Log validation errors
+
+Postprocess files
+Correct line endings
+Correct file pointers in labels
+
+Move files to staging directory
+
+Generate new product inventories
+
+Generate new collection labels

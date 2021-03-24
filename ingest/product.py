@@ -21,6 +21,10 @@ def extract_label(xmldoc):
     return {}
 
 def extract_keywords(infile):
+    '''
+    Wrapper for extract_label. This handles creation and destruction of
+    the BeautifulSoup object.
+    '''
     xmldoc = BeautifulSoup(infile, 'lxml-xml')
     if xmldoc:
         keywords = extract_label(xmldoc)

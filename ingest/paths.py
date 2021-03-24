@@ -2,19 +2,36 @@ import os
 import itertools
 
 class Paths:
+    '''
+    A helper class that determines where data files and labels are stored. This
+    provides multiple ways to get at each data file and label file, and
+    accounts for the fact that the data and labels are delivered in separate locations.
+    '''
     def __init__(self, basedir, dest):
         self.basedir = basedir
         self.dest = dest
 
     def datadir(self, inst=None, year=None, date=None, filename=None):
+        '''
+        Returns the data directory
+        '''
         return self._buildpath((self.basedir, inst, year, date, filename))
 
     def labeldir(self, inst=None, year=None, date=None, filename=None):
+        '''
+        Returns the label file directory
+        '''
         subdir = "other/pds4" if date else None
         return self._buildpath((self.basedir, inst, year, subdir, date, filename))
         
-    def destdir(self, collection_id, inst=None, year=None, date=None):
-        return self._buildpath((self.dest, collection_id, inst, year, date))
+    def destdir(self, collection_id, inst=None, year=None, date=None, failed=False):
+        '''
+        Returns the destination directory
+        '''
+        if failed:
+            return self._buildpath((self.dest, collection_id, "failed", inst, year, date))
+        else:
+            return self._buildpath((self.dest, collection_id, inst, year, date))
 
     def _buildpath(self, elements):
         return os.path.join(*self._filledElements(elements))
