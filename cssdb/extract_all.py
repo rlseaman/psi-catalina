@@ -30,7 +30,7 @@ def main(argv=None):
             extracted = extract_night(args.basedir, inst, year, night)
     
             if extracted:
-                outfilename = args.outfilebase + night
+                outfilename = args.outfilebase + night + ".json"
                 with open(outfilename, 'w') as f:
                     json.dump(extracted, f)
 
