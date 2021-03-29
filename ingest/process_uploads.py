@@ -607,7 +607,9 @@ def write_collection(template_filename,
     '''
     Writes the collection label to a file.
     '''
-    template = iotools.read_file(template_filename)
+    script_dir=os.path.abspath(os.path.dirname(sys.argv[0]))
+    template_path=(os.path.join(script_dir, template_filename))
+    template = iotools.read_file(template_path)
     contents = template.format(
         collection_id=collection_lidvid['collection_id'],
         major=collection_lidvid['major'],
