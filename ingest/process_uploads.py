@@ -57,7 +57,10 @@ def main(argv=None):
     if args.console:
         logfilename = None
     else:
-        logfilename="process_uploads_%s.log" % time.time()
+        logfilebase = "process_uploads_%s.log" % datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
+        os.makedirs(os.path.join(args.basedir, "logs"), exist_ok=True)
+        logfilename=os.path.join(args.basedir, "logs", logfilebase)
+        
         print(logfilename)
 
     loglevel = logging.DEBUG if args.verbose else logging.INFO
@@ -604,7 +607,9 @@ def write_collection(template_filename,
     '''
     Writes the collection label to a file.
     '''
-    template = iotools.read_file(template_filename)
+    script_dir=os.path.abspath(os.path.dirname(sys.argv[0]))
+    template_path=(os.path.join(script_dir, template_filename))
+    template = iotools.read_file(template_path)
     contents = template.format(
         collection_id=collection_lidvid['collection_id'],
         major=collection_lidvid['major'],
