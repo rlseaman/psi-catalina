@@ -77,8 +77,8 @@ def extract_time_coordinates(time_coordinates):
     gets the start and stop time from the time_coordinates element
     '''
     return {
-        "start_date": str(time_coordinates.start_date_time.string),
-        "stop_date": str(time_coordinates.stop_date_time.string)
+        "start_date": optstr(time_coordinates.start_date_time.string),
+        "stop_date": optstr(time_coordinates.stop_date_time.string)
     }
 
 def extract_file_area(file_area):
@@ -150,4 +150,7 @@ def extract_document_file(document_file):
     '''
     return {
         'filename': str(document_file.file_name.string)
-    }   
+    }
+
+def optstr(value):
+    return str(value) if value else None
