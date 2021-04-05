@@ -33,25 +33,25 @@
 
 
         <Time_Coordinates>
-            <start_date_time>{start_date}</start_date_time>
-            <stop_date_time>{stop_date}</stop_date_time>
-          </Time_Coordinates>
-          <Primary_Result_Summary>
+            <start_date_time xsi:nil="true" nilReason="inapplicable"/>
+            <stop_date_time xsi:nil="true" nilReason="inapplicable"/>
+        </Time_Coordinates>
+        <Primary_Result_Summary>
             <purpose>Calibration</purpose>
             <processing_level>Raw</processing_level>
-            <Science_Facets>
-              <discipline_name>Imaging</discipline_name>
-              <facet1>Grayscale</facet1>
-            </Science_Facets>
-          </Primary_Result_Summary>
-          <Investigation_Area>
+        <Science_Facets>
+            <discipline_name>Imaging</discipline_name>
+            <facet1>Grayscale</facet1>
+        </Science_Facets>
+        </Primary_Result_Summary>
+        <Investigation_Area>
             <name>None</name>
             <type>Mission</type>
-            <Internal_Reference>
-              <lid_reference>urn:nasa:pds:context:investigation:none</lid_reference>
-              <reference_type>collection_to_investigation</reference_type>
-            </Internal_Reference>
-          </Investigation_Area>
+        <Internal_Reference>
+            <lid_reference>urn:nasa:pds:context:investigation:none</lid_reference>
+            <reference_type>collection_to_investigation</reference_type>
+        </Internal_Reference>
+        </Investigation_Area>
 
         <Observing_System>
             <Observing_System_Component>
