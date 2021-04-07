@@ -1,4 +1,4 @@
-P,CSS_bundle_overview_PDFA.xml:urn:nasa:pds:gbo.ast.catalina.survey:document:css_bundle_overview_pdfa.pdf::1.0
-P,CSS_history_PDFA.xml:urn:nasa:pds:gbo.ast.catalina.survey:document:css_history_pdfa.pdf::1.0
-P,CSS_operations_PDFA.xml:urn:nasa:pds:gbo.ast.catalina.survey:document:css_operations_pdfa.pdf::1.0
-P,CSS_telescopes_PDFA.xml:urn:nasa:pds:gbo.ast.catalina.survey:document:css_telescopes_pdfa.pdf::1.0
+P,urn:nasa:pds:gbo.ast.catalina.survey:document:css_bundle_overview_pdfa.pdf::1.0
+P,urn:nasa:pds:gbo.ast.catalina.survey:document:css_history_pdfa.pdf:1.0
+P,urn:nasa:pds:gbo.ast.catalina.survey:document:css_operations_pdfa.pdf:1.0
+P,urn:nasa:pds:gbo.ast.catalina.survey:document:css_telescopes_pdfa.pdf:1.0
