@@ -221,32 +221,32 @@
     </Bundle>
 
     <Bundle_Member_Entry>
-        <lidvid_reference>urn:nasa:pds:gbo.ast.catalina.survey:calibration::1.0</lidvid_reference>
+        <lid_reference>urn:nasa:pds:gbo.ast.catalina.survey:calibration</lid_reference>
         <member_status>Primary</member_status>
         <reference_type>bundle_has_member_collection</reference_type>
     </Bundle_Member_Entry>
     <Bundle_Member_Entry>
-        <lidvid_reference>urn:nasa:pds:gbo.ast.catalina.survey:document::1.0</lidvid_reference>
+        <lid_reference>urn:nasa:pds:gbo.ast.catalina.survey:document</lid_reference>
         <member_status>Primary</member_status>
         <reference_type>bundle_has_document_collection</reference_type>
     </Bundle_Member_Entry>
     <Bundle_Member_Entry>
-        <lidvid_reference>urn:nasa:pds:gbo.ast.catalina.survey:data_derived::1.0</lidvid_reference>
+        <lid_reference>urn:nasa:pds:gbo.ast.catalina.survey:data_derived</lid_reference>
         <member_status>Primary</member_status>
         <reference_type>bundle_has_member_collection</reference_type>
     </Bundle_Member_Entry>
     <Bundle_Member_Entry>
-        <lidvid_reference>urn:nasa:pds:gbo.ast.catalina.survey:data_raw::1.0</lidvid_reference>
+        <lid_reference>urn:nasa:pds:gbo.ast.catalina.survey:data_raw</lid_reference>
         <member_status>Primary</member_status>
         <reference_type>bundle_has_member_collection</reference_type>
     </Bundle_Member_Entry>
     <Bundle_Member_Entry>
-        <lidvid_reference>urn:nasa:pds:gbo.ast.catalina.survey:data_calibrated::1.0</lidvid_reference>
+        <lid_reference>urn:nasa:pds:gbo.ast.catalina.survey:data_calibrated</lid_reference>
         <member_status>Primary</member_status>
         <reference_type>bundle_has_member_collection</reference_type>
     </Bundle_Member_Entry>
     <Bundle_Member_Entry>
-        <lidvid_reference>urn:nasa:pds:gbo.ast.catalina.survey:data_partially_processed::1.0</lidvid_reference>
+        <lid_reference>urn:nasa:pds:gbo.ast.catalina.survey:data_partially_processed</lid_reference>
         <member_status>Primary</member_status>
         <reference_type>bundle_has_member_collection</reference_type>
     </Bundle_Member_Entry>
