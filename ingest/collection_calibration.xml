@@ -175,7 +175,7 @@
         </Observing_System>
         <Observing_System>
             <Observing_System_Component>
-                <name>Steward Observatory, Kitt Peak Station</name>
+                <name>Kitt Peak Station, Steward Observatory</name>
                 <type>Observatory</type>
                 <Internal_Reference>
                     <lid_reference>urn:nasa:pds:context:facility:observatory.steward-kittpeak</lid_reference>
