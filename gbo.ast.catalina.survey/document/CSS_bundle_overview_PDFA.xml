@@ -162,7 +162,7 @@
                 </Internal_Reference>
             </Observing_System_Component>
             <Observing_System_Component>
-                <name>Catalina Sky Survey 2.3-m Bok telescope (MPC code V00)</name>
+                <name>2.29-m Bok Boller &amp; Chivens Ritchey-Chretien refl.</name>
                 <type>Telescope</type>
                 <Internal_Reference>
                     <lid_reference>urn:nasa:pds:context:telescope:steward-kittpeak.bok2m3</lid_reference>
