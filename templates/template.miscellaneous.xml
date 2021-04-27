@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_1A00.sch" schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<?xml-model href="https://pds.nasa.gov/pds4/img/v1/PDS4_IMG_1900.sch" schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<?xml-model href="https://pds.nasa.gov/pds4/disp/v1/PDS4_DISP_1900.sch" schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<?xml-model href="https://pds.nasa.gov/pds4/geom/v1/PDS4_GEOM_1900_1510.sch" schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<?xml-model href="https://pds.nasa.gov/pds4/proc/v1/PDS4_PROC_1900.sch" schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<?xml-model href="https://pds.nasa.gov/pds4/survey/v1/PDS4_SURVEY_1A00_1000.sch" schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<Product_Document
+  xmlns="http://pds.nasa.gov/pds4/pds/v1"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:disp="http://pds.nasa.gov/pds4/disp/v1"
+  xmlns:geom="http://pds.nasa.gov/pds4/geom/v1"
+  xmlns:img="http://pds.nasa.gov/pds4/img/v1"
+  xmlns:proc="http://pds.nasa.gov/pds4/proc/v1"
+  xmlns:survey="http://pds.nasa.gov/pds4/survey/v1"
+  xsi:schemaLocation="http://pds.nasa.gov/pds4/pds/v1 https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_1A00.xsd
+                      http://pds.nasa.gov/pds4/img/v1 https://pds.nasa.gov/pds4/img/v1/PDS4_IMG_1900.xsd
+                      http://pds.nasa.gov/pds4/disp/v1 https://pds.nasa.gov/pds4/disp/v1/PDS4_DISP_1900.xsd
+                      http://pds.nasa.gov/pds4/geom/v1 https://pds.nasa.gov/pds4/geom/v1/PDS4_GEOM_1900_1510.xsd
+                      http://pds.nasa.gov/pds4/proc/v1 https://pds.nasa.gov/pds4/proc/v1/PDS4_PROC_1900.xsd
+                      http://pds.nasa.gov/pds4/survey/v1 https://pds.nasa.gov/pds4/survey/v1/PDS4_SURVEY_1A00_1000.xsd">
+  <Identification_Area>
+    <logical_identifier>urn:nasa:pds:gbo.ast.catalina.survey:miscellaneous:{product_id}</logical_identifier>
+    <version_id>1.0</version_id>
+    <title>{title}</title>
+    <information_model_version>1.10.0.0</information_model_version>
+    <product_class>Product_Observational</product_class>
+    <Citation_Information>
+      <author_list>Seaman, R., Christensen, E., Gibbs, A., and Shelly, F.</author_list>
+      <publication_year>2021</publication_year>
+      <description>{product_description}</description>
+    </Citation_Information>
+  </Identification_Area>
+  <Context_Area>
+    <Time_Coordinates>
+      <start_date_time>{start_date_time}</start_date_time>
+      <stop_date_time>{stop_date_time}</stop_date_time>
+    </Time_Coordinates>
+    <Primary_Result_Summary>
+      <purpose>{purpose}</purpose>
+      <processing_level>{processing_level}</processing_level>
+      <Science_Facets>
+        <discipline_name>{discipline_name}</discipline_name>
+        <facet1>{facet1}</facet1>
+      </Science_Facets>
+    </Primary_Result_Summary>
+    <Investigation_Area>
+      <name>Catalina Sky Survey</name>
+      <type>Individual Investigation</type>
+      <Internal_Reference>
+          <lid_reference>urn:nasa:pds:context:investigation:individual.catalina_sky_survey</lid_reference>
+          <reference_type>document_to_investigation</reference_type>
+      </Internal_Reference>
+    </Investigation_Area>
+    <Observing_System>
+      <Observing_System_Component>
+        <name>{instrument_name}</name>
+        <type>Instrument</type>
+        <Internal_Reference>
+          <lid_reference>{instrument_lid}</lid_reference>
+          <reference_type>is_instrument</reference_type>
+        </Internal_Reference>
+      </Observing_System_Component>
+      <Observing_System_Component>
+        <name>{telescope_name}</name>
+        <type>Telescope</type>
+        <Internal_Reference>
+          <lid_reference>{telescope_lid}</lid_reference>
+          <reference_type>is_telescope</reference_type>
+        </Internal_Reference>
+      </Observing_System_Component>
+      <Observing_System_Component>
+        <name>{observatory_name}</name>
+        <type>Observatory</type>
+        <Internal_Reference>
+          <lid_reference>{observatory_lid}</lid_reference>
+          <reference_type>is_facility</reference_type>
+        </Internal_Reference>
+      </Observing_System_Component>
+    </Observing_System>
+    <Target_Identification>
+      <name>Multiple</name>
+      <type>Asteroid</type>
+    </Target_Identification>
+    <Discipline_Area>
+      <survey:Survey>
+        <survey:field_id>{field_id}</survey:field_id>
+        <survey:observation_purpose>{observation_purpose}</survey:observation_purpose>
+        <survey:observation_technique>{observation_technique}</survey:observation_technique>
+        <survey:Image_Corners>
+          <survey:equinox>J2000</survey:equinox>
+          <survey:Corner_Position>
+            <survey:corner_identification>Top Left</survey:corner_identification>
+            <survey:Coordinate>
+              <survey:right_ascension unit="deg">{top_left_ra}</survey:right_ascension>
+              <survey:declination unit="deg">{top_left_dec}</survey:declination>
+            </survey:Coordinate>
+          </survey:Corner_Position>
+          <survey:Corner_Position>
+            <survey:corner_identification>Top Right</survey:corner_identification>
+            <survey:Coordinate>
+              <survey:right_ascension unit="deg">{top_right_ra}</survey:right_ascension>
+              <survey:declination unit="deg">{top_right_dec}</survey:declination>
+            </survey:Coordinate>
+          </survey:Corner_Position>
+          <survey:Corner_Position>
+            <survey:corner_identification>Bottom Left</survey:corner_identification>
+            <survey:Coordinate>
+              <survey:right_ascension unit="deg">{bottom_left_ra}</survey:right_ascension>
+              <survey:declination unit="deg">{bottom_left_dec}</survey:declination>
+            </survey:Coordinate>
+          </survey:Corner_Position>
+          <survey:Corner_Position>
+            <survey:corner_identification>Bottom Right</survey:corner_identification>
+            <survey:Coordinate>
+              <survey:right_ascension unit="deg">{bottom_right_ra}</survey:right_ascension>
+              <survey:declination unit="deg">{bottom_right_dec}</survey:declination>
+            </survey:Coordinate>
+          </survey:Corner_Position>
+        </survey:Image_Corners>
+        <survey:Limiting_Magnitudes>
+          <survey:band_name>G</survey:band_name>
+          <survey:reference_object_type>Asteroid</survey:reference_object_type>
+          <survey:Percentage_Limit>
+            <survey:percentage>50</survey:percentage>
+            <survey:limiting_magnitude>{fifty_percent_magnitude}</survey:limiting_magnitude>
+          </survey:Percentage_Limit>
+          <survey:Percentage_Limit>
+            <survey:percentage>0</survey:percentage>
+            <survey:limiting_magnitude>{zero_percent_magnitude}</survey:limiting_magnitude>
+          </survey:Percentage_Limit>
+        </survey:Limiting_Magnitudes>
+      </survey:Survey>
+      <proc:Processing_Information>
+        <Local_Internal_Reference>
+          <local_identifier_reference>table</local_identifier_reference>
+          <local_reference_type>processing_information_to_data_object</local_reference_type>
+        </Local_Internal_Reference>
+        <proc:Process>
+          <proc:Software>
+            <proc:Software_Program>
+              <proc:name>{program_name}</proc:name>
+              <proc:program_version>{program_version}</proc:program_version>
+            </proc:Software_Program>
+          </proc:Software>
+        </proc:Process>
+      </proc:Processing_Information>
+    </Discipline_Area>
+  </Context_Area>
+  <Document>
+    <document_name>{document_name}</document_name>
+    <publication_date>{publication_date}</publication_date>
+    <description>{document_description}</description>
+    <Document_Edition>
+      <edition_name>Plain text</edition_name>
+      <language>English</language>
+      <files>1</files>
+      <description>Catalina Sky Survey</description>
+      <Document_File>
+        <file_name>{file_name}</file_name>
+        <local_identifier>table</local_identifier>
+        <document_standard_id>7-Bit ASCII Text</document_standard_id>
+      </Document_File>
+    </Document_Edition>
+    </Document>
+</Product_Document>
