@@ -26,6 +26,7 @@ def make_search_template(tablename, fields, search_fields):
     
 
 OBSNIGHT_FIELDS = ['survey', 'observatory', 'telescope', 'camera', 'obsdate', 'operator', 'limiting_magnitude', 'directory']
+OBSNIGHT_SEARCH_FIELDS=['survey', 'observatory', 'telescope', 'camera', 'obsdate']
 OBSNIGHT_FIELDS_PK = ['night_id'] + OBSNIGHT_FIELDS
 
 SURVEYFIELD_FIELDS = ['surveyfield_code', 'mjd', 'ra', 'declination', 'night_id']
@@ -62,25 +63,27 @@ def write_directory(extracted, directory_name):
     conn = sqlite3.connect("sqlite")
     c = conn.cursor()
 
-    night_id = write_obsnight(c, extracted, directory_name)
+    if not obsnight_exists(c, extracted):
 
-    for followup in extracted["followup"]:
-        write_followup(c, night_id, followup)
+        night_id = write_obsnight(c, extracted, directory_name)
 
-    for userfield in extracted["fields"]:
-        write_userfield(c, night_id, userfield)
+        for followup in extracted["followup"]:
+            write_followup(c, night_id, followup)
 
-    for observation in extracted["pointing"]["Observations"]:
-        write_observation(c, night_id, observation)
+        for userfield in extracted["fields"]:
+            write_userfield(c, night_id, userfield)
 
-    for surveyplan in extracted["surveyplan"]:
-        write_plan(c, night_id, surveyplan)
+        for observation in extracted["pointing"]["Observations"]:
+            write_observation(c, night_id, observation)
 
-    for astr in extracted["astrometry"]:
-        write_astr(c, night_id, astr)
+        for surveyplan in extracted["surveyplan"]:
+            write_plan(c, night_id, surveyplan)
 
-    for neo in extracted["neos"]:
-        write_neo(c, night_id, neo)
+        for astr in extracted["astrometry"]:
+            write_astr(c, night_id, astr)
+
+        for neo in extracted["neos"]:
+            write_neo(c, night_id, neo)
 
     conn.commit()
     conn.close()
@@ -98,6 +101,17 @@ def write_obsnight(c, extracted, directory_name):
     )
 
     return exec_insert_key(c, OBSNIGHT_INSERT, params)
+
+def obsnight_exists(c: sqlite3.Cursor, extracted):
+    query = make_search_template("obsnight", "*", OBSNIGHT_FIELDS)
+    params = ('CSS',
+        extracted['coverage']['Source'],
+        extracted['control']['Telescope'],
+        extracted['control']['Detector'],
+        extracted['coverage']['Date'])
+
+    c.execute(query, params)
+    return c.fetchone()
 
 def write_followup(c, night_id, followup):
     params = (
