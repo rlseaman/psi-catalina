@@ -1,32 +1,16 @@
 #! /usr/bin/env bash
 set -e
 
-rm cssdb.sqlite && sqlite3 cssdb.sqlite < cssdb_schema.sql
+SCRIPT_DIR=`dirname $0`
+#rm cssdb.sqlite && sqlite3 cssdb.sqlite < cssdb_schema.sql
 
+DATE=$1
+YEAR=$2
 
-python3 import.py data/CSS/703/2019/19Aug21
-python3 import.py data/CSS/703/2019/19Aug22
-python3 import.py data/CSS/703/2019/19Aug25
-python3 import.py data/CSS/703/2019/19Aug26
-python3 import.py data/CSS/703/2019/19Aug27
-python3 import.py data/CSS/703/2019/19Aug28
-python3 import.py data/CSS/703/2019/19Aug30
+pushd $SCRIPT_DIR
 
+python3 extract_all.py --basedir=/data/CSS --nights=21 --outfilebase=/data/json
+find /data/json -name '*.json' -exec python3 import_json.py --filename '{}' \;
+find /data/json -name '*.json' -exec trash '{}' \;
 
-python3 import.py data/CSS/G96/2019/19Aug20
-python3 import.py data/CSS/G96/2019/19Aug21
-python3 import.py data/CSS/G96/2019/19Aug22
-python3 import.py data/CSS/G96/2019/19Aug25
-python3 import.py data/CSS/G96/2019/19Aug26
-python3 import.py data/CSS/G96/2019/19Aug27
-
-python3 import.py data/CSS/I52/2019/19Aug21
-python3 import.py data/CSS/I52/2019/19Aug25
-python3 import.py data/CSS/I52/2019/19Aug26
-python3 import.py data/CSS/I52/2019/19Aug27
-python3 import.py data/CSS/I52/2019/19Aug28
-python3 import.py data/CSS/I52/2019/19Aug30
-
-python3 import.py data/CSS/V06/2019/19Aug30
-python3 import.py data/CSS/V06/2019/19Sep01
-python3 import.py data/CSS/V06/2019/19Sep02
+popd
