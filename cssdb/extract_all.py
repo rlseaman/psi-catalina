@@ -27,19 +27,24 @@ def main(argv=None):
         for d in dates:
             night = d.strftime("%y%b%d")
             year = d.strftime("%Y")
-            extracted = extract_night(args.basedir, inst, year, night)
-    
-            if extracted:
-                outfilename = args.outfilebase + night + ".json"
-                with open(outfilename, 'w') as f:
-                    json.dump(extracted, f)
+
+            outfilename = args.outfilebase + night + ".json"
+
+            if not os.path.exists(outfilename):
+                extracted = extract_night(args.basedir, inst, year, night)
+                print (extracted)
+        
+                if extracted:
+                    with open(outfilename, 'w') as f:
+                        json.dump(extracted, f)
+            else:
+                print("Output file exists: %s, skipping..." % outfilename)
 
 def extract_night(directory_name, inst, year, night):
     '''
     Extract information from the files in a single directory (which should correspond to
     a combination of instrument and observing night), and return it as a single dictionary.
     '''
-    print(directory_name)
 
     files_for_night=get_files_for_night(directory_name, inst, year, night)
 
@@ -52,6 +57,8 @@ def extract_night(directory_name, inst, year, night):
                             surveyplan_file=first_matching_file(directory_name, has_prefix("survey")), 
                             astrometry_file=first_matching_file(files_for_night, has_extension(".mpcd.mrpt")), 
                             neo_file=first_matching_file(files_for_night, has_extension(".neos.mrpt")))
+    else:
+        print ("No data for %s, %s, %s" % (inst, year, night))
 
 def extract_files(pointing_file, coverage_file, control_file, followup_file, fields_file, surveyplan_file, astrometry_file, neo_file):
     return {
