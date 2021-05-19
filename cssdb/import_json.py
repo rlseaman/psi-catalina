@@ -14,8 +14,9 @@ def main(argv=None):
     parser.add_argument('--filename', help='The file name for the JSON file', required=True)
     args = parser.parse_args()
 
-    extracted = json.load(args.filename)
-    cssdb.write_directory(extracted, args.filename)
+    with (open(args.filename)) as f:
+        extracted = json.load(f)
+        cssdb.write_directory(extracted, args.filename)
 
 if __name__ == '__main__':
     sys.exit(main())
