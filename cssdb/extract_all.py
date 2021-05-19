@@ -28,7 +28,7 @@ def main(argv=None):
             night = d.strftime("%y%b%d")
             year = d.strftime("%Y")
 
-            outfilename = args.outfilebase + night + ".json"
+            outfilename = args.outfilebase + night + "." + inst + ".json"
 
             if not os.path.exists(outfilename):
                 extracted = extract_night(args.basedir, inst, year, night)
