@@ -60,7 +60,7 @@ def write_directory(extracted, directory_name):
     '''
     Writes all of the information extracted from the files in the directory to the database.
     '''
-    conn = sqlite3.connect("sqlite")
+    conn = sqlite3.connect("cssdb.sqlite")
     c = conn.cursor()
 
     if not obsnight_exists(c, extracted):
@@ -103,7 +103,8 @@ def write_obsnight(c, extracted, directory_name):
     return exec_insert_key(c, OBSNIGHT_INSERT, params)
 
 def obsnight_exists(c: sqlite3.Cursor, extracted):
-    query = make_search_template("obsnight", "*", OBSNIGHT_FIELDS)
+    query = make_search_template("obsnight", "*", OBSNIGHT_SEARCH_FIELDS)
+    print (extracted)
     params = ('CSS',
         extracted['coverage']['Source'],
         extracted['control']['Telescope'],
@@ -133,7 +134,7 @@ def write_userfield(c, night_id, userfield):
         userfield.get("NAME", None),
         userfield["ra"],
         userfield["dec"],
-        userfield["MAG"],
+        userfield.get("MAG", None),
         userfield.get("COM", None),
         userfield.get("field", None),
         night_id
