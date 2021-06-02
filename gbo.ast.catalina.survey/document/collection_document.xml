@@ -2,7 +2,6 @@
 <?xml-model href="https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_1B00.sch" schematypens="http://purl.oclc.org/dsdl/schematron"?>
 
 <Product_Collection xmlns="http://pds.nasa.gov/pds4/pds/v1"
-	xmlns:pds="http://pds.nasa.gov/pds4/pds/v1"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://pds.nasa.gov/pds4/pds/v1 https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_1B00.xsd">    
     
@@ -155,7 +154,7 @@
         </Observing_System>
         <Observing_System>
             <Observing_System_Component>
-                <name>Steward Observatory, Kitt Peak Station</name>
+                <name>Kitt Peak Station, Steward Observatory</name>
                 <type>Observatory</type>
                 <Internal_Reference>
                     <lid_reference>urn:nasa:pds:context:facility:observatory.steward-kittpeak</lid_reference>
@@ -163,7 +162,7 @@
                 </Internal_Reference>
             </Observing_System_Component>
             <Observing_System_Component>
-                <name>Catalina Sky Survey 2.3-m Bok telescope (MPC code V00)</name>
+                <name>2.29-m Bok Boller &amp; Chivens Ritchey-Chretien refl.</name>
                 <type>Telescope</type>
                 <Internal_Reference>
                     <lid_reference>urn:nasa:pds:context:telescope:steward-kittpeak.bok2m3</lid_reference>
@@ -219,7 +218,7 @@
     
     <File_Area_Inventory>
         <File>
-            <file_name>collection_document_inventory.csv</file_name>
+            <file_name>collection_inventory_document.csv</file_name>
         </File>
         <Inventory>
             <offset unit="byte">0</offset>

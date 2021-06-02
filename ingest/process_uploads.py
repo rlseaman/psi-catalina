@@ -57,7 +57,10 @@ def main(argv=None):
     if args.console:
         logfilename = None
     else:
-        logfilename="process_uploads_%s.log" % time.time()
+        logfilebase = "process_uploads_%s.log" % datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
+        os.makedirs(os.path.join(args.basedir, "logs"), exist_ok=True)
+        logfilename=os.path.join(args.basedir, "logs", logfilebase)
+        
         print(logfilename)
 
     loglevel = logging.DEBUG if args.verbose else logging.INFO
@@ -518,14 +521,15 @@ def update_data_collection(loc, collection_products, collection_id, preserve_col
     start_date = min(start_dates) if start_dates else None
     stop_date = max(stop_dates) if stop_dates else None
     
-    new_lidvid = merge_inventories(collection_path, collection_id, collection_products, collection_labels, preserve_collection_version)
+    new_lidvid, record_count = merge_inventories(collection_path, collection_id, collection_products, collection_labels, preserve_collection_version)
 
     template_filename = COLLECTION_FILES.get(collection_id, "other_collection_template.xml")
     write_collection(template_filename,
                      new_lidvid,
                      collection_path,
                      start_date,
-                     stop_date)
+                     stop_date,
+                     record_count)
 
 
 def get_collection_labels(collection_path, collection_id):
@@ -564,10 +568,11 @@ def merge_inventories(collection_path, collection_id, collection_products, colle
 
 
     new_lidvid = make_collection_lidvid(collection_id, new_major, new_minor)
+    merged_inv = inventory.merge(old_inv, new_inv)
 
-    inventory.write_inventory(inventory.merge(old_inv, new_inv), new_lidvid, collection_path)
+    inventory.write_inventory(merged_inv, new_lidvid, collection_path)
 
-    return new_lidvid
+    return new_lidvid, len(merged_inv)
 
 
 def get_last_version_number(collection_id, collection_labels):
@@ -600,11 +605,14 @@ def write_collection(template_filename,
                      collection_lidvid,
                      collection_dir,
                      start_date,
-                     stop_date):
+                     stop_date,
+                     record_count):
     '''
     Writes the collection label to a file.
     '''
-    template = iotools.read_file(template_filename)
+    script_dir=os.path.abspath(os.path.dirname(sys.argv[0]))
+    template_path=(os.path.join(script_dir, template_filename))
+    template = iotools.read_file(template_path)
     contents = template.format(
         collection_id=collection_lidvid['collection_id'],
         major=collection_lidvid['major'],
@@ -612,7 +620,7 @@ def write_collection(template_filename,
         start_date=start_date,
         stop_date=stop_date,
         file_size=0,
-        record_count=0)
+        record_count=record_count)
     collection_filename = LABEL_FILENAME_TEMPLATE.format(**collection_lidvid)
     collection_path = os.path.join(collection_dir, collection_filename)
     logging.info("writing to: %s", collection_path)

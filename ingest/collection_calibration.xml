@@ -2,7 +2,6 @@
 <?xml-model href="https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_1B00.sch" schematypens="http://purl.oclc.org/dsdl/schematron"?>
 
 <Product_Collection xmlns="http://pds.nasa.gov/pds4/pds/v1"
-	xmlns:pds="http://pds.nasa.gov/pds4/pds/v1"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://pds.nasa.gov/pds4/pds/v1 https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_1B00.xsd">    
     
@@ -33,25 +32,25 @@
 
 
         <Time_Coordinates>
-            <start_date_time>{start_date}</start_date_time>
-            <stop_date_time>{stop_date}</stop_date_time>
-          </Time_Coordinates>
-          <Primary_Result_Summary>
+            <start_date_time xsi:nil="true" nilReason="inapplicable"/>
+            <stop_date_time xsi:nil="true" nilReason="inapplicable"/>
+        </Time_Coordinates>
+        <Primary_Result_Summary>
             <purpose>Calibration</purpose>
             <processing_level>Raw</processing_level>
-            <Science_Facets>
-              <discipline_name>Imaging</discipline_name>
-              <facet1>Grayscale</facet1>
-            </Science_Facets>
-          </Primary_Result_Summary>
-          <Investigation_Area>
+        <Science_Facets>
+            <discipline_name>Imaging</discipline_name>
+            <facet1>Grayscale</facet1>
+        </Science_Facets>
+        </Primary_Result_Summary>
+        <Investigation_Area>
             <name>None</name>
             <type>Mission</type>
-            <Internal_Reference>
-              <lid_reference>urn:nasa:pds:context:investigation:none</lid_reference>
-              <reference_type>collection_to_investigation</reference_type>
-            </Internal_Reference>
-          </Investigation_Area>
+        <Internal_Reference>
+            <lid_reference>urn:nasa:pds:context:investigation:none</lid_reference>
+            <reference_type>collection_to_investigation</reference_type>
+        </Internal_Reference>
+        </Investigation_Area>
 
         <Observing_System>
             <Observing_System_Component>
@@ -175,7 +174,7 @@
         </Observing_System>
         <Observing_System>
             <Observing_System_Component>
-                <name>Steward Observatory, Kitt Peak Station</name>
+                <name>Kitt Peak Station, Steward Observatory</name>
                 <type>Observatory</type>
                 <Internal_Reference>
                     <lid_reference>urn:nasa:pds:context:facility:observatory.steward-kittpeak</lid_reference>
@@ -183,7 +182,7 @@
                 </Internal_Reference>
             </Observing_System_Component>
             <Observing_System_Component>
-                <name>Catalina Sky Survey 2.3-m Bok telescope (MPC code V00)</name>
+                <name>2.29-m Bok Boller &amp; Chivens Ritchey-Chretien refl.</name>
                 <type>Telescope</type>
                 <Internal_Reference>
                     <lid_reference>urn:nasa:pds:context:telescope:steward-kittpeak.bok2m3</lid_reference>

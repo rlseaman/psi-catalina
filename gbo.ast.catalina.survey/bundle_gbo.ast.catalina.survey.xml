@@ -159,7 +159,7 @@
         </Observing_System>
         <Observing_System>
             <Observing_System_Component>
-                <name>Steward Observatory, Kitt Peak Station</name>
+                <name>Kitt Peak Station, Steward Observatory</name>
                 <type>Observatory</type>
                 <Internal_Reference>
                     <lid_reference>urn:nasa:pds:context:facility:observatory.steward-kittpeak</lid_reference>
@@ -167,7 +167,7 @@
                 </Internal_Reference>
             </Observing_System_Component>
             <Observing_System_Component>
-                <name>Catalina Sky Survey 2.3-m Bok telescope (MPC code V00)</name>
+                <name>2.29-m Bok Boller &amp; Chivens Ritchey-Chretien refl.</name>
                 <type>Telescope</type>
                 <Internal_Reference>
                     <lid_reference>urn:nasa:pds:context:telescope:steward-kittpeak.bok2m3</lid_reference>
@@ -221,32 +221,32 @@
     </Bundle>
 
     <Bundle_Member_Entry>
-        <lidvid_reference>urn:nasa:pds:gbo.ast.catalina.survey:calibration::1.0</lidvid_reference>
+        <lid_reference>urn:nasa:pds:gbo.ast.catalina.survey:calibration</lid_reference>
         <member_status>Primary</member_status>
         <reference_type>bundle_has_member_collection</reference_type>
     </Bundle_Member_Entry>
     <Bundle_Member_Entry>
-        <lidvid_reference>urn:nasa:pds:gbo.ast.catalina.survey:document::1.0</lidvid_reference>
+        <lid_reference>urn:nasa:pds:gbo.ast.catalina.survey:document</lid_reference>
         <member_status>Primary</member_status>
         <reference_type>bundle_has_document_collection</reference_type>
     </Bundle_Member_Entry>
     <Bundle_Member_Entry>
-        <lidvid_reference>urn:nasa:pds:gbo.ast.catalina.survey:data_derived::1.0</lidvid_reference>
+        <lid_reference>urn:nasa:pds:gbo.ast.catalina.survey:data_derived</lid_reference>
         <member_status>Primary</member_status>
         <reference_type>bundle_has_member_collection</reference_type>
     </Bundle_Member_Entry>
     <Bundle_Member_Entry>
-        <lidvid_reference>urn:nasa:pds:gbo.ast.catalina.survey:data_raw::1.0</lidvid_reference>
+        <lid_reference>urn:nasa:pds:gbo.ast.catalina.survey:data_raw</lid_reference>
         <member_status>Primary</member_status>
         <reference_type>bundle_has_member_collection</reference_type>
     </Bundle_Member_Entry>
     <Bundle_Member_Entry>
-        <lidvid_reference>urn:nasa:pds:gbo.ast.catalina.survey:data_calibrated::1.0</lidvid_reference>
+        <lid_reference>urn:nasa:pds:gbo.ast.catalina.survey:data_calibrated</lid_reference>
         <member_status>Primary</member_status>
         <reference_type>bundle_has_member_collection</reference_type>
     </Bundle_Member_Entry>
     <Bundle_Member_Entry>
-        <lidvid_reference>urn:nasa:pds:gbo.ast.catalina.survey:data_partially_processed::1.0</lidvid_reference>
+        <lid_reference>urn:nasa:pds:gbo.ast.catalina.survey:data_partially_processed</lid_reference>
         <member_status>Primary</member_status>
         <reference_type>bundle_has_member_collection</reference_type>
     </Bundle_Member_Entry>

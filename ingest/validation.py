@@ -103,7 +103,7 @@ def run_validator(file_name, skip_data):
     '''
 
     logging.info("Running the validator...")
-    params = [VALIDATE_CMD, '-s', 'json', '-E', '1000'] + (['-D'] if skip_data else []) + ['-x', *SCHEMA_PATHS, '-S', *SCHEMATRON_PATHS, '-t', file_name]
+    params = [VALIDATE_CMD, '-s', 'json', '-E', '1000'] + (['-D'] if skip_data else []) + ['-t', file_name]
 
     process = subprocess.run(params, stdout=subprocess.PIPE, encoding="utf-8")
 
