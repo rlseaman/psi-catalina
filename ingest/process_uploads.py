@@ -411,15 +411,29 @@ def validate_products(products, loc, preprocessing_opts, validation_opts, logdir
             validation_failures,_,_ = validation.validate_products(batch, validation_opts.skip_data_validation)
             if validation_failures:
                 for failure in validation_failures:
-                    failfile = os.path.basename(failure['label'])
-                    faillogpath = os.path.join(logdir, failfile + ".log")
-                    with open(faillogpath, "w") as f:
-                        json.dump(failure, f, indent=2)
+                    writeFailure(batch, logdir, loc, failure)
                 all_validation_failures.extend(validation_failures)
     if all_validation_failures and not validation_opts.permissive_validation:
         raise Exception('There were validation errors')
 
     return all_validation_failures
+
+
+'''
+Writes information about a failure to the disk. If possible, it will write it next to the file that
+failed.
+'''
+def writeFailure(batch, logdir, loc, failure):
+    failfile = os.path.basename(failure['label'])
+    src_products = [x for x in batch if x.labelfilename == failfile]
+
+    faildir = loc.productDestDir(src_products[0], True) if src_products else logdir
+    os.makedirs(faildir, exist_ok=True)
+
+    faillogpath = os.path.join(faildir, failfile + ".log")
+    with open(faillogpath, "w") as f:
+        json.dump(failure, f, indent=2)
+
 
 
 def chunk(items, size):
