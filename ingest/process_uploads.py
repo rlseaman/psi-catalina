@@ -414,15 +414,29 @@ def validate_products(products, loc, preprocessing_opts, validation_opts, logdir
             validation_failures,_,_ = validation.validate_products(batch, validation_opts.skip_data_validation)
             if validation_failures:
                 for failure in validation_failures:
-                    failfile = os.path.basename(failure['label'])
-                    faillogpath = os.path.join(logdir, failfile + ".log")
-                    with open(faillogpath, "w") as f:
-                        json.dump(failure, f)
+                    writeFailure(batch, logdir, loc, failure)
                 all_validation_failures.extend(validation_failures)
     if all_validation_failures and not validation_opts.permissive_validation:
         raise Exception('There were validation errors')
 
     return all_validation_failures
+
+
+'''
+Writes information about a failure to the disk. If possible, it will write it next to the file that
+failed.
+'''
+def writeFailure(batch, logdir, loc, failure):
+    failfile = os.path.basename(failure['label'])
+    src_products = [x for x in batch if x.labelfilename == failfile]
+
+    faildir = loc.productDestDir(src_products[0], True) if src_products else logdir
+    os.makedirs(faildir, exist_ok=True)
+
+    faillogpath = os.path.join(faildir, failfile + ".log")
+    with open(faillogpath, "w") as f:
+        json.dump(failure, f, indent=2)
+
 
 
 def chunk(items, size):
@@ -463,10 +477,8 @@ def move_product(product, loc, postprocessing_opts, failed):
     '''
     logging.info("Moving files for: %s", product.labelfilename)
 
-    collection_id = product.collection_id()
-
     datadir = loc.datadir(product.inst, product.year, product.date)
-    dest_directory = loc.destdir(collection_id, product.inst, product.year, product.date, failed)
+    dest_directory = loc.productDestDir(product, failed)
     os.makedirs(dest_directory, exist_ok=True)
 
     file_names=product.filenames()

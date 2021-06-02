@@ -33,6 +33,9 @@ class Paths:
         else:
             return self._buildpath((self.dest, collection_id, inst, year, date))
 
+    def productDestDir(self, p, failed=False):
+        return self.destdir(p.collectionId, p.inst, p.year, p.date, failed)        
+
     def _buildpath(self, elements):
         return os.path.join(*self._filledElements(elements))
 
