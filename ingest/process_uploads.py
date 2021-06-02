@@ -414,7 +414,7 @@ def validate_products(products, loc, preprocessing_opts, validation_opts, logdir
                     failfile = os.path.basename(failure['label'])
                     faillogpath = os.path.join(logdir, failfile + ".log")
                     with open(faillogpath, "w") as f:
-                        json.dump(failure, f)
+                        json.dump(failure, f, indent=2)
                 all_validation_failures.extend(validation_failures)
     if all_validation_failures and not validation_opts.permissive_validation:
         raise Exception('There were validation errors')
