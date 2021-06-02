@@ -460,10 +460,8 @@ def move_product(product, loc, postprocessing_opts, failed):
     '''
     logging.info("Moving files for: %s", product.labelfilename)
 
-    collection_id = product.collection_id()
-
     datadir = loc.datadir(product.inst, product.year, product.date)
-    dest_directory = loc.destdir(collection_id, product.inst, product.year, product.date, failed)
+    dest_directory = loc.productDestDir(product, failed)
     os.makedirs(dest_directory, exist_ok=True)
 
     file_names=product.filenames()
