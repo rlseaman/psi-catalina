@@ -39,7 +39,7 @@ FOLLOWUP_FIELDS_PK = ["followup_id"] + FOLLOWUP_FIELDS
 USERFIELD_FIELDS = ["userfield_code", "userfield_name", "ra", "declination", "magnitude", "comment", "field_code", "night_id"]
 USERFIELD_FIELDS_PK = ['userfield_id'] + USERFIELD_FIELDS
 
-OBS_FIELDS = ["night_id", "obsfile"]
+OBS_FIELDS = ["night_id", "obsfile", "obsdir"]
 OBS_FIELDS_PK = ['observation_id'] + OBS_FIELDS
 
 ASTR_FIELDS = ['astr_code', 'obstime', 'ra', 'declination', 'magnitude', 'night_id']

@@ -26,7 +26,8 @@ CREATE TABLE followups(
 CREATE TABLE observations(
     observation_id integer PRIMARY KEY, 
     night_id integer REFERENCES obsnight(night_id), 
-    obsfile text
+    obsfile text,
+    obsdir text
 );
 
 CREATE TABLE userfields(
