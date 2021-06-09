@@ -18,7 +18,8 @@ DICTIONARIES = ['PDS4_IMG_1900',
                 'PDS4_DISP_1900',
                 'PDS4_GEOM_1900_1510',
                 'PDS4_SURVEY_1A00_1000',
-                'PDS4_PROC_1900']
+                'PDS4_PROC_1900',
+                'PDS4_PDS_1A00']
 
 SCHEMA_FILES = [x + '.xsd' for x in DICTIONARIES]
 SCHEMATRON_FILES = [x + '.sch' for x in DICTIONARIES]
@@ -103,8 +104,7 @@ def run_validator(file_name, skip_data):
     '''
 
     logging.info("Running the validator...")
-    params = [VALIDATE_CMD, '-s', 'json', '-E', '1000'] + (['-D'] if skip_data else []) + ['-t', file_name]
-
+    params = [VALIDATE_CMD, '-s', 'json', '-E', '1000'] + (['-D'] if skip_data else []) + ['-x', *SCHEMA_PATHS, '-S', *SCHEMATRON_PATHS, '-t', file_name]
     process = subprocess.run(params, stdout=subprocess.PIPE, encoding="utf-8")
 
     logging.info("Validation complete, processing results...")
