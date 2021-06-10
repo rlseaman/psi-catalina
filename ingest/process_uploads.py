@@ -45,6 +45,7 @@ COLLECTION_FILES = {
     "data_calibrated": "collection_data_calibrated.xml",
     "calibration": "collection_calibration.xml",
     "document" : "collection_document.xml",
+    "miscellaneous" : "collection_miscellaneous.xml",
 }
 
 def main(argv=None):
