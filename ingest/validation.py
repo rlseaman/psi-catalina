@@ -12,7 +12,7 @@ import gzip
 import logging
 import re
 
-SCHEMA_PATH = '../schemas'
+SCHEMA_PATH = '/data/schemas'
 
 DICTIONARIES = ['PDS4_IMG_1900',
                 'PDS4_DISP_1900',
