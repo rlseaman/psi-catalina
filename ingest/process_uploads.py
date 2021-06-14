@@ -98,7 +98,7 @@ def main(argv=None):
     )
 
     logging.info("Basedir: %s, Destdir: %s", args.basedir, args.destdir)
-    lockfile_run(args.basedir, args.destdir, preprocessing_opts, validation_opts, postprocessing_opts, filter_opts)
+    lockfile_run(args.basedir, args.destdir, args.schemadir, preprocessing_opts, validation_opts, postprocessing_opts, filter_opts)
 
     return 0
 
@@ -109,6 +109,9 @@ def get_args():
                         required=True)
     parser.add_argument('--destdir', 
                         help='The destination directory for the processed data', 
+                        required=True)
+    parser.add_argument('--schemadir', 
+                        help='The directory for the schema files', 
                         required=True)
     parser.add_argument('--specific-date', 
                         dest='specific_date', 
@@ -178,7 +181,7 @@ def get_args():
     return parser.parse_args()
 
 
-def lockfile_run(basedir, destdir, preprocessing_opts, validation_opts, postprocesing_opts, filter_opts):
+def lockfile_run(basedir, destdir, schemadir, preprocessing_opts, validation_opts, postprocesing_opts, filter_opts):
     '''
     Run a function on this directory if one isn't already running. This is
     enforced with a lockfile.
@@ -190,18 +193,18 @@ def lockfile_run(basedir, destdir, preprocessing_opts, validation_opts, postproc
         with open(lockfile, "w") as lock:
             lock.write(".")
         try:
-            process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, postprocesing_opts, filter_opts)
+            process_upload_dir(basedir, destdir, schemadir, preprocessing_opts, validation_opts, postprocesing_opts, filter_opts)
         finally:
             os.remove(lockfile)
 
 
-def process_upload_dir(basedir, destdir, preprocessing_opts, validation_opts, postprocesing_opts, filter_opts):
+def process_upload_dir(basedir, destdir, schemadir, preprocessing_opts, validation_opts, postprocesing_opts, filter_opts):
     '''
     process an upload directory, assuming it has been validated.
     '''
     logging.info("Discovering products at: %s", basedir)
     bundle_dir = os.path.join(destdir, BUNDLE_ID)
-    loc = paths.Paths(basedir, bundle_dir)
+    loc = paths.Paths(basedir, bundle_dir, schemadir)
     discovered_products = discover_products(loc, filter_opts)
     logging.info("Discovey complete, consolidating: %s", basedir)
     products = list(itertools.islice(discovered_products, filter_opts.max_products))
@@ -412,7 +415,7 @@ def validate_products(products, loc, preprocessing_opts, validation_opts, logdir
             for product in batch:
                 preprocess_product(product, loc, preprocessing_opts.skip_data_preprocessing, preprocessing_opts.skip_label_preprocessing)
         if not validation_opts.skip_validation:
-            validation_failures,_,_ = validation.validate_products(batch, validation_opts.skip_data_validation)
+            validation_failures,_,_ = validation.validate_products(batch, loc.schemadir, validation_opts.skip_data_validation)
             if validation_failures:
                 for failure in validation_failures:
                     writeFailure(batch, logdir, loc, failure)

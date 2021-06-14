@@ -7,9 +7,10 @@ class Paths:
     provides multiple ways to get at each data file and label file, and
     accounts for the fact that the data and labels are delivered in separate locations.
     '''
-    def __init__(self, basedir, dest):
+    def __init__(self, basedir, dest, schemadir):
         self.basedir = basedir
         self.dest = dest
+        self.schemadir = schemadir
 
     def datadir(self, inst=None, year=None, date=None, filename=None):
         '''

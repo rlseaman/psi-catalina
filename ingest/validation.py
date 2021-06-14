@@ -12,30 +12,26 @@ import gzip
 import logging
 import re
 
-SCHEMA_PATH = '../schemas'
 
 DICTIONARIES = ['PDS4_IMG_1900',
                 'PDS4_DISP_1900',
                 'PDS4_GEOM_1900_1510',
                 'PDS4_SURVEY_1A00_1000',
-                'PDS4_PROC_1900']
+                'PDS4_PROC_1900',
+                'PDS4_PDS_1A00']
 
-SCHEMA_FILES = [x + '.xsd' for x in DICTIONARIES]
-SCHEMATRON_FILES = [x + '.sch' for x in DICTIONARIES]
-SCHEMA_PATHS = [os.path.join(SCHEMA_PATH, x) for x in SCHEMA_FILES]
-SCHEMATRON_PATHS = [os.path.join(SCHEMA_PATH, x) for x in SCHEMATRON_FILES]
 
 VALIDATE_CMD='validate'
 FUNPACK_CMD='funpack'
 
-def validate_product(product, skip_data):
+def validate_product(product, schema_path, skip_data):
     '''
     Moves the entirety of the product to a temporary location,
     decompressed the data files if needed, and validates the product.
     '''
-    return validate_products([product], skip_data)
+    return validate_products([product], schema_path, skip_data)
 
-def validate_products(products, skip_data):
+def validate_products(products, schema_path, skip_data):
     '''
     Moves the entirety of the product to a temporary location,
     decompressed the data files if needed, and validates the product.
@@ -46,7 +42,7 @@ def validate_products(products, skip_data):
         for product in products:
             create_temp_copy(temp_dir, product, skip_data)
 
-        return run_validator(temp_dir, skip_data)
+        return run_validator(temp_dir, schema_path, skip_data)
 
 
 def create_temp_copy(temp_dir, product, skip_data):
@@ -97,14 +93,13 @@ def create_temp_copy(temp_dir, product, skip_data):
 
 
 
-def run_validator(file_name, skip_data):
+def run_validator(file_name, schema_path, skip_data):
     '''
     Runs the label validatior on the given file or directory
     '''
 
     logging.info("Running the validator...")
-    params = [VALIDATE_CMD, '-s', 'json', '-E', '1000'] + (['-D'] if skip_data else []) + ['-t', file_name]
-
+    params = [VALIDATE_CMD, '-s', 'json', '-E', '1000'] + (['-D'] if skip_data else []) + ['-x', *get_schemas(schema_path, ".xsd"), '-S', *get_schemas(schema_path, ".sch"), '-t', file_name]
     process = subprocess.run(params, stdout=subprocess.PIPE, encoding="utf-8")
 
     logging.info("Validation complete, processing results...")
@@ -131,6 +126,10 @@ def run_validator(file_name, skip_data):
     else:
         logging.info("Validation passed")
     return (failures, successes, output)
+
+def get_schemas(base_path, extension):
+    return [os.path.join(base_path, x + extension) for x in DICTIONARIES]
+    
 
 class Validation:
     '''
