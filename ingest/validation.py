@@ -20,14 +20,14 @@ DICTIONARIES_1A = ['PDS4_IMG_1900',
                 'PDS4_PROC_1900',
                 'PDS4_PDS_1A00']
 
-DICTIONARIES_1G = ['PDS4_IMG_1900',
-                'PDS4_DISP_1900',
-                'PDS4_GEOM_1900_1510',
+DICTIONARIES_1G = ['PDS4_IMG_1G00_1850',
+                'PDS4_DISP_1G00_1500',
+                'PDS4_GEOM_1G00_1920',
                 'PDS4_SURVEY_1A00_1000',
-                'PDS4_PROC_1900',
-                'PDS4_PDS_1A00']
+                'PDS4_PROC_1G00_1210',
+                'PDS4_SURVEY_1G00_1010']
 
-DICTIONARIES = DICTIONARIES_1A
+DICTIONARIES = DICTIONARIES_1G
 
 VALIDATE_CMD='validate'
 FUNPACK_CMD='funpack'
