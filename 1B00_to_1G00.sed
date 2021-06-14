@@ -1,0 +1,15 @@
+# Core IM
+s/PDS4_PDS_1B00/PDS4_PDS_1G00/
+s/1.11.0.0/1.16.0.0/
+# Core IM - Update CRLF to LF
+s/Carriage-Return Line-Feed/Line-Feed/
+# Imaging
+#s/PDS4_IMG_1900/PDS4_IMG_1G00_1850/
+# Display
+#s/PDS4_DISP_1900/PDS4_DISP_1G00_1500/
+# Geometry
+#s/PDS4_GEOM_1900_1510/PDS4_GEOM_1G00_1920/
+# Processing
+#s/PDS4_PROC_1900/PDS4_PROC_1G00_1210/
+# Survey
+#s/PDS4_SURVEY_1A00_1000/PDS4_SURVEY_1G00_1010/
