@@ -43,23 +43,6 @@ def strip_label_gz_extension(contents, datafilename):
     return contents.replace(datafilename, uncompressed_datafilename)
 
 DATA_FUNCS = {
-    "sext": linefeed_to_crlf,
-    "iext": linefeed_to_crlf,
-    "strp": linefeed_to_crlf,
-    "strm": linefeed_to_crlf,
-    "scmp": linefeed_to_crlf,
-    "ephm": linefeed_to_crlf,
-    "mtds": linefeed_to_crlf,
-    "mtdf": linefeed_to_crlf, 
-    "dets": linefeed_to_crlf,
-    "hits": linefeed_to_crlf,
-    "rjct": linefeed_to_crlf,
-    "mpcd": linefeed_to_crlf,
-    "neos": linefeed_to_crlf,
-    "fail": linefeed_to_crlf,
-    "followup": linefeed_to_crlf,
-    "ast": linefeed_to_crlf,   
-    "userfields": linefeed_to_crlf
 }
 
 LABEL_FUNCS = {
