@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?xml-model href="https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_1B00.sch" schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<?xml-model href="https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_1G00.sch" schematypens="http://purl.oclc.org/dsdl/schematron"?>
 
 <Product_Collection xmlns="http://pds.nasa.gov/pds4/pds/v1"
 	xmlns:pds="http://pds.nasa.gov/pds4/pds/v1"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://pds.nasa.gov/pds4/pds/v1 https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_1B00.xsd">    
+    xsi:schemaLocation="http://pds.nasa.gov/pds4/pds/v1 https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_1G00.xsd">    
     
     <Identification_Area>
         <logical_identifier>urn:nasa:pds:gbo.ast.catalina.survey:miscellaneous</logical_identifier>
         <version_id>{major}.{minor}</version_id>
         <title>Catalina Sky Survey Bundle: Miscellaneous Collection</title>
-        <information_model_version>1.11.0.0</information_model_version>
+        <information_model_version>1.16.0.0</information_model_version>
         <product_class>Product_Collection</product_class>   
         <Citation_Information>
             <author_list>Seaman, R., Christensen, E., Gibbs, A., and Shelly, F.</author_list>
@@ -237,7 +237,7 @@
             <offset unit="byte">0</offset>
             <parsing_standard_id>PDS DSV 1</parsing_standard_id>
             <records>{record_count}</records>
-            <record_delimiter>Carriage-Return Line-Feed</record_delimiter>
+            <record_delimiter>Line-Feed</record_delimiter>
             <field_delimiter>Comma</field_delimiter>
             <Record_Delimited>
                 <fields>2</fields>

@@ -18,7 +18,7 @@ def write_inventory(inventory, collection_lidvid, collection_dir):
     collection_path = os.path.join(collection_dir, collection_filename)
     
     logging.info("writing to: " + collection_path)
-    iotools.write_file(collection_path, '\r\n'.join(sorted(inventory)) + '\r\n')
+    iotools.write_file(collection_path, '\n'.join(sorted(inventory)) + '\n')
 
 def read_inventory(collection_lidvid, collection_dir):
     '''
