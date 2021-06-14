@@ -13,13 +13,21 @@ import logging
 import re
 
 
-DICTIONARIES = ['PDS4_IMG_1900',
+DICTIONARIES_1A = ['PDS4_IMG_1900',
                 'PDS4_DISP_1900',
                 'PDS4_GEOM_1900_1510',
                 'PDS4_SURVEY_1A00_1000',
                 'PDS4_PROC_1900',
                 'PDS4_PDS_1A00']
 
+DICTIONARIES_1G = ['PDS4_IMG_1900',
+                'PDS4_DISP_1900',
+                'PDS4_GEOM_1900_1510',
+                'PDS4_SURVEY_1A00_1000',
+                'PDS4_PROC_1900',
+                'PDS4_PDS_1A00']
+
+DICTIONARIES = DICTIONARIES_1A
 
 VALIDATE_CMD='validate'
 FUNPACK_CMD='funpack'
