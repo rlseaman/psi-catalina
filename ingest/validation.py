@@ -130,7 +130,8 @@ def run_validator(file_name, schema_path, skip_data):
                           if x['status'] == "PASS"]
 
     if failures:
-        logging.info("%s Failures encountered", len(failures))
+        filenames = [os.path.basename(x['label']) for x in failures]
+        logging.warn("%s Failures encountered: %s", len(failures), ",".join(filenames))
         #logging.error(failure)
         #logging.error(result)
     else:
