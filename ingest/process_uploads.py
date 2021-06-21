@@ -415,7 +415,8 @@ def validate_products(products, loc, preprocessing_opts, validation_opts, logdir
             for product in batch:
                 preprocess_product(product, loc, preprocessing_opts.skip_data_preprocessing, preprocessing_opts.skip_label_preprocessing)
         if not validation_opts.skip_validation:
-            validation_failures,_,_ = validation.validate_products(batch, loc.schemadir, validation_opts.skip_data_validation)
+            validation_failures,_,unfiltered = validation.validate_products(batch, loc.schemadir, validation_opts.skip_data_validation)
+            log_validation_run(unfiltered, logdir)
             if validation_failures:
                 for failure in validation_failures:
                     writeFailure(batch, logdir, loc, failure)
@@ -425,6 +426,12 @@ def validate_products(products, loc, preprocessing_opts, validation_opts, logdir
 
     return all_validation_failures
 
+def log_validation_run(output, logdir):
+    logdate = datetime.datetime.now().strftime("%Y%m%dT%H%M%S.%f")
+    logfilename = logdate + ".json"
+    logfilepath = os.path.join(logdir, logfilename)
+    with open(logfilepath, "w") as logfile:
+        logfile.write(output)
 
 '''
 Writes information about a failure to the disk. If possible, it will write it next to the file that

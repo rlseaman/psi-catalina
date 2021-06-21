@@ -112,7 +112,9 @@ def run_validator(file_name, schema_path, skip_data):
 
     logging.info("Validation complete, processing results...")
 
-    output = re.sub('\}\.+', '}', process.stdout)
+    unfiltered = process.stdout
+
+    output = re.sub('\}\.+', '}', unfiltered)
     output = re.sub('\.+\{', '{', output)
     
     try:
@@ -133,7 +135,7 @@ def run_validator(file_name, schema_path, skip_data):
         #logging.error(result)
     else:
         logging.info("Validation passed")
-    return (failures, successes, output)
+    return (failures, successes, unfiltered)
 
 def get_schemas(base_path, extension):
     return [os.path.join(base_path, x + extension) for x in DICTIONARIES]
