@@ -7,7 +7,7 @@ import os
 import iotools
 import logging
 
-INVENTORY_FILENAME_TEMPLATE = 'collection_inventory_{collection_id}.csv'
+INVENTORY_FILENAME_TEMPLATE = 'collection_inventory_{collection_id}_v{major}.{minor}.csv'
 
 
 def write_inventory(inventory, collection_lidvid, collection_dir):
