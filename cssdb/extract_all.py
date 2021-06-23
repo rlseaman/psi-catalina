@@ -8,12 +8,14 @@ import argparse
 import datetime
 
 import json
+import logging
 import cssextract
 
 
-COLLECTIONS=['data_calibrated', 'data_derived', 'data_partially_processed', 'data_raw', 'data_reduced']
+COLLECTIONS=['data_calibrated', 'data_derived', 'data_partially_processed', 'data_raw', 'data_reduced', 'miscellaneous']
 INSTS = ['703', 'G96', 'I52', 'V06']
 def main(argv=None):
+    logging.basicConfig(level=logging.INFO,format='%(asctime)s|%(levelname)s|%(message)s')
 
     parser = argparse.ArgumentParser(description='Convert the nightly files from the CSS archive into json format')
     parser.add_argument('--basedir', help='The base directory for the delivered data', required=True)
@@ -32,13 +34,13 @@ def main(argv=None):
 
             if not os.path.exists(outfilename):
                 extracted = extract_night(args.basedir, inst, year, night)
-                print (extracted)
+                logging.debug(extracted)
         
                 if extracted:
                     with open(outfilename, 'w') as f:
                         json.dump(extracted, f)
             else:
-                print("Output file exists: %s, skipping..." % outfilename)
+                logging.info("Output file exists: %s, skipping..." % outfilename)
 
 def extract_night(directory_name, inst, year, night):
     '''
@@ -58,11 +60,11 @@ def extract_night(directory_name, inst, year, night):
                             astrometry_file=first_matching_file(files_for_night, has_extension(".mpcd.mrpt")), 
                             neo_file=first_matching_file(files_for_night, has_extension(".neos.mrpt")))
     else:
-        print ("No data for %s, %s, %s" % (inst, year, night))
+        logging.info("No data for %s, %s, %s",inst, year, night)
 
 def extract_files(pointing_file, coverage_file, control_file, followup_file, fields_file, surveyplan_file, astrometry_file, neo_file):
     return {
-        "pointing": cssextract.process_pointing_file(pointing_file),
+        "pointing": cssextract.process_pointing_file(pointing_file) if pointing_file else [],
         "coverage": cssextract.process_coverage_file(coverage_file) if coverage_file else [],
         "control": cssextract.process_control_file(control_file),
         "followup": cssextract.process_field_file(followup_file) if followup_file else [],
