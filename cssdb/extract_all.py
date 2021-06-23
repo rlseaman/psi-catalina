@@ -11,7 +11,7 @@ import json
 import cssextract
 
 
-COLLECTIONS=['data_calibrated', 'data_derived', 'data_partially_processed', 'data_raw', 'data_reduced']
+COLLECTIONS=['data_calibrated', 'data_derived', 'data_partially_processed', 'data_raw', 'data_reduced', 'miscellaneous']
 INSTS = ['703', 'G96', 'I52', 'V06']
 def main(argv=None):
 
@@ -62,7 +62,7 @@ def extract_night(directory_name, inst, year, night):
 
 def extract_files(pointing_file, coverage_file, control_file, followup_file, fields_file, surveyplan_file, astrometry_file, neo_file):
     return {
-        "pointing": cssextract.process_pointing_file(pointing_file),
+        "pointing": cssextract.process_pointing_file(pointing_file) if pointing_file else [],
         "coverage": cssextract.process_coverage_file(coverage_file) if coverage_file else [],
         "control": cssextract.process_control_file(control_file),
         "followup": cssextract.process_field_file(followup_file) if followup_file else [],
