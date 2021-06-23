@@ -20,7 +20,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description='Convert the nightly files from the CSS archive into json format')
     parser.add_argument('--basedir', help='The base directory for the delivered data', required=True)
     parser.add_argument('--nights', help='Number of nights to look back', required=True, type=int)
-    parser.add_argument('--outfilebase', help='The base file for the JSON output', required=True)
+    parser.add_argument('--outfilebase', help='The destination directory the JSON output', required=True)
     args = parser.parse_args()
 
     dates = [datetime.date.today() - datetime.timedelta(x) for x in range(0, args.nights)]
@@ -30,7 +30,7 @@ def main(argv=None):
             night = d.strftime("%y%b%d")
             year = d.strftime("%Y")
 
-            outfilename = args.outfilebase + night + "." + inst + ".json"
+            outfilename = os.path.join(args.outfilebase, "catalina" + night + "." + inst + ".json")
 
             if not os.path.exists(outfilename):
                 extracted = extract_night(args.basedir, inst, year, night)
