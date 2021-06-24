@@ -22,6 +22,7 @@ CREATE TABLE followups(
     field_code TEXT,
     night_id integer REFERENCES obsnight(night_id)
 );
+CREATE INDEX ix_followups_obsnight on followups(night_id);
 
 CREATE TABLE observations(
     observation_id integer PRIMARY KEY, 
@@ -29,6 +30,7 @@ CREATE TABLE observations(
     obsfile text,
     obsdir text
 );
+CREATE INDEX ix_observations_obsnight on observations(night_id);
 
 CREATE TABLE userfields(
     userfield_id INTEGER PRIMARY KEY, 
@@ -41,6 +43,7 @@ CREATE TABLE userfields(
     field_code TEXT,
     night_id INTEGER references obsnight(night_id)
 );
+CREATE INDEX ix_userfields_obsnight on userfields(night_id);
 
 CREATE TABLE surveyfields(
     surveyfield_id INTEGER PRIMARY KEY, 
@@ -50,6 +53,7 @@ CREATE TABLE surveyfields(
     declination TEXT,
     night_id INTEGER references obsnight(night_id)
 );
+CREATE INDEX ix_surveyfields_obsnight on surveyfields(night_id);
 
 CREATE TABLE astrometry(
     astr_id INTEGER PRIMARY KEY, 
@@ -60,6 +64,7 @@ CREATE TABLE astrometry(
     magnitude TEXT,
     night_id INTEGER references obsnight(night_id)
 );
+CREATE INDEX ix_astrometry_obsnight on astrometry(night_id);
 
 CREATE TABLE neo(
     neo_id INTEGER PRIMARY KEY, 
@@ -70,3 +75,4 @@ CREATE TABLE neo(
     magnitude TEXT,
     night_id INTEGER references obsnight(night_id)
 );
+CREATE INDEX ix_neo_obsnight on neo(night_id);
