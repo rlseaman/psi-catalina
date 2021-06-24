@@ -1,4 +1,5 @@
 import sqlite3
+import logging
 
 def make_insert_template(tablename, fields):
     return "INSERT INTO {}({}) VALUES ({})".format(
@@ -104,7 +105,7 @@ def write_obsnight(c, extracted, directory_name):
 
 def obsnight_exists(c: sqlite3.Cursor, extracted):
     query = make_search_template("obsnight", "*", OBSNIGHT_SEARCH_FIELDS)
-    print (extracted)
+    logging.debug(extracted)
     params = ('CSS',
         extracted['coverage']['Source'],
         extracted['control']['Telescope'],
