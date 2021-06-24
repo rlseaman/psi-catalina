@@ -4,6 +4,10 @@
     </head>
     <body>
         <h1>Details for Night {{ night.obsdate }}</h1>
+        <h2>Observatory: {{ night.observatory }}</h2>
+        <h2>Telescope: {{ night.telescope }}</h2>
+        <h2>Camera: {{ night.camera }}</h2>
+        <h2>Operator: {{ night.operator }}</h2>
 
         {% if surveyfields %}
         <a href="#surveyfields">Survey Fields</a>
