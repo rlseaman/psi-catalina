@@ -17,3 +17,4 @@ fi
 
 tar -xzf catalina_json.tar.gz
 find json -name "*.json" -exec python3 import_json.py --filename '{}' \; 
+sqlite3 cssdb.sqlite < cssdb_indexes.sql
