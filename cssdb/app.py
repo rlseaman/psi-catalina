@@ -18,7 +18,7 @@ def to_dict(fields, t):
 def root():
     with get_connection() as conn:
         c = conn.cursor()
-        c.execute("select * from obsnight")
+        c.execute("select * from obsnight order by obsdate")
         obsnights = c.fetchall()
 
     return render_template('index.html', nights=obsnights)
