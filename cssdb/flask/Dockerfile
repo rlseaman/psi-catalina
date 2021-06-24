@@ -5,6 +5,7 @@ run apk add sqlite python3 py3-flask uwsgi uwsgi-python uwsgi-http py3-matplotli
 
 run mkdir /usr/local/cssdb
 
+copy catalina_json.tar.gz /usr/local/cssdb
 copy build_db.sh /usr/local/cssdb
 copy cssdb_schema.sql /usr/local/cssdb
 copy cssdb.py /usr/local/cssdb
