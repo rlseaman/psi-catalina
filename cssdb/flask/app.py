@@ -31,7 +31,7 @@ def night(night_id):
         c = conn.cursor()
 
         night = query(c, "select * from obsnight where night_id = ?", term)[0]
-        userfields = query(c, "select * from userfields where night_id = ?", term)
+        userfields = query(c, "select * from userfields where night_id = ? and userfield_name is not null", term)
         followups = query(c, "select * from followups where night_id = ?", term)
         observations = query(c, "select * from observations where night_id = ?", term)
         surveyfields = query(c, "select * from surveyfields where night_id = ?", term)
