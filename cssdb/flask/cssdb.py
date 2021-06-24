@@ -74,7 +74,7 @@ def write_directory(extracted, directory_name):
             write_userfield(c, night_id, userfield)
 
         for observation in extracted["pointing"]["Observations"]:
-            write_observation(c, night_id, observation)
+            write_observation(c, night_id, observation, "")
 
         for surveyplan in extracted["surveyplan"]:
             write_plan(c, night_id, surveyplan)
@@ -142,8 +142,8 @@ def write_userfield(c, night_id, userfield):
 
     c.execute(USERFIELD_INSERT, params)
 
-def write_observation(c, night_id, obsfile):
-    params = (night_id, obsfile)
+def write_observation(c, night_id, obsfile, obsdir):
+    params = (night_id, obsfile, obsdir)
     c.execute(OBS_INSERT, params)
 
 def write_plan(c, night_id, plan):
