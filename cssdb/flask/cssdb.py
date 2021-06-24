@@ -82,7 +82,7 @@ def write_directory(extracted, directory_name):
             write_observation(c, night_id, observation, "")
 
         for surveyplan in extracted["surveyplan"]:
-            logging.info("Writing survey plan...")
+            logging.debug("Writing survey plan...")
             write_plan(c, night_id, surveyplan)
 
         for astr in extracted["astrometry"]:
