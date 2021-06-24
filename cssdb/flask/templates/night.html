@@ -5,6 +5,27 @@
     <body>
         <h1>Details for Night {{ night.obsdate }}</h1>
 
+        {% if surveyfields %}
+        <h2>Survey Plan</h2>
+        <img src='/img/survey/{{ night.night_id }}'>
+        <table>
+            <tr>
+                <th>Code</th>
+                <th>MJD</th>
+                <th>RA</th>
+                <th>Dec</th>
+            </tr>
+            {% for surveyfield in surveyfields %}
+            <tr>
+                <td><a href='/field/{{ surveyfield.surveyfield_code }}'>{{ surveyfield.surveyfield_code }}</a></td>
+                <td>{{ surveyfield.mjd }}</td>
+                <td>{{ surveyfield.ra }}</td>
+                <td>{{ surveyfield.declination }}</td>
+            </tr>
+            {% endfor %}
+        </table>        
+        {% endif %}
+
         {% if followup %}
         <h2>Followups</h2>
         <table>
@@ -91,26 +112,6 @@
         </table>   
         {% endif %}     
 
-        {% if surveyfields %}
-        <h2>Survey Plan</h2>
-        <img src='/img/survey/{{ night.night_id }}'>
-        <table>
-            <tr>
-                <th>Code</th>
-                <th>MJD</th>
-                <th>RA</th>
-                <th>Dec</th>
-            </tr>
-            {% for surveyfield in surveyfields %}
-            <tr>
-                <td><a href='/field/{{ surveyfield.surveyfield_code }}'>{{ surveyfield.surveyfield_code }}</a></td>
-                <td>{{ surveyfield.mjd }}</td>
-                <td>{{ surveyfield.ra }}</td>
-                <td>{{ surveyfield.declination }}</td>
-            </tr>
-            {% endfor %}
-        </table>        
-        {% endif %}
 
         {% if observations %}
         <h2>Observations</h2>
