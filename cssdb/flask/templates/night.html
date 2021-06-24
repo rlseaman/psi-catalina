@@ -6,8 +6,26 @@
         <h1>Details for Night {{ night.obsdate }}</h1>
 
         {% if surveyfields %}
+        <a href="#surveyfields">Survey Fields</a>
+        {% endif %}
+        {% if followups %}
+        <a href="#followups">Followups</a>
+        {% endif %}
+        {% if userfields %}
+        <a href="#userfields">User Fields</a>
+        {% endif %}
+        {% if neos %}
+        <a href="#neos">NEOs</a>
+        {% endif %}
+        {% if observations %}
+        <a href="#observations">Observations</a>
+        {% endif %}
+
+
+        {% if surveyfields %}
+        <a id="surveyfields"></a>
         <h2>Survey Plan</h2>
-        <img src='/img/survey/{{ night.night_id }}'>
+        <img src='/img/survey/{{ night.night_id }}' alt='building graph...'>
         <table>
             <tr>
                 <th>Code</th>
@@ -27,8 +45,9 @@
         {% endif %}
 
         {% if followups %}
+        <a id="followups"></a>
         <h2>Followups</h2>
-        <img src='/img/followups/{{ night.night_id }}'>
+        <img src='/img/followups/{{ night.night_id }}' alt='building graph...'>
 
         <table>
             <tr>
@@ -61,8 +80,9 @@
         {% endif %}
 
         {% if userfields %}
+        <a id='userfields'></a>
         <h2>User-Specified Fields</h2>
-        <img src='/img/userfields/{{ night.night_id }}'>
+        <img src='/img/userfields/{{ night.night_id }}' alt='building graph...'>
         <table>
             <tr>
                 <th>Code</th>
@@ -94,8 +114,9 @@
         {% endif %}
 
         {% if neos %}
+        <a id='neos'></a>
         <h2>NEOs</h2>
-        <img src='/img/neos/{{ night.night_id }}'>
+        <img src='/img/neos/{{ night.night_id }}' alt='building graph...'>
         <table>
             <tr>
                 <th>Object</th>
@@ -118,6 +139,7 @@
 
 
         {% if observations %}
+        <a id='observations'></a>
         <h2>Observations</h2>
         <table>
             <tr>
