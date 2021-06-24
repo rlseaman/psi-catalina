@@ -26,8 +26,10 @@
         </table>        
         {% endif %}
 
-        {% if followup %}
+        {% if followups %}
         <h2>Followups</h2>
+        <img src='/img/followups/{{ night.night_id }}'>
+
         <table>
             <tr>
                 <th>Code</th>
@@ -60,6 +62,7 @@
 
         {% if userfields %}
         <h2>User-Specified Fields</h2>
+        <img src='/img/userfields/{{ night.night_id }}'>
         <table>
             <tr>
                 <th>Code</th>
@@ -92,6 +95,7 @@
 
         {% if neos %}
         <h2>NEOs</h2>
+        <img src='/img/neos/{{ night.night_id }}'>
         <table>
             <tr>
                 <th>Object</th>

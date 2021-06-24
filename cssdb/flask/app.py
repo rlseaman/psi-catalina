@@ -7,6 +7,7 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from flask import Flask, escape, request, render_template, send_file, Response
 
 
+
 app = Flask(__name__)
 
 DB_FILE="cssdb.sqlite"
@@ -85,6 +86,46 @@ def field(field_id):
         followups=followups,
         observations=observations)
 
+@app.route("/img/neos/<night_id>")
+def neos(night_id):
+    match_param = (night_id, )
+    with get_connection() as conn:
+        c = conn.cursor()
+
+        result = query(c, "select ra, declination from neo where night_id = ?", match_param)
+        surveyfields = [(ra_hms_to_dec(*parse_triplet(ra)), dec_dms_to_dec(*parse_triplet(dec))) for (ra, dec) in result if ra and dec]
+
+    b = generate_coordinate_scatter_plot(surveyfields, "NEOs", "NEOs Detail")
+    
+    return Response(b.getvalue(), mimetype='image/png')
+
+@app.route("/img/followups/<night_id>")
+def followups(night_id):
+    match_param = (night_id, )
+    with get_connection() as conn:
+        c = conn.cursor()
+
+        result = query(c, "select ra, declination from followups where night_id = ?", match_param)
+        surveyfields = [(ra_hms_to_dec(*parse_triplet(ra)), dec_dms_to_dec(*parse_triplet(dec))) for (ra, dec) in result if ra and dec]
+
+    b = generate_coordinate_scatter_plot(surveyfields, "Followups", "Followups Detail")
+    
+    return Response(b.getvalue(), mimetype='image/png')
+
+@app.route("/img/userfields/<night_id>")
+def userfields(night_id):
+    match_param = (night_id, )
+    with get_connection() as conn:
+        c = conn.cursor()
+
+        result = query(c, "select ra, declination from userfields where night_id = ?", match_param)
+        surveyfields = [(ra_hms_to_dec(*parse_triplet(ra)), dec_dms_to_dec(*parse_triplet(dec))) for (ra, dec) in result if ra and dec]
+
+    b = generate_coordinate_scatter_plot(surveyfields, "User Fields", "User Fields Detail")
+    
+    return Response(b.getvalue(), mimetype='image/png')
+
+
 @app.route("/img/survey/<night_id>")
 def survey(night_id):
     match_param = (night_id, )
@@ -121,6 +162,20 @@ def generate_coordinate_scatter_plot(coordinates, main_label, detail_label):
     b = io.BytesIO()
     FigureCanvas(fig).print_png(b)
     return b
+
+def parse_triplet(val):
+    hd, m, s = split_triplet(val)
+    return int(hd), int(m), float(s)
+
+def split_triplet(val):
+    return val.split(":") if ":" in val else val.split(" ")
+
+def ra_hms_to_dec(hours, minutes, seconds):
+    #return (hours/24.0*360.0) + (minutes/24.0/60.0*360.0) + (seconds/24.0/60.0/60.0*360.0)
+    return hours * 15.0 + minutes / 4.0 + seconds / 240.0
+
+def dec_dms_to_dec(degrees, minutes, seconds):
+    return degrees + (minutes/60.0) + (seconds/3600.0)
 
 def get_connection():
     conn = sqlite3.connect(DB_FILE)
