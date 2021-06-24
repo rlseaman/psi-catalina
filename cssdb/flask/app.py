@@ -94,11 +94,11 @@ def survey(night_id):
         result = query(c, "select ra, declination from surveyfields where night_id = ?", match_param)
         surveyfields = [(float(ra), float(dec)) for (ra, dec) in result]
 
-    b = generate_coordinate_scatter_plot(surveyfields)
+    b = generate_coordinate_scatter_plot(surveyfields, "Survey Plan", "Survey Plan Detail")
     
     return Response(b.getvalue(), mimetype='image/png')
 
-def generate_coordinate_scatter_plot(coordinates):
+def generate_coordinate_scatter_plot(coordinates, main_label, detail_label):
     ras = [coordinate[0] for coordinate in coordinates]
     decs = [coordinate[1] for coordinate in coordinates]
     fig = Figure(figsize=(10, 5))
@@ -106,7 +106,7 @@ def generate_coordinate_scatter_plot(coordinates):
     summary = fig.add_subplot(1,2,1)
     summary.set_xlabel("Right Ascension (degrees)")
     summary.set_ylabel("Declination (degrees)")
-    summary.set_title("Survey Plan")
+    summary.set_title(main_label)
     summary.set_xlim(0,360)
     summary.set_ylim(-90, 90)
     summary.scatter(ras, decs, s=3, color='blue', alpha=0.5)
@@ -114,7 +114,7 @@ def generate_coordinate_scatter_plot(coordinates):
     detail = fig.add_subplot(1,2,2)
     detail.set_xlabel("Right Ascension (degrees)")
     detail.set_ylabel("Declination (degrees)")
-    detail.set_title("Survey Plan Detail")
+    detail.set_title(detail_label)
     detail.scatter(ras, decs, s=3, color='blue', alpha=0.5)
 
 
