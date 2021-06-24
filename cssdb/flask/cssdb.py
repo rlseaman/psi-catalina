@@ -63,27 +63,34 @@ def write_directory(extracted, directory_name):
     '''
     conn = sqlite3.connect("cssdb.sqlite")
     c = conn.cursor()
+    logging.debug("Writing info...")
 
     if not obsnight_exists(c, extracted):
 
         night_id = write_obsnight(c, extracted, directory_name)
 
         for followup in extracted["followup"]:
+            logging.debug("Writing followup...")
             write_followup(c, night_id, followup)
 
         for userfield in extracted["fields"]:
+            logging.debug("Writing field...")
             write_userfield(c, night_id, userfield)
 
         for observation in extracted["pointing"]["Observations"]:
+            logging.debug("Writing observation...")
             write_observation(c, night_id, observation, "")
 
         for surveyplan in extracted["surveyplan"]:
+            logging.info("Writing survey plan...")
             write_plan(c, night_id, surveyplan)
 
         for astr in extracted["astrometry"]:
+            logging.debug("Writing astrometry...")
             write_astr(c, night_id, astr)
 
         for neo in extracted["neos"]:
+            logging.debug("Writing neo...")
             write_neo(c, night_id, neo)
 
     conn.commit()
@@ -105,7 +112,6 @@ def write_obsnight(c, extracted, directory_name):
 
 def obsnight_exists(c: sqlite3.Cursor, extracted):
     query = make_search_template("obsnight", "*", OBSNIGHT_SEARCH_FIELDS)
-    logging.debug(extracted)
     params = ('CSS',
         extracted['coverage']['Source'],
         extracted['control']['Telescope'],
