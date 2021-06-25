@@ -1,5 +1,5 @@
 CREATE TABLE obsnight(
-    night_id integer PRIMARY KEY, 
+    night_id text PRIMARY KEY, 
     survey TEXT, 
     observatory TEXT, 
     telescope TEXT, 
@@ -20,12 +20,12 @@ CREATE TABLE followups(
     magnitude TEXT,
     comment TEXT,
     field_code TEXT,
-    night_id integer REFERENCES obsnight(night_id)
+    night_id text REFERENCES obsnight(night_id)
 );
 
 CREATE TABLE observations(
     observation_id integer PRIMARY KEY, 
-    night_id integer REFERENCES obsnight(night_id), 
+    night_id text REFERENCES obsnight(night_id), 
     obsfile text,
     obsdir text
 );
@@ -39,7 +39,7 @@ CREATE TABLE userfields(
     magnitude TEXT,
     comment TEXT,
     field_code TEXT,
-    night_id INTEGER references obsnight(night_id)
+    night_id text references obsnight(night_id)
 );
 
 CREATE TABLE surveyfields(
@@ -48,7 +48,7 @@ CREATE TABLE surveyfields(
     mjd NUMERIC,    
     ra TEXT,
     declination TEXT,
-    night_id INTEGER references obsnight(night_id)
+    night_id text references obsnight(night_id)
 );
 
 CREATE TABLE astrometry(
@@ -58,7 +58,7 @@ CREATE TABLE astrometry(
     ra TEXT,
     declination TEXT,
     magnitude TEXT,
-    night_id INTEGER references obsnight(night_id)
+    night_id text references obsnight(night_id)
 );
 
 CREATE TABLE neo(
@@ -68,5 +68,5 @@ CREATE TABLE neo(
     ra TEXT,
     declination TEXT,
     magnitude TEXT,
-    night_id INTEGER references obsnight(night_id)
+    night_id text references obsnight(night_id)
 );

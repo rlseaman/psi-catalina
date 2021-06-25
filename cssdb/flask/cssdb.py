@@ -1,5 +1,6 @@
 import sqlite3
 import logging
+import hashlib
 
 def make_insert_template(tablename, fields):
     return "INSERT INTO {}({}) VALUES ({})".format(
@@ -49,7 +50,7 @@ ASTR_FIELDS_PK = ['astr_id'] + ASTR_FIELDS
 NEO_FIELDS = ['neo_code', 'obstime', 'ra', 'declination', 'magnitude', 'night_id']
 NEO_FIELDS_PK = ['neo_id'] + NEO_FIELDS
 
-OBSNIGHT_INSERT = make_insert_template("obsnight", OBSNIGHT_FIELDS)
+OBSNIGHT_INSERT = make_insert_template("obsnight", OBSNIGHT_FIELDS_PK)
 FOLLOWUP_INSERT = make_insert_template("followups", FOLLOWUP_FIELDS)
 USERFIELD_INSERT = make_insert_template("userfields", USERFIELD_FIELDS)
 OBS_INSERT = make_insert_template("observations", OBS_FIELDS)
@@ -98,7 +99,9 @@ def write_directory(extracted, directory_name):
 
 
 def write_obsnight(c, extracted, directory_name):
-    params = ('CSS',
+    key = hash_key(get_night_key_params(extracted))
+    params = (key, 
+        'CSS',
         extracted['coverage']['Source'],
         extracted['control']['Telescope'],
         extracted['control']['Detector'],
@@ -108,18 +111,29 @@ def write_obsnight(c, extracted, directory_name):
         directory_name
     )
 
-    return exec_insert_key(c, OBSNIGHT_INSERT, params)
+    exec_insert(c, OBSNIGHT_INSERT, params)
+    return key
 
 def obsnight_exists(c: sqlite3.Cursor, extracted):
     query = make_search_template("obsnight", "*", OBSNIGHT_SEARCH_FIELDS)
-    params = ('CSS',
+    params = get_night_key_params(extracted)
+
+    c.execute(query, params)
+    return c.fetchone()
+
+def get_night_key_params(extracted):
+    return ('CSS',
         extracted['coverage']['Source'],
         extracted['control']['Telescope'],
         extracted['control']['Detector'],
         extracted['coverage']['Date'])
 
-    c.execute(query, params)
-    return c.fetchone()
+
+def hash_key(params):
+    m = hashlib.sha1()
+    for param in params:
+        m.update(param.encode('utf-8'))
+    return m.hexdigest()
 
 def write_followup(c, night_id, followup):
     params = (
@@ -190,3 +204,6 @@ def exec_insert_key(c, sql, params):
     c.execute(sql, params)
     c.execute("select last_insert_rowid()")
     return c.fetchone()[0]
+
+def exec_insert(c, sql, params):
+    c.execute(sql, params)
