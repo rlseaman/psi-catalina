@@ -1,11 +1,13 @@
 import sqlite3
 import json
 import io
+from sqlite3.dbapi2 import converters
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 
 from flask import Flask, escape, request, render_template, send_file, Response
 
+import cssquery
 
 
 app = Flask(__name__)
@@ -26,16 +28,7 @@ def root():
 
 @app.route("/night/<night_id>")
 def night(night_id):
-    term = (night_id, )
-    with get_connection() as conn:
-        c = conn.cursor()
-
-        night = query(c, "select * from obsnight where night_id = ?", term)[0]
-        userfields = query(c, "select * from userfields where night_id = ? and userfield_name is not null", term)
-        followups = query(c, "select * from followups where night_id = ?", term)
-        observations = query(c, "select * from observations where night_id = ?", term)
-        surveyfields = query(c, "select * from surveyfields where night_id = ?", term)
-        neos = query(c, "select * from neo where night_id = ?", term)
+    night, userfields, followups, observations, surveyfields, neos = cssquery.get_night(night_id)
 
     return render_template(
         'night.html', 
@@ -48,19 +41,11 @@ def night(night_id):
 
 @app.route("/object/<object_id>")
 def obj(object_id):
-    objid = (object_id, )
-    with get_connection() as conn:
-        c = conn.cursor()
-
-        userfields = query(c, "select * from userfields join obsnight using(night_id) where userfield_name = ?", objid)
-        followups = query(c, "select * from followups join obsnight using(night_id) where followup_name = ?", objid)
-        astrometries = query(c, "select * from astrometry join obsnight using(night_id) where astr_code = ?", objid)
-        neos = query(c, "select * from neo join obsnight using(night_id) where neo_code = ?", objid)
-
+    userfields, followups, astrometries, neos = cssquery.get_object(object_id)
+    
     return render_template(
         'object.html', 
         objid=object_id,
-        night=night, 
         userfields=userfields, 
         followups=followups, 
         astrometries=astrometries, 
@@ -68,16 +53,8 @@ def obj(object_id):
     
 @app.route("/field/<field_id>")
 def field(field_id):
-    match_param = (field_id, )
-    like_param = ('%' + field_id + '%', )
-    with get_connection() as conn:
-        c = conn.cursor()
-
-        surveyfields = query(c, "select * from surveyfields join obsnight using(night_id) where surveyfield_code = ?", match_param)
-        followups = query(c, "select * from followups join obsnight using(night_id) where field_code = ?", match_param)
-        userfields = query(c, "select * from userfields join obsnight using(night_id) where comment = ?", match_param)
-        observations = query(c, "select * from observations join obsnight using(night_id) where obsfile like ?", like_param)
-
+    surveyfields, followups, userfields, observations = cssquery.get_field(field_id)
+    
     return render_template(
         'field.html', 
         field_id=field_id,
@@ -88,39 +65,24 @@ def field(field_id):
 
 @app.route("/img/neos/<night_id>")
 def neos(night_id):
-    match_param = (night_id, )
-    with get_connection() as conn:
-        c = conn.cursor()
-
-        result = query(c, "select ra, declination from neo where night_id = ?", match_param)
-        surveyfields = [(ra_hms_to_dec(*parse_triplet(ra)), dec_dms_to_dec(*parse_triplet(dec))) for (ra, dec) in result if ra and dec]
-
+    result = cssquery.get_neos_for_night(night_id)
+    surveyfields = convert_ra_decs(result)
     b = generate_coordinate_scatter_plot(surveyfields, "NEOs", "NEOs Detail")
-    
     return Response(b.getvalue(), mimetype='image/png')
 
 @app.route("/img/followups/<night_id>")
 def followups(night_id):
     match_param = (night_id, )
-    with get_connection() as conn:
-        c = conn.cursor()
-
-        result = query(c, "select ra, declination from followups where night_id = ?", match_param)
-        surveyfields = [(ra_hms_to_dec(*parse_triplet(ra)), dec_dms_to_dec(*parse_triplet(dec))) for (ra, dec) in result if ra and dec]
-
+    result = cssquery.get_followups_for_night(night_id)
+    surveyfields = convert_ra_decs(result)
     b = generate_coordinate_scatter_plot(surveyfields, "Followups", "Followups Detail")
     
     return Response(b.getvalue(), mimetype='image/png')
 
 @app.route("/img/userfields/<night_id>")
 def userfields(night_id):
-    match_param = (night_id, )
-    with get_connection() as conn:
-        c = conn.cursor()
-
-        result = query(c, "select ra, declination from userfields where night_id = ?", match_param)
-        surveyfields = [(ra_hms_to_dec(*parse_triplet(ra)), dec_dms_to_dec(*parse_triplet(dec))) for (ra, dec) in result if ra and dec]
-
+    result = cssquery.get_userfields_for_night(night_id)
+    surveyfields = convert_ra_decs(result)
     b = generate_coordinate_scatter_plot(surveyfields, "User Fields", "User Fields Detail")
     
     return Response(b.getvalue(), mimetype='image/png')
@@ -128,13 +90,8 @@ def userfields(night_id):
 
 @app.route("/img/survey/<night_id>")
 def survey(night_id):
-    match_param = (night_id, )
-    with get_connection() as conn:
-        c = conn.cursor()
-
-        result = query(c, "select ra, declination from surveyfields where night_id = ?", match_param)
-        surveyfields = [(float(ra), float(dec)) for (ra, dec) in result]
-
+    result = cssquery.get_surveyfields_for_night(night_id)
+    surveyfields = [(float(ra), float(dec)) for (ra, dec) in result]
     b = generate_coordinate_scatter_plot(surveyfields, "Survey Plan", "Survey Plan Detail")
     
     return Response(b.getvalue(), mimetype='image/png')
@@ -176,6 +133,9 @@ def ra_hms_to_dec(hours, minutes, seconds):
 
 def dec_dms_to_dec(degrees, minutes, seconds):
     return degrees + (minutes/60.0) + (seconds/3600.0)
+
+def convert_ra_decs(values):
+    return [(ra_hms_to_dec(*parse_triplet(ra)), dec_dms_to_dec(*parse_triplet(dec))) for (ra, dec) in values if ra and dec]
 
 def get_connection():
     conn = sqlite3.connect(DB_FILE)

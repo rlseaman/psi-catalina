@@ -12,7 +12,10 @@ copy cssdb_schema.sql /usr/local/cssdb
 copy cssdb_indexes.sql /usr/local/cssdb
 copy cssdb.py /usr/local/cssdb
 copy import_json.py /usr/local/cssdb
+
 copy app.py /usr/local/cssdb
+copy cssquery.py /usr/local/cssdb
+
 copy static /usr/local/cssdb/static
 copy templates /usr/local/cssdb/templates
 
