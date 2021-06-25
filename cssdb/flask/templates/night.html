@@ -28,9 +28,10 @@
 
         {% if surveyfields %}
         <a id="surveyfields"></a>
-        <h2>Survey Plan</h2>
+        <h2>Survey Plan ({{ surveyfields|length() }})</h2>
         <img src='/img/survey/{{ night.night_id }}' alt='building graph...'>
-        <table>
+        <p><a onclick='tableSurveyFields.style.display=""'>Show</a></p>
+        <table id='tableSurveyFields' style='display:none'>
             <tr>
                 <th>Code</th>
                 <th>MJD</th>
@@ -50,10 +51,10 @@
 
         {% if followups %}
         <a id="followups"></a>
-        <h2>Followups</h2>
+        <h2>Followups ({{ followups|length() }})</h2>
         <img src='/img/followups/{{ night.night_id }}' alt='building graph...'>
-
-        <table>
+        <p><a onclick='tableFollowups.style.display=""'>Show</a></p>
+        <table id='tableFollowups' style='display:none'>
             <tr>
                 <th>Code</th>
                 <th>Name</th>
@@ -85,9 +86,10 @@
 
         {% if userfields %}
         <a id='userfields'></a>
-        <h2>User-Specified Fields</h2>
+        <h2>User-Specified Fields ({{ userfields|length() }})</h2>
         <img src='/img/userfields/{{ night.night_id }}' alt='building graph...'>
-        <table>
+        <p><a onclick='tableUserFields.style.display=""'>Show</a></p>
+        <table id='tableUserFields' style='display:none'>
             <tr>
                 <th>Code</th>
                 <th>Name</th>
@@ -119,9 +121,10 @@
 
         {% if neos %}
         <a id='neos'></a>
-        <h2>NEOs</h2>
+        <h2>NEOs ({{ neos|length() }})</h2>
         <img src='/img/neos/{{ night.night_id }}' alt='building graph...'>
-        <table>
+        <p><a onclick='tableNEOs.style.display=""'>Show</a></p>
+        <table id='tableNEOs' style='display:none'>
             <tr>
                 <th>Object</th>
                 <th>Date</th>
@@ -144,8 +147,9 @@
 
         {% if observations %}
         <a id='observations'></a>
-        <h2>Observations</h2>
-        <table>
+        <h2>Observations ({{ observations|length() }})</h2>
+        <p><a onclick='tableObservations.style.display=""'>Show</a></p>
+        <table id='tableObservations' style='display:none'>
             <tr>
                 <th>File</th>
             </tr>
