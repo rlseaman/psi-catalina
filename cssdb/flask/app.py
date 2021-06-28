@@ -25,84 +25,48 @@ def root():
 @app.route("/api/nights")
 def api_nights():
     Response.content_type = "application/json"
-    return jsonify(make_serializable(cssquery.get_nights()))
+    return jsonify(cssquery.get_nights())
 
-def make_serializable(results):
-    return [dict(x) for x in results]    
 
 @app.route("/night/<night_id>")
 def night(night_id):
-    night, userfields, followups, observations, surveyfields, neos = cssquery.get_night(night_id)
-
     return render_template(
         'night.html', 
-        night=night, 
-        userfields=userfields, 
-        followups=followups, 
-        observations=observations, 
-        surveyfields=surveyfields,
-        neos=neos)
+        **cssquery.get_night(night_id))
 
 @app.route("/api/night/<night_id>")
 def api_night(night_id):
-    night, userfields, followups, observations, surveyfields, neos = cssquery.get_night(night_id)
-
     return jsonify(
-        night=dict(night), 
-        userfields=make_serializable(userfields), 
-        followups=make_serializable(followups), 
-        observations=make_serializable(observations), 
-        surveyfields=make_serializable(surveyfields),
-        neos=make_serializable(neos)
+        **cssquery.get_night(night_id)
     )
 
 
 @app.route("/object/<object_id>")
 def obj(object_id):
-    userfields, followups, astrometries, neos = cssquery.get_object(object_id)
-    
     return render_template(
         'object.html', 
         objid=object_id,
-        userfields=userfields, 
-        followups=followups, 
-        astrometries=astrometries, 
-        neos=neos)
+        **cssquery.get_object(object_id))
 
 @app.route("/api/object/<object_id>")
 def api_obj(object_id):
-    userfields, followups, astrometries, neos = cssquery.get_object(object_id)
-    
     return jsonify(
-        objid=make_serializable(object_id),
-        userfields=make_serializable(userfields), 
-        followups=make_serializable(followups), 
-        astrometries=make_serializable(astrometries), 
-        neos=make_serializable(neos))
+        objid=object_id,
+        **cssquery.get_object(object_id))
 
     
 @app.route("/field/<field_id>")
 def field(field_id):
-    surveyfields, followups, userfields, observations = cssquery.get_field(field_id)
-    
     return render_template(
         'field.html', 
         field_id=field_id,
-        surveyfields=make_serializable(surveyfields),
-        userfields=make_serializable(userfields),
-        followups=make_serializable(followups),
-        observations=make_serializable(observations))
+        **cssquery.get_field(field_id))
 
 @app.route("/api/field/<field_id>")
 def api_field(field_id):
-    surveyfields, followups, userfields, observations = cssquery.get_field(field_id)
-    
     return jsonify(
         field_id=field_id,
-        surveyfields=make_serializable(surveyfields),
-        userfields=make_serializable(userfields),
-        followups=make_serializable(followups),
-        observations=make_serializable(observations))
+        **cssquery.get_field(field_id))
 
 
 @app.route("/img/neos/<night_id>")
@@ -114,8 +78,8 @@ def neos(night_id):
 
 @app.route("/img/followups/<night_id>")
 def followups(night_id):
-    match_param = (night_id, )
     result = cssquery.get_followups_for_night(night_id)
+    print(result)
     surveyfields = convert_ra_decs(result)
     b = generate_coordinate_scatter_plot(surveyfields, "Followups", "Followups Detail")
     
