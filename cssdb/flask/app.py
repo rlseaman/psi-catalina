@@ -79,7 +79,6 @@ def neos(night_id):
 @app.route("/img/followups/<night_id>")
 def followups(night_id):
     result = cssquery.get_followups_for_night(night_id)
-    print(result)
     surveyfields = convert_ra_decs(result)
     b = generate_coordinate_scatter_plot(surveyfields, "Followups", "Followups Detail")
     
