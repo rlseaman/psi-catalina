@@ -62,7 +62,7 @@ def write_directory(extracted, directory_name):
     '''
     Writes all of the information extracted from the files in the directory to the database.
     '''
-    conn = sqlite3.connect("cssdb.sqlite")
+    conn = sqlite3.connect("/data/cssdb.sqlite")
     c = conn.cursor()
     logging.debug("Writing info...")
 

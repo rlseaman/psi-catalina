@@ -1,5 +1,5 @@
 import sqlite3
-DB_FILE="cssdb.sqlite"
+DB_FILE="/data/cssdb.sqlite"
 
 def get_night(night_id):
     term = (night_id, )

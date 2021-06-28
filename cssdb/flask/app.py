@@ -12,7 +12,7 @@ import cssquery
 
 app = Flask(__name__)
 
-DB_FILE="cssdb.sqlite"
+DB_FILE="/data/cssdb.sqlite"
 
 def to_dict(fields, t):
     return dict(zip(fields, t))

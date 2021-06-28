@@ -1,0 +1,14 @@
+version: "3.9"
+services:
+  cssdb:
+    build: flask
+    ports: 
+      - "8085:8080"
+    volumes:
+      - cssdb_data:/data
+  dbbuild:
+    build: dbbuild
+    volumes:
+      - cssdb_data:/data
+volumes:
+  cssdb_data:

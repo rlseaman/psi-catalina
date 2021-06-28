@@ -2,12 +2,12 @@
 
 set -e
 
-if [ -e cssdb.sqlite ]; then
-    rm cssdb.sqlite
+if [ -e /data/cssdb.sqlite ]; then
+    rm /data/cssdb.sqlite
     
 fi
 
-sqlite3 cssdb.sqlite < cssdb_schema.sql
+sqlite3 /data/cssdb.sqlite < cssdb_schema.sql
 
 if [ -n "$PROD" ]; then
     echo "Downloading fresh data..."
@@ -17,4 +17,4 @@ fi
 
 tar -xzf catalina_json.tar.gz
 find json -name "*.json" -exec python3 import_json.py --filename '{}' \; 
-sqlite3 cssdb.sqlite < cssdb_indexes.sql
+sqlite3 /data/cssdb.sqlite < cssdb_indexes.sql
