@@ -19,21 +19,13 @@ def to_dict(fields, t):
 
 @app.route("/")
 def root():
-    with get_connection() as conn:
-        c = conn.cursor()
-        c.execute("select * from obsnight order by obsdate")
-        obsnights = c.fetchall()
 
-    return render_template('index.html', nights=obsnights)
+    return render_template('index.html', nights=cssquery.get_nights())
 
 @app.route("/api/nights")
 def api_nights():
-    with get_connection() as conn:
-        c = conn.cursor()
-        c.execute("select * from obsnight order by obsdate")
-        obsnights = c.fetchall()
     Response.content_type = "application/json"
-    return jsonify(make_serializable(obsnights))
+    return jsonify(make_serializable(cssquery.get_nights()))
 
 def make_serializable(results):
     return [dict(x) for x in results]    

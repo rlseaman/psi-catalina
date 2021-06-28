@@ -1,6 +1,12 @@
 import sqlite3
 DB_FILE="/data/cssdb.sqlite"
 
+def get_nights():
+    with get_connection() as conn:
+        c = conn.cursor()
+        c.execute("select * from obsnight order by obsdate")
+        return c.fetchall()
+
 def get_night(night_id):
     term = (night_id, )
     with get_connection() as conn:
