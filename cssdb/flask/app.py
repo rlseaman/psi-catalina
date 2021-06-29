@@ -18,7 +18,7 @@ def to_dict(fields, t):
 @app.route("/")
 def root():
 
-    return render_template('index.html', nights=cssquery.get_nights())
+    return render_template('index.html.jinja', nights=cssquery.get_nights())
 
 @app.route("/api/nights")
 def api_nights():
@@ -29,7 +29,7 @@ def api_nights():
 @app.route("/night/<night_id>")
 def night(night_id):
     return render_template(
-        'night.html', 
+        'night.html.jinja', 
         **cssquery.get_night(night_id))
 
 @app.route("/api/night/<night_id>")
@@ -42,7 +42,7 @@ def api_night(night_id):
 @app.route("/object/<object_id>")
 def obj(object_id):
     return render_template(
-        'object.html', 
+        'object.html.jinja', 
         objid=object_id,
         **cssquery.get_object(object_id))
 
@@ -56,7 +56,7 @@ def api_obj(object_id):
 @app.route("/field/<field_id>")
 def field(field_id):
     return render_template(
-        'field.html', 
+        'field.html.jinja', 
         field_id=field_id,
         **cssquery.get_field(field_id))
 
