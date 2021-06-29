@@ -7,28 +7,32 @@
         <h2>Computerized Search Service</h2>
 
 
-        {% for obsdate in nights|map(attribute='obsdate')|unique() %}
-            <h3>{{ obsdate }}</h3>
-            <table>
-                <tr>
-                    <th>Date</th>
-                    <th>Observatory</th>
-                    <th>Telescope</th>
-                    <th>Camera</th>
-                    <th>Operator</th>
-                    <th>Limiting Magnitude</th>
+        <table>
+            <tr>
+                <th>Date</th>
+                <th>Observatory</th>
+                <th>Telescope</th>
+                <th>Camera</th>
+                <th>Operator</th>
+                <th>Limiting Magnitude</th>
+            </tr>
+            {% set ns = namespace(prev=None)%}
+            {% for night in nights %}
+                {% if ns.prev and ns.prev.obsdate != night.obsdate %}
+                <tr style='border-top:thick black solid'>
+                {% else %}
+                <tr style=''>
+                {% endif %}
+                    <td><a href="/night/{{ night.night_id }}">{{ night.obsdate }}</a></td>
+                    <td>{{ night.observatory }}</td>
+                    <td>{{ night.telescope }}</td>
+                    <td>{{ night.camera }}</td>
+                    <td>{{ night.operator }}</td>
+                    <td>{{ night.limiting_magnitude }}</td>
                 </tr>
-                {% for night in nights if night.obsdate == obsdate %}
-                    <tr>
-                        <td><a href="/night/{{ night.night_id }}">{{ night.obsdate }}</a></td>
-                        <td>{{ night.observatory }}</td>
-                        <td>{{ night.telescope }}</td>
-                        <td>{{ night.camera }}</td>
-                        <td>{{ night.operator }}</td>
-                        <td>{{ night.limiting_magnitude }}</td>
-                    </tr>
-                {% endfor %}
-            </table>
-        {% endfor %}
+                
+                {% set ns.prev = night %}
+            {% endfor %}
+        </table>
     </body>
 </html>
