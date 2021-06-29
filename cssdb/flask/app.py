@@ -22,7 +22,6 @@ def root():
 
 @app.route("/api/nights")
 def api_nights():
-    Response.content_type = "application/json"
     return jsonify(cssquery.get_nights())
 
 
