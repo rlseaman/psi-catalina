@@ -6,7 +6,7 @@ run apk add sqlite python3 py3-flask uwsgi uwsgi-python uwsgi-http py3-matplotli
 run mkdir /usr/local/cssdb
 
 
-copy *.py /usr/local/cssdb
+copy *.py /usr/local/cssdb/
 
 copy static /usr/local/cssdb/static
 copy templates /usr/local/cssdb/templates
