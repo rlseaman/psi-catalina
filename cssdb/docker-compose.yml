@@ -14,6 +14,8 @@ services:
       - cssdb_data:/data
   dbbuild:
     build: dbbuild
+    env_file:
+      - dbbuild.env
     volumes:
       - cssdb_data:/data
 volumes:
