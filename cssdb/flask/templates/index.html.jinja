@@ -1,0 +1,38 @@
+<html>
+    <head>
+        <link href='/static/style.css' rel='stylesheet'>
+    </head>    
+    <body>
+        <h1>Catalina Sky Survey</h1>
+        <h2>CSS Browse Service</h2>
+
+
+        <table>
+            <tr>
+                <th>Date</th>
+                <th>Observatory</th>
+                <th>Telescope</th>
+                <th>Camera</th>
+                <th>Operator</th>
+                <th>Limiting Magnitude</th>
+            </tr>
+            {% set ns = namespace(prev=None)%}
+            {% for night in nights %}
+                {% if ns.prev and ns.prev.obsdate != night.obsdate %}
+                <tr style='border-top:thick black solid'>
+                {% else %}
+                <tr style=''>
+                {% endif %}
+                    <td><a href="/night/{{ night.night_id }}">{{ night.obsdate }}</a></td>
+                    <td>{{ night.observatory }}</td>
+                    <td>{{ night.telescope }}</td>
+                    <td>{{ night.camera }}</td>
+                    <td>{{ night.operator }}</td>
+                    <td>{{ night.limiting_magnitude }}</td>
+                </tr>
+                
+                {% set ns.prev = night %}
+            {% endfor %}
+        </table>
+    </body>
+</html>

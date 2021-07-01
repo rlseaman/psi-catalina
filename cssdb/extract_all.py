@@ -34,7 +34,7 @@ def main(argv=None):
 
             if not os.path.exists(outfilename):
                 extracted = extract_night(args.basedir, inst, year, night)
-                logging.debug(extracted)
+                
         
                 if extracted:
                     with open(outfilename, 'w') as f:
@@ -56,7 +56,7 @@ def extract_night(directory_name, inst, year, night):
                             control_file=first_matching_file(files_for_night, has_name("controlconfig.json")), 
                             followup_file=first_matching_file(files_for_night, has_name("followup.txt")), 
                             fields_file=first_matching_file(files_for_night, has_name("userfields.txt")), 
-                            surveyplan_file=first_matching_file(directory_name, has_prefix("survey")), 
+                            surveyplan_file=first_matching_file(files_for_night, has_prefix("survey"), desc="Survey plan"), 
                             astrometry_file=first_matching_file(files_for_night, has_extension(".mpcd.mrpt")), 
                             neo_file=first_matching_file(files_for_night, has_extension(".neos.mrpt")))
     else:
@@ -70,23 +70,27 @@ def extract_files(pointing_file, coverage_file, control_file, followup_file, fie
         "followup": cssextract.process_field_file(followup_file) if followup_file else [],
         "fields": cssextract.process_field_file(fields_file) if fields_file else [],
         "surveyplan": cssextract.process_plan_file(surveyplan_file) if surveyplan_file else [],
-        "neos": cssextract.process_astrometry_file(astrometry_file)  if astrometry_file else [],
-        "astrometry": cssextract.process_astrometry_file(neo_file)  if neo_file else []
+        "astrometry": cssextract.process_astrometry_file(astrometry_file)  if astrometry_file else [],
+        "neos": cssextract.process_astrometry_file(neo_file)  if neo_file else []
     }
 
 def has_extension(extension):
     return lambda x: x.endswith(extension)
 
 def has_prefix(prefix):
-    return lambda x: os.path.basename(x).startswith(prefix)
+    def fn(x):
+        return os.path.basename(x).startswith(prefix)
+    return fn
 
 def has_name(name):
     return lambda x: os.path.basename(x) == name
 
-def first_matching_file(filelist, filter):
+def first_matching_file(filelist, filter, desc="file"):
     candidates = [x for x in filelist if filter(x)]
     if candidates:
+        logging.debug("Found %s: %s", desc, candidates[0] )
         return candidates[0]
+    logging.debug("No match for %s", desc)
     return None
 
 def get_files_for_night(search_dir, inst, year, night):
@@ -97,7 +101,7 @@ def get_files_for_night(search_dir, inst, year, night):
         )
 
 def get_files_in_path(path):
-    return (os.path.join(path, filename) for filename in os.listdir(path))
+    return (os.path.join(path, filename) for filename in os.listdir(path) if not filename.endswith(".xml"))
 
 def get_directories_for_night(search_dir, inst="", year="", night=""):
     candidates = (os.path.join(search_dir, collection, inst, year, night) for collection in COLLECTIONS)
