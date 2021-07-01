@@ -4,7 +4,7 @@ DB_FILE="/data/cssdb.sqlite"
 def get_nights():
     with get_connection() as conn:
         c = conn.cursor()
-        return query_d(c,"select * from obsnight order by obsdate")
+        return query_d(c,"select * from obsnight order by obsdate, survey, observatory, telescope")
 
 def get_night(night_id):
     term = (night_id, )
