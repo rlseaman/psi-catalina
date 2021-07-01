@@ -70,8 +70,8 @@ def extract_files(pointing_file, coverage_file, control_file, followup_file, fie
         "followup": cssextract.process_field_file(followup_file) if followup_file else [],
         "fields": cssextract.process_field_file(fields_file) if fields_file else [],
         "surveyplan": cssextract.process_plan_file(surveyplan_file) if surveyplan_file else [],
-        "neos": cssextract.process_astrometry_file(astrometry_file)  if astrometry_file else [],
-        "astrometry": cssextract.process_astrometry_file(neo_file)  if neo_file else []
+        "astrometry": cssextract.process_astrometry_file(astrometry_file)  if astrometry_file else [],
+        "neos": cssextract.process_astrometry_file(neo_file)  if neo_file else []
     }
 
 def has_extension(extension):
