@@ -10,6 +10,8 @@ services:
       - 8086:80
   cssdb:
     build: flask
+    env_file:
+      - cssdb.env
     volumes:
       - cssdb_data:/data
   dbbuild:
