@@ -203,8 +203,7 @@ def process_upload_dir(basedir, destdir, schemadir, preprocessing_opts, validati
     process an upload directory, assuming it has been validated.
     '''
     logging.info("Discovering products at: %s", basedir)
-    bundle_dir = os.path.join(destdir, BUNDLE_ID)
-    loc = paths.Paths(basedir, bundle_dir, schemadir)
+    loc = paths.Paths(basedir, destdir, BUNDLE_ID, schemadir)
     discovered_products = discover_products(loc, filter_opts)
     logging.info("Discovey complete, consolidating: %s", basedir)
     products = list(itertools.islice(discovered_products, filter_opts.max_products))

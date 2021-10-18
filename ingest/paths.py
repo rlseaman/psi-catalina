@@ -7,9 +7,10 @@ class Paths:
     provides multiple ways to get at each data file and label file, and
     accounts for the fact that the data and labels are delivered in separate locations.
     '''
-    def __init__(self, basedir, dest, schemadir):
+    def __init__(self, basedir, dest, bundle_id, schemadir):
         self.basedir = basedir
         self.dest = dest
+        self.bundle_id = bundle_id
         self.schemadir = schemadir
 
     def datadir(self, inst=None, year=None, date=None, filename=None):
@@ -30,9 +31,9 @@ class Paths:
         Returns the destination directory
         '''
         if failed:
-            return self._buildpath((self.dest, collection_id, "failed", inst, year, date))
+            return self._buildpath((self.dest, "failed", collection_id, inst, year, date))
         else:
-            return self._buildpath((self.dest, collection_id, inst, year, date))
+            return self._buildpath((self.dest, self.bundle_id, collection_id, inst, year, date))
 
     def productDestDir(self, p, failed=False):
         return self.destdir(p.collection_id(), p.inst, p.year, p.date, failed)        
