@@ -231,7 +231,7 @@
     
     <File_Area_Inventory>
         <File>
-            <file_name>collection_miscellaneous_inventory.csv</file_name>
+            <file_name>collection_inventory_miscellaneous_v{major}.{minor}.csv</file_name>
         </File>
         <Inventory>
             <offset unit="byte">0</offset>

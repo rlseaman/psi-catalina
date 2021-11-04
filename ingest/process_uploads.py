@@ -30,7 +30,7 @@ import paths
 
 
 BUNDLE_ID = "gbo.ast.catalina.survey"
-LABEL_FILENAME_TEMPLATE = 'collection_{collection_id}_v{major}.{minor}_.xml'
+LABEL_FILENAME_TEMPLATE = 'collection_{collection_id}_v{major}.{minor}.xml'
 INSTRUMENTS = ['703','G96','I52','V06']
 IGNORE_FILES = ['signature.md5', '.autoxfer']
 IGNORE_DATES = ['pds4', 'other']
