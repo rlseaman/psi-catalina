@@ -13,19 +13,11 @@
         <product_class>Product_Collection</product_class>   
         <Citation_Information>
             <author_list>Seaman, R., Christensen, E., Gibbs, A., and Shelly, F.</author_list>
-            <publication_year>2021</publication_year>
+            <publication_year>{year}</publication_year>
             <description>
                 Calibration files for Catalina Sky Survey
             </description>
         </Citation_Information>
-   
-        <Modification_History>
-            <Modification_Detail>
-              <modification_date>2021-01-04</modification_date>
-              <version_id>1.0</version_id>
-              <description>Initial Revision</description>
-            </Modification_Detail>
-        </Modification_History>
     </Identification_Area>
     
     <Context_Area>

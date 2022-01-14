@@ -13,7 +13,7 @@
         <product_class>Product_Collection</product_class>   
         <Citation_Information>
             <author_list>Seaman, R., Christensen, E., Gibbs, A., and Shelly, F.</author_list>
-            <publication_year>2021</publication_year>
+            <publication_year>{year}</publication_year>
             <description>
                 Partially Processed Data files for Catalina Sky Survey
             </description>
