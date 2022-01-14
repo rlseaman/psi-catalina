@@ -644,7 +644,8 @@ def write_collection(template_filename,
         start_date=start_date,
         stop_date=stop_date,
         file_size=0,
-        record_count=record_count)
+        record_count=record_count,
+        year=datetime.datetime.now().strftime("%Y"))
     collection_filename = LABEL_FILENAME_TEMPLATE.format(**collection_lidvid)
     collection_path = os.path.join(collection_dir, collection_filename)
     logging.info("writing to: %s", collection_path)
