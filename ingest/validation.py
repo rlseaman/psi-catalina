@@ -94,7 +94,7 @@ def create_temp_copy(temp_dir, product, skip_data):
             subprocess.run([FUNPACK_CMD, '-C', '-O', temp_data_path, data_path + ".fz"])
         else:
             logging.error("could not find data file: %s", temp_data_path)
-            raise Exception("could not find data file: " + temp_data_path)
+            #raise Exception("could not find data file: " + temp_data_path)
             
     return temp_label_path
 

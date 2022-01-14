@@ -501,9 +501,10 @@ def move_product(product, loc, postprocessing_opts, failed):
 
     for file_name in file_names:
         actual_file_name = get_actual_file_name(datadir, file_name)
-        src_data = os.path.join(datadir, actual_file_name)
-        dest_data = os.path.join(dest_directory, actual_file_name)
-        transfer_file(src_data, dest_data, postprocessing_opts)
+        if actual_file_name:
+            src_data = os.path.join(datadir, actual_file_name)
+            dest_data = os.path.join(dest_directory, actual_file_name)
+            transfer_file(src_data, dest_data, postprocessing_opts)
 
 
 def transfer_file(src, dest, postprocessing_opts):
@@ -523,7 +524,8 @@ def get_actual_file_name(data_dir, file_name):
     file_names = [file_name + suffix for suffix in suffixes if os.path.exists(os.path.join(data_dir, file_name + suffix))]
     if file_names:
         return file_names[0]
-    raise(Exception('cannot find file:' + os.path.join(data_dir, file_name)))
+    return None
+    #raise(Exception('cannot find file:' + os.path.join(data_dir, file_name)))
 
 
 
