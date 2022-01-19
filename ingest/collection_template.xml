@@ -13,6 +13,20 @@
       <description>This is the {collection_id} collection for the catalina sky survey bundle. 
       </description>
     </Citation_Information>
+    <Modification_History>
+      {% for h in modification_history %}
+      <Modification_Detail>
+        <modification_date>{h.modification_date}</modification_date>
+        <version_id>{h.version_id}</version_id>
+        <description>{h.description}</description>
+      </Modification_Detail>
+      {% endfor %}
+      <Modification_Detail>
+        <modification_date>{latest_modification.modification_date}</modification_date>
+        <version_id>{latest_modification.version_id}</version_id>
+        <description>{latest_modification.description}</description>
+      </Modification_Detail>
+  </Modification_History>
   </Identification_Area>
   <Context_Area>
     <Time_Coordinates>
@@ -87,4 +101,3 @@
     </Inventory>
   </File_Area_Inventory>
 </Product_Collection>
-

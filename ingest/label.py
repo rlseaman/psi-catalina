@@ -45,6 +45,8 @@ def extract_identification_area(identification_area):
     '''
     lid = str(identification_area.logical_identifier.string)
     vid = str(identification_area.version_id.string)
+    modification_history = extract_modification_history(identification_area.Modification_History)
+
     major, minor = [int(x) for x in vid.split(".")]
 
     return {
@@ -53,7 +55,20 @@ def extract_identification_area(identification_area):
         "version_id": vid,
         "lidvid": lid + "::" + vid,
         "major": major,
-        "minor": minor
+        "minor": minor,
+        "modification_history": modification_history
+    }
+
+def extract_modification_history(modification_history):
+    if modification_history:
+        return [extract_modification_detail(d) for d in modification_history.find_all("Modification_Detail")]
+    return []
+
+def extract_modification_detail(modification_detail):
+    return {
+        "version_id": modification_detail.version_id.text,
+        "modification_date": modification_detail.modification_date.text,
+        "description" : modification_detail.description.text
     }
 
 def extract_observation_area(context_area):
