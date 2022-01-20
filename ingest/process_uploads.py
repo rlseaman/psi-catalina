@@ -247,7 +247,7 @@ def process_upload_dir(basedir, destdir, schemadir, preprocessing_opts, validati
         logging.info("Skipping collection update")
     else:
         for collection_id in collection_lids:
-            collection_products = [x for x in products if x.collection_id() == collection_id]
+            collection_products = [x for x in products if x.collection_id() == collection_id and x.labelfilename not in failed_files]
             if collection_products:
                 update_data_collection(loc, collection_products, collection_id, postprocesing_opts.preserve_collection_version)
 
