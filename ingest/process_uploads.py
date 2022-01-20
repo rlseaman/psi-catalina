@@ -20,7 +20,7 @@ import json
 from types import SimpleNamespace
 import datetime
 import shutil
-from jinja2 import Environment, PackageLoader, select_autoescape
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 from product import Product
 from collection import Collection
 import iotools
@@ -51,7 +51,7 @@ COLLECTION_FILES = {
 }
 
 env = Environment(
-    loader=PackageLoader("process_uploads"),
+    loader=FileSystemLoader(os.path.join(os.path.abspath(os.path.dirname(sys.argv[0])), "templates")),
     autoescape=select_autoescape()
 )
 
@@ -662,7 +662,6 @@ def write_collection(template_filename,
     '''
     Writes the collection label to a file.
     '''
-    script_dir=os.path.abspath(os.path.dirname(sys.argv[0]))
     template=env.get_template(template_filename)
     contents = template.render(
         collection_id=collection_lidvid['collection_id'],
