@@ -638,7 +638,7 @@ def collection_with_version(collection_labels:list[Collection], major:str, minor
 def create_modification_detail(new_lidvid, description):
     return {
         "modification_date": datetime.datetime.now().strftime("%Y-%m-%d"),
-        "version_id": new_lidvid["major"] + "." + new_lidvid["minor"],
+        "version_id": f'{new_lidvid["major"]}.{new_lidvid["minor"]}',
         "description": description
     }
 
