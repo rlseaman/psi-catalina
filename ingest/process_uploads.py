@@ -537,7 +537,7 @@ def get_actual_file_name(data_dir, file_name):
 
 
 
-def update_data_collection(loc, collection_products: list[Product], collection_id, preserve_collection_version):
+def update_data_collection(loc, collection_products: list, collection_id, preserve_collection_version):
     '''
     Create the collection inventory and label.
     '''
@@ -639,7 +639,7 @@ def make_collection_lidvid(collection_id, major, minor):
         'collection_id': collection_id
     }
 
-def collection_with_version(collection_labels:list[Collection], major:str, minor:str):
+def collection_with_version(collection_labels:list, major:str, minor:str):
     candidates = [x for x in collection_labels if x.majorversion() == major and x.minorversion() == minor]
     return candidates[0] if candidates else None
 
