@@ -4,6 +4,7 @@ Python script to process submissions from Catalina Sky Survey and convert them
 to PDS4 format.
 '''
 
+from operator import mod
 import sys
 
 import os
@@ -19,7 +20,7 @@ import json
 from types import SimpleNamespace
 import datetime
 import shutil
-
+from jinja2 import Environment, PackageLoader, select_autoescape
 from product import Product
 from collection import Collection
 import iotools
@@ -27,6 +28,7 @@ import validation
 import inventory
 import preprocess
 import paths
+
 
 
 BUNDLE_ID = "gbo.ast.catalina.survey"
@@ -47,6 +49,12 @@ COLLECTION_FILES = {
     "document" : "collection_document.xml",
     "miscellaneous" : "collection_miscellaneous.xml",
 }
+
+env = Environment(
+    loader=PackageLoader("process_uploads"),
+    autoescape=select_autoescape()
+)
+
 
 def main(argv=None):
     '''
@@ -655,9 +663,8 @@ def write_collection(template_filename,
     Writes the collection label to a file.
     '''
     script_dir=os.path.abspath(os.path.dirname(sys.argv[0]))
-    template_path=(os.path.join(script_dir, template_filename))
-    template = iotools.read_file(template_path)
-    contents = template.format(
+    template=env.get_template(template_filename)
+    contents = template.render(
         collection_id=collection_lidvid['collection_id'],
         major=collection_lidvid['major'],
         minor=collection_lidvid['minor'],
@@ -665,7 +672,9 @@ def write_collection(template_filename,
         stop_date=stop_date,
         file_size=0,
         record_count=record_count,
-        year=datetime.datetime.now().strftime("%Y"))
+        year=datetime.datetime.now().strftime("%Y"),
+        modification_history=modification_history,
+        latest_modification=latest_modification)
     collection_filename = LABEL_FILENAME_TEMPLATE.format(**collection_lidvid)
     collection_path = os.path.join(collection_dir, collection_filename)
     logging.info("writing to: %s", collection_path)
