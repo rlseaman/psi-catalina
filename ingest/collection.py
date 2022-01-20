@@ -51,3 +51,6 @@ class Collection:
         Retrieves the minor of the collection
         '''
         return self.keywords.get('minor')
+
+    def modification_history(self):
+        return self.keywords.get('modification_history')

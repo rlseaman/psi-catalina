@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_1600.sch" schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<Product_Collection xmlns="http://pds.nasa.gov/pds4/pds/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://pds.nasa.gov/pds4/pds/v1 https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_1600.xsd">
+  <Identification_Area>
+    <logical_identifier>urn:nasa:pds:css:{{ collection_id }}</logical_identifier>
+    <version_id>{{ major }}.{{ minor }}</version_id>
+    <title>data collection for the Catalina Sky Survey bundle</title>
+    <information_model_version>1.A.0.0</information_model_version>
+    <product_class>Product_Collection</product_class>
+    <Citation_Information>
+      <author_list></author_list>
+      <publication_year>2015</publication_year>
+      <description>This is the {{ collection_id }} collection for the catalina sky survey bundle. 
+      </description>
+    </Citation_Information>
+    <Modification_History>
+      {% for h in modification_history %}
+      <Modification_Detail>
+        <modification_date>{{ h.modification_date }}</modification_date>
+        <version_id>{{ h.version_id }}</version_id>
+        <description>{{ h.description }}</description>
+      </Modification_Detail>
+      {% endfor %}
+      <Modification_Detail>
+        <modification_date>{{ latest_modification.modification_date }}</modification_date>
+        <version_id>{{ latest_modification.version_id }}</version_id>
+        <description>{{ latest_modification.description }}</description>
+      </Modification_Detail>
+  </Modification_History>
+  </Identification_Area>
+  <Context_Area>
+    <Time_Coordinates>
+      <start_date_time>{{ start_date }}</start_date_time>
+      <stop_date_time>{{ stop_date }}</stop_date_time>
+    </Time_Coordinates>
+    <Primary_Result_Summary>
+      <purpose>Science</purpose>
+      <processing_level>Partially Processed</processing_level>
+      <Science_Facets>
+        <domain>Atmosphere</domain>
+        <discipline_name>Small Bodies</discipline_name>
+        <facet1>Dust Study</facet1>
+      </Science_Facets>
+    </Primary_Result_Summary>
+    <Investigation_Area>
+      <name>None</name>
+      <type>Mission</type>
+      <Internal_Reference>
+        <lid_reference>urn:nasa:pds:context:investigation:none</lid_reference>
+        <reference_type>collection_to_investigation</reference_type>
+      </Internal_Reference>
+    </Investigation_Area>
+    <Observing_System>
+      <Observing_System_Component>
+        <name>CSS Instrument</name>
+        <type>Instrument</type>
+        <description></description>
+        <Internal_Reference>
+          <lid_reference>urn:nasa:pds:context:instrument:instrument.css</lid_reference>
+          <reference_type>is_instrument</reference_type>
+        </Internal_Reference>
+      </Observing_System_Component>
+    <Target_Identification>
+      <name>Multiple</name>
+      <type>Asteroid</type>
+    </Target_Identification>
+  </Context_Area>
+  <Collection>
+    <collection_type>Data</collection_type>
+  </Collection>
+  <File_Area_Inventory>
+    <File>
+      <file_name>collection_css_data_inventory.csv</file_name>
+      <local_identifier>data_reduced</local_identifier>
+      <file_size unit="byte">{{ file_size }}</file_size>
+      <records>121</records>
+    </File>
+    <Inventory>
+      <offset unit="byte">0</offset>
+      <parsing_standard_id>PDS DSV 1</parsing_standard_id>
+      <records>{{ record_count }}</records>
+      <record_delimiter>Line-Feed</record_delimiter>
+      <field_delimiter>Comma</field_delimiter>
+      <Record_Delimited>
+        <fields>2</fields>
+        <groups>0</groups>
+        <Field_Delimited>
+          <name>Member Status</name>
+          <field_number>1</field_number>
+          <data_type>ASCII_String</data_type>
+          <maximum_field_length unit="byte">1</maximum_field_length>
+        </Field_Delimited>
+        <Field_Delimited>
+          <name>LIDVID_LID</name>
+          <field_number>2</field_number>
+          <data_type>ASCII_LIDVID_LID</data_type>
+          <maximum_field_length unit="byte">255</maximum_field_length>
+        </Field_Delimited>
+      </Record_Delimited>
+      <reference_type>inventory_has_member_product</reference_type>
+    </Inventory>
+  </File_Area_Inventory>
+</Product_Collection>

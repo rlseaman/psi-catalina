@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_1G00.sch" schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<?xml-model href="https://pds.nasa.gov/pds4/img/v1/PDS4_IMG_1G00_1850.sch" schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<?xml-model href="https://pds.nasa.gov/pds4/disp/v1/PDS4_DISP_1G00_1500.sch" schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<?xml-model href="https://pds.nasa.gov/pds4/geom/v1/PDS4_GEOM_1G00_1920.sch" schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<?xml-model href="https://pds.nasa.gov/pds4/proc/v1/PDS4_PROC_1G00_1210.sch" schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<?xml-model href="https://pds.nasa.gov/pds4/survey/v1/PDS4_SURVEY_1G00_1010.sch" schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<Product_Observational
+  xmlns="http://pds.nasa.gov/pds4/pds/v1"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:disp="http://pds.nasa.gov/pds4/disp/v1"
+  xmlns:geom="http://pds.nasa.gov/pds4/geom/v1"
+  xmlns:img="http://pds.nasa.gov/pds4/img/v1"
+  xmlns:proc="http://pds.nasa.gov/pds4/proc/v1"
+  xmlns:survey="http://pds.nasa.gov/pds4/survey/v1"
+  xsi:schemaLocation="http://pds.nasa.gov/pds4/pds/v1 https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_1G00.xsd
+                      http://pds.nasa.gov/pds4/img/v1 https://pds.nasa.gov/pds4/img/v1/PDS4_IMG_1G00_1850.xsd
+                      http://pds.nasa.gov/pds4/disp/v1 https://pds.nasa.gov/pds4/disp/v1/PDS4_DISP_1G00_1500.xsd
+                      http://pds.nasa.gov/pds4/geom/v1 https://pds.nasa.gov/pds4/geom/v1/PDS4_GEOM_1G00_1920.xsd
+                      http://pds.nasa.gov/pds4/proc/v1 https://pds.nasa.gov/pds4/proc/v1/PDS4_PROC_1G00_1210.xsd
+                      http://pds.nasa.gov/pds4/survey/v1 https://pds.nasa.gov/pds4/survey/v1/PDS4_SURVEY_1G00_1010.xsd">
+  <Identification_Area>
+    <logical_identifier>urn:nasa:pds:gbo.ast.catalina.survey:data_calibrated:i52_20210501_1a_u0wsd4_01_0001.arch</logical_identifier>
+    <version_id>1.0</version_id>
+    <title>I52_20210501_1A_U0WSD4_01_0001.arch.fz</title>
+    <information_model_version>1.16.0.0</information_model_version>
+    <product_class>Product_Observational</product_class>
+    <Citation_Information>
+      <author_list>Seaman, R., Christensen, E., Gibbs, A., and Shelly, F.</author_list>
+      <publication_year>2021</publication_year>
+      <description>FITS image</description>
+    </Citation_Information>
+  </Identification_Area>
+  <Observation_Area>
+    <Time_Coordinates>
+      <start_date_time>2021-05-01T05:11:20.906Z</start_date_time>
+      <stop_date_time>2021-05-01T05:11:35.906Z</stop_date_time>
+    </Time_Coordinates>
+    <Primary_Result_Summary>
+      <purpose>Science</purpose>
+      <processing_level>Derived</processing_level>
+      <Science_Facets>
+        <discipline_name>Small Bodies</discipline_name>
+        <facet1>Physical Properties</facet1>
+      </Science_Facets>
+    </Primary_Result_Summary>
+    <Investigation_Area>
+      <name>Catalina Sky Survey</name>
+      <type>Individual Investigation</type>
+      <Internal_Reference>
+        <lid_reference>urn:nasa:pds:context:investigation:individual.catalina_sky_survey</lid_reference>
+        <reference_type>data_to_investigation</reference_type>
+      </Internal_Reference>
+    </Investigation_Area>
+    <Observing_System>
+      <Observing_System_Component>
+        <name>SI_800-594 Imager</name>
+        <type>Instrument</type>
+        <Internal_Reference>
+          <lid_reference>urn:nasa:pds:context:instrument:mount_lemmon.1m02.2kccd</lid_reference>
+          <reference_type>is_instrument</reference_type>
+        </Internal_Reference>
+      </Observing_System_Component>
+      <Observing_System_Component>
+        <name>Catalina 1.0 Meter Follow-up Telescope</name>
+        <type>Telescope</type>
+        <Internal_Reference>
+          <lid_reference>urn:nasa:pds:context:telescope:mount_lemmon.1m02</lid_reference>
+          <reference_type>is_telescope</reference_type>
+        </Internal_Reference>
+      </Observing_System_Component>
+      <Observing_System_Component>
+        <name>Steward Observatory, Mt. Lemmon Station</name>
+        <type>Observatory</type>
+        <Internal_Reference>
+          <lid_reference>urn:nasa:pds:context:facility:observatory.mount_lemmon</lid_reference>
+          <reference_type>is_facility</reference_type>
+        </Internal_Reference>
+      </Observing_System_Component>
+    </Observing_System>
+    <Target_Identification>
+      <name>Multiple</name>
+      <type>Asteroid</type>
+    </Target_Identification>
+    <Discipline_Area>
+      <survey:Survey>
+        <survey:field_id>U0WSD4</survey:field_id>
+        <survey:observation_purpose>Survey</survey:observation_purpose>
+        <survey:observation_technique>Sidereal Stare</survey:observation_technique>
+        <survey:Image_Corners>
+          <survey:equinox>J2000</survey:equinox>
+          <survey:Corner_Position>
+            <survey:corner_identification>Top Left</survey:corner_identification>
+            <survey:Coordinate>
+              <survey:right_ascension unit="deg">236.93250</survey:right_ascension>
+              <survey:declination unit="deg">-1.72019</survey:declination>
+            </survey:Coordinate>
+          </survey:Corner_Position>
+          <survey:Corner_Position>
+            <survey:corner_identification>Top Right</survey:corner_identification>
+            <survey:Coordinate>
+              <survey:right_ascension unit="deg">237.52302</survey:right_ascension>
+              <survey:declination unit="deg">-1.72019</survey:declination>
+            </survey:Coordinate>
+          </survey:Corner_Position>
+          <survey:Corner_Position>
+            <survey:corner_identification>Bottom Left</survey:corner_identification>
+            <survey:Coordinate>
+              <survey:right_ascension unit="deg">236.93250</survey:right_ascension>
+              <survey:declination unit="deg">-2.30955</survey:declination>
+            </survey:Coordinate>
+          </survey:Corner_Position>
+          <survey:Corner_Position>
+            <survey:corner_identification>Bottom Right</survey:corner_identification>
+            <survey:Coordinate>
+              <survey:right_ascension unit="deg">237.52302</survey:right_ascension>
+              <survey:declination unit="deg">-2.30955</survey:declination>
+            </survey:Coordinate>
+          </survey:Corner_Position>
+        </survey:Image_Corners>
+        <survey:Limiting_Magnitudes>
+          <survey:band_name>G</survey:band_name>
+          <survey:reference_object_type>Asteroid</survey:reference_object_type>
+          <survey:Percentage_Limit>
+            <survey:percentage>50</survey:percentage>
+            <survey:limiting_magnitude>18.79</survey:limiting_magnitude>
+          </survey:Percentage_Limit>
+          <survey:Percentage_Limit>
+            <survey:percentage>0</survey:percentage>
+            <survey:limiting_magnitude>20.04</survey:limiting_magnitude>
+          </survey:Percentage_Limit>
+        </survey:Limiting_Magnitudes>
+      </survey:Survey>
+      <proc:Processing_Information>
+        <Local_Internal_Reference>
+          <local_identifier_reference>file</local_identifier_reference>
+          <local_reference_type>processing_information_to_data_object</local_reference_type>
+        </Local_Internal_Reference>
+        <proc:Process>
+          <proc:Software>
+            <proc:Software_Program>
+              <proc:name>calibrate</proc:name>
+              <proc:program_version>1857</proc:program_version>
+            </proc:Software_Program>
+          </proc:Software>
+        </proc:Process>
+      </proc:Processing_Information>
+    </Discipline_Area>
+  </Observation_Area>
+  <File_Area_Observational>
+    <File>
+      <file_name>I52_20210501_1A_U0WSD4_01_0001.arch</file_name>
+      <local_identifier>file</local_identifier>
+    </File>
+    <Header>
+      <local_identifier>header</local_identifier>
+      <offset unit="byte">0</offset>
+      <object_length unit="byte">14400</object_length>
+      <parsing_standard_id>FITS 3.0</parsing_standard_id>
+    </Header>
+    <Array_2D>
+      <local_identifier>image</local_identifier>
+      <offset unit="byte">14400</offset>
+      <axes>2</axes>
+      <axis_index_order>Last Index Fastest</axis_index_order>
+      <description>TBD</description>
+      <Element_Array>
+        <data_type>SignedMSB2</data_type>
+        <unit>counts</unit>
+        <scaling_factor>1</scaling_factor>
+        <value_offset>32768</value_offset>
+      </Element_Array>
+      <Axis_Array>
+        <axis_name>Line</axis_name>
+        <elements>2052</elements>
+        <sequence_number>1</sequence_number>
+      </Axis_Array>
+      <Axis_Array>
+        <axis_name>Sample</axis_name>
+        <elements>2048</elements>
+        <sequence_number>2</sequence_number>
+      </Axis_Array>
+    </Array_2D>
+  </File_Area_Observational>
+</Product_Observational>

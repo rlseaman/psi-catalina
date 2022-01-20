@@ -4,6 +4,7 @@ Python script to process submissions from Catalina Sky Survey and convert them
 to PDS4 format.
 '''
 
+from operator import mod
 import sys
 
 import os
@@ -19,7 +20,7 @@ import json
 from types import SimpleNamespace
 import datetime
 import shutil
-
+from jinja2 import Environment, PackageLoader, select_autoescape
 from product import Product
 from collection import Collection
 import iotools
@@ -27,6 +28,7 @@ import validation
 import inventory
 import preprocess
 import paths
+
 
 
 BUNDLE_ID = "gbo.ast.catalina.survey"
@@ -47,6 +49,12 @@ COLLECTION_FILES = {
     "document" : "collection_document.xml",
     "miscellaneous" : "collection_miscellaneous.xml",
 }
+
+env = Environment(
+    loader=PackageLoader("process_uploads"),
+    autoescape=select_autoescape()
+)
+
 
 def main(argv=None):
     '''
@@ -239,7 +247,7 @@ def process_upload_dir(basedir, destdir, schemadir, preprocessing_opts, validati
         logging.info("Skipping collection update")
     else:
         for collection_id in collection_lids:
-            collection_products = [x for x in products if x.collection_id() == collection_id]
+            collection_products = [x for x in products if x.collection_id() == collection_id and x.labelfilename not in failed_files]
             if collection_products:
                 update_data_collection(loc, collection_products, collection_id, postprocesing_opts.preserve_collection_version)
 
@@ -529,7 +537,7 @@ def get_actual_file_name(data_dir, file_name):
 
 
 
-def update_data_collection(loc, collection_products, collection_id, preserve_collection_version):
+def update_data_collection(loc, collection_products: list[Product], collection_id, preserve_collection_version):
     '''
     Create the collection inventory and label.
     '''
@@ -544,8 +552,14 @@ def update_data_collection(loc, collection_products, collection_id, preserve_col
     stop_dates = [x.stop_date() for x in collection_products + collection_labels if x.stop_date()]
     start_date = min(start_dates) if start_dates else None
     stop_date = max(stop_dates) if stop_dates else None
+    obs_dates = set([x.date for x in collection_products if x.start_date()])
     
-    new_lidvid, record_count = merge_inventories(collection_path, collection_id, collection_products, collection_labels, preserve_collection_version)
+    old_lidvid = get_last_version_number(collection_id, collection_labels)
+    new_lidvid, record_count = merge_inventories(collection_path, collection_id, collection_products, old_lidvid, preserve_collection_version)
+    previous_collection = collection_with_version(collection_labels, old_lidvid["major"], old_lidvid["minor"])
+    modification_history = previous_collection.modification_history() if previous_collection else []
+    latest_modification=create_modification_detail(new_lidvid, "routine delivery for dates: " + ",".join(obs_dates))
+
 
     template_filename = COLLECTION_FILES.get(collection_id, "other_collection_template.xml")
     write_collection(template_filename,
@@ -553,7 +567,9 @@ def update_data_collection(loc, collection_products, collection_id, preserve_col
                      collection_path,
                      start_date,
                      stop_date,
-                     record_count)
+                     record_count,
+                     modification_history,
+                     latest_modification)
 
 
 def get_collection_labels(collection_path, collection_id):
@@ -571,14 +587,13 @@ def is_collection_file(candidate):
     return candidate.name.startswith('collection') and candidate.name.endswith('.xml')
 
 
-def merge_inventories(collection_path, collection_id, collection_products, collection_labels, preserve_collection_version):
+def merge_inventories(collection_path, collection_id, collection_products, old_lidvid, preserve_collection_version):
     '''
     Produces a new collection inventory file, and returns the lidvid for the
     new collection
     '''
     product_lidvids = [x.lidvid() for x in collection_products]
 
-    old_lidvid = get_last_version_number(collection_id, collection_labels)
     old_inv = inventory.read_inventory(old_lidvid, collection_path)
     new_inv = inventory.from_lidvids('P', product_lidvids)
 
@@ -624,20 +639,32 @@ def make_collection_lidvid(collection_id, major, minor):
         'collection_id': collection_id
     }
 
+def collection_with_version(collection_labels:list[Collection], major:str, minor:str):
+    candidates = [x for x in collection_labels if x.majorversion() == major and x.minorversion() == minor]
+    return candidates[0] if candidates else None
+
+def create_modification_detail(new_lidvid, description):
+    return {
+        "modification_date": datetime.datetime.now().strftime("%Y-%m-%d"),
+        "version_id": f'{new_lidvid["major"]}.{new_lidvid["minor"]}',
+        "description": description
+    }
+
 
 def write_collection(template_filename,
                      collection_lidvid,
                      collection_dir,
                      start_date,
                      stop_date,
-                     record_count):
+                     record_count,
+                     modification_history,
+                     latest_modification):
     '''
     Writes the collection label to a file.
     '''
     script_dir=os.path.abspath(os.path.dirname(sys.argv[0]))
-    template_path=(os.path.join(script_dir, template_filename))
-    template = iotools.read_file(template_path)
-    contents = template.format(
+    template=env.get_template(template_filename)
+    contents = template.render(
         collection_id=collection_lidvid['collection_id'],
         major=collection_lidvid['major'],
         minor=collection_lidvid['minor'],
@@ -645,7 +672,9 @@ def write_collection(template_filename,
         stop_date=stop_date,
         file_size=0,
         record_count=record_count,
-        year=datetime.datetime.now().strftime("%Y"))
+        year=datetime.datetime.now().strftime("%Y"),
+        modification_history=modification_history,
+        latest_modification=latest_modification)
     collection_filename = LABEL_FILENAME_TEMPLATE.format(**collection_lidvid)
     collection_path = os.path.join(collection_dir, collection_filename)
     logging.info("writing to: %s", collection_path)
