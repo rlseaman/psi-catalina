@@ -552,7 +552,7 @@ def update_data_collection(loc, collection_products: list, collection_id, preser
     stop_dates = [x.stop_date() for x in collection_products + collection_labels if x.stop_date()]
     start_date = min(start_dates) if start_dates else None
     stop_date = max(stop_dates) if stop_dates else None
-    obs_dates = set([x.date for x in collection_products if x.date])
+    obs_dates = sorted(set([x.date for x in collection_products if x.date]), key=lambda x: datetime.datetime.strptime(x, "%y%b%d"))
     
     old_lidvid = get_last_version_number(collection_id, collection_labels)
     new_lidvid, record_count = merge_inventories(collection_path, collection_id, collection_products, old_lidvid, preserve_collection_version)
