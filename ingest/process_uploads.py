@@ -557,8 +557,8 @@ def update_data_collection(loc, collection_products: list, collection_id, preser
     old_lidvid = get_last_version_number(collection_id, collection_labels)
     new_lidvid, record_count = merge_inventories(collection_path, collection_id, collection_products, old_lidvid, preserve_collection_version)
     previous_collection = collection_with_version(collection_labels, old_lidvid["major"], old_lidvid["minor"])
-    modification_history = previous_collection.modification_history() if previous_collection else []
-    latest_modification=create_modification_detail(new_lidvid, "routine delivery for dates: " + ",".join(obs_dates))
+    modification_history = [x for x in previous_collection.modification_history() if x["version_id"] == "1.0"] if previous_collection else []
+    latest_modification=create_modification_detail(new_lidvid, "routine delivery for: " + ",".join(obs_dates))
 
 
     template_filename = COLLECTION_FILES.get(collection_id, "other_collection_template.xml")
