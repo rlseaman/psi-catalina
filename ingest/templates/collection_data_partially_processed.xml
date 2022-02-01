@@ -244,7 +244,7 @@
     
     <File_Area_Inventory>
         <File>
-            <file_name>collection_inventory_data_reduced_v{{ major }}.{{ minor }}.csv</file_name>
+            <file_name>collection_inventory_data_partially_processed_v{{ major }}.{{ minor }}.csv</file_name>
         </File>
         <Inventory>
             <offset unit="byte">0</offset>
