@@ -240,6 +240,11 @@
         <member_status>Primary</member_status>
         <reference_type>bundle_has_member_collection</reference_type>
     </Bundle_Member_Entry>
+    <Bundle_Member_Entry>
+        <lid_reference>urn:nasa:pds:gbo.ast.catalina.survey:miscellaneous</lid_reference>
+        <member_status>Primary</member_status>
+        <reference_type>bundle_has_member_collection</reference_type>
+    </Bundle_Member_Entry>
 
 
 </Product_Bundle>
