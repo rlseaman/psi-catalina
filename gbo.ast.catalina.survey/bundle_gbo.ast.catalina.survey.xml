@@ -30,7 +30,7 @@
         <Observing_System>
             <Observing_System_Component>
                 <name>Mount Lemmon (Catalina) Station</name>
-                <type>Host</type>
+                <type>Facility</type>
                 <Internal_Reference>
                     <lid_reference>urn:nasa:pds:context:facility:observatory.mount_lemmon</lid_reference>
                     <reference_type>is_facility</reference_type>
@@ -64,7 +64,7 @@
         <Observing_System>
             <Observing_System_Component>
                 <name>Mount Lemmon (Catalina) Station</name>
-                <type>Host</type>
+                <type>Facility</type>
                 <Internal_Reference>
                     <lid_reference>urn:nasa:pds:context:facility:observatory.mount_lemmon</lid_reference>
                     <reference_type>is_facility</reference_type>
@@ -90,7 +90,7 @@
         <Observing_System>
             <Observing_System_Component>
                 <name>Mount Bigelow (Catalina) Station</name>
-                <type>Host</type>
+                <type>Facility</type>
                 <Internal_Reference>
                     <lid_reference>urn:nasa:pds:context:facility:observatory.mount_bigelow</lid_reference>
                     <reference_type>is_facility</reference_type>
@@ -116,7 +116,7 @@
         <Observing_System>
             <Observing_System_Component>
                 <name>Mount Bigelow (Catalina) Station</name>
-                <type>Host</type>
+                <type>Facility</type>
                 <Internal_Reference>
                     <lid_reference>urn:nasa:pds:context:facility:observatory.mount_bigelow</lid_reference>
                     <reference_type>is_facility</reference_type>
@@ -150,7 +150,7 @@
         <Observing_System>
             <Observing_System_Component>
                 <name>Kitt Peak Station, Steward Observatory</name>
-                <type>Host</type>
+                <type>Facility</type>
                 <Internal_Reference>
                     <lid_reference>urn:nasa:pds:context:facility:observatory.steward-kittpeak</lid_reference>
                     <reference_type>is_facility</reference_type>
@@ -176,7 +176,7 @@
         <Observing_System>
             <Observing_System_Component>
                 <name>Siding Spring Observatory</name>
-                <type>Host</type>
+                <type>Facility</type>
                 <Internal_Reference>
                     <lid_reference>urn:nasa:pds:context:facility:observatory.siding_spring</lid_reference>
                     <reference_type>is_facility</reference_type>
@@ -237,6 +237,11 @@
     </Bundle_Member_Entry>
     <Bundle_Member_Entry>
         <lid_reference>urn:nasa:pds:gbo.ast.catalina.survey:data_partially_processed</lid_reference>
+        <member_status>Primary</member_status>
+        <reference_type>bundle_has_member_collection</reference_type>
+    </Bundle_Member_Entry>
+    <Bundle_Member_Entry>
+        <lid_reference>urn:nasa:pds:gbo.ast.catalina.survey:miscellaneous</lid_reference>
         <member_status>Primary</member_status>
         <reference_type>bundle_has_member_collection</reference_type>
     </Bundle_Member_Entry>

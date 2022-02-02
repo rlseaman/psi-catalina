@@ -36,28 +36,27 @@
     </Identification_Area>
     
     <Context_Area>
-
-
         <Time_Coordinates>
             <start_date_time>{{ start_date }}</start_date_time>
             <stop_date_time>{{ stop_date }}</stop_date_time>
-          </Time_Coordinates>
-          <Primary_Result_Summary>
+        </Time_Coordinates>
+        <Primary_Result_Summary>
             <purpose>Science</purpose>
             <processing_level>Partially Processed</processing_level>
             <Science_Facets>
               <discipline_name>Imaging</discipline_name>
               <facet1>Grayscale</facet1>
             </Science_Facets>
-          </Primary_Result_Summary>
-          <Investigation_Area>
-            <name>None</name>
-            <type>Mission</type>
+        </Primary_Result_Summary>
+        <Investigation_Area>
+            <name>Catalina Sky Survey</name>
+            <type>Individual Investigation</type>
             <Internal_Reference>
-              <lid_reference>urn:nasa:pds:context:investigation:none</lid_reference>
-              <reference_type>collection_to_investigation</reference_type>
+                <lid_reference>urn:nasa:pds:context:investigation:individual.catalina_sky_survey</lid_reference>
+                <reference_type>collection_to_investigation</reference_type>
             </Internal_Reference>
-          </Investigation_Area>
+        </Investigation_Area>
+
 
         <Observing_System>
             <Observing_System_Component>
@@ -245,7 +244,7 @@
     
     <File_Area_Inventory>
         <File>
-            <file_name>collection_inventory_data_reduced_v{{ major }}.{{ minor }}.csv</file_name>
+            <file_name>collection_inventory_data_partially_processed_v{{ major }}.{{ minor }}.csv</file_name>
         </File>
         <Inventory>
             <offset unit="byte">0</offset>

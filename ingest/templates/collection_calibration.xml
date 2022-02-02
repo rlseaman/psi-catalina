@@ -50,12 +50,12 @@
         </Science_Facets>
         </Primary_Result_Summary>
         <Investigation_Area>
-            <name>None</name>
-            <type>Mission</type>
-        <Internal_Reference>
-            <lid_reference>urn:nasa:pds:context:investigation:none</lid_reference>
-            <reference_type>collection_to_investigation</reference_type>
-        </Internal_Reference>
+            <name>Catalina Sky Survey</name>
+            <type>Individual Investigation</type>
+            <Internal_Reference>
+                <lid_reference>urn:nasa:pds:context:investigation:individual.catalina_sky_survey</lid_reference>
+                <reference_type>collection_to_investigation</reference_type>
+            </Internal_Reference>
         </Investigation_Area>
 
         <Observing_System>
@@ -244,7 +244,7 @@
     
     <File_Area_Inventory>
         <File>
-            <file_name>collection_inventory_data_calibration_v{{ major }}.{{ minor }}.csv</file_name>
+            <file_name>collection_inventory_calibration_v{{ major }}.{{ minor }}.csv</file_name>
         </File>
         <Inventory>
             <offset unit="byte">0</offset>
