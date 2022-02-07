@@ -102,6 +102,7 @@ def main(argv=None):
         specific_date = args.specific_date,
         specific_instrument = args.specific_instrument,
         max_products = args.max_products,
+        max_nights = args.max_nights,
         ignore_past_days = args.ignore_past_days
     )
 
@@ -180,6 +181,10 @@ def get_args():
                         type=int,
                         dest='max_products', 
                         help='The maximum number of products to process in a single run')
+    parser.add_argument('--max-nights', 
+                        type=int,
+                        dest='max_nights', 
+                        help='The maximum number of nights to process in a single run')
     parser.add_argument('--ignore-past-days', 
                         type=int,
                         default=0,
@@ -214,7 +219,8 @@ def process_upload_dir(basedir, destdir, schemadir, preprocessing_opts, validati
     loc = paths.Paths(basedir, destdir, BUNDLE_ID, schemadir)
     discovered_products = discover_products(loc, filter_opts)
     logging.info("Discovey complete, consolidating: %s", basedir)
-    products = list(itertools.islice(discovered_products, filter_opts.max_products))
+    products = limit_products(list(itertools.islice(discovered_products, filter_opts.max_products)), filter_opts.max_nights)
+
 
 
     logging.info("%i products discovered", len(products))
@@ -256,6 +262,12 @@ def process_upload_dir(basedir, destdir, schemadir, preprocessing_opts, validati
     #logging.info("moving to %s", deletion_area_dest)
     logging.info("done")
 
+def limit_products(products, maxnights=None):
+    if maxnights is None:
+        return products
+    else:
+        dates = sorted(set(product.date for product in products), key=parseDirDate, reverse=True)[:maxnights]
+        return [x for x in products if x.date in dates]
 
 
 def discover_products(loc, filter_opts):
@@ -552,7 +564,7 @@ def update_data_collection(loc, collection_products: list, collection_id, preser
     stop_dates = [x.stop_date() for x in collection_products + collection_labels if x.stop_date()]
     start_date = min(start_dates) if start_dates else None
     stop_date = max(stop_dates) if stop_dates else None
-    obs_dates = sorted(set([x.date for x in collection_products if x.date]), key=lambda x: datetime.datetime.strptime(x, "%y%b%d"))
+    obs_dates = sorted(set([x.date for x in collection_products if x.date]), key=parseDirDate)
     
     old_lidvid = get_last_version_number(collection_id, collection_labels)
     new_lidvid, record_count = merge_inventories(collection_path, collection_id, collection_products, old_lidvid, preserve_collection_version)
@@ -571,6 +583,8 @@ def update_data_collection(loc, collection_products: list, collection_id, preser
                      modification_history,
                      latest_modification)
 
+def parseDirDate(x):
+    return datetime.datetime.strptime(x, "%y%b%d")
 
 def get_collection_labels(collection_path, collection_id):
     '''
