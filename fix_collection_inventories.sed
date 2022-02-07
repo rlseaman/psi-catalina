@@ -1,0 +1,2 @@
+s/<file_name>collection_inventory_data_calibration/<file_name>collection_inventory_calibration/
+s/<file_name>collection_inventory_data_reduced/<file_name>collection_inventory_partially_processed/
