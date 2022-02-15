@@ -217,10 +217,10 @@ def process_upload_dir(basedir, destdir, schemadir, preprocessing_opts, validati
     '''
     logging.info("Discovering products at: %s", basedir)
     loc = paths.Paths(basedir, destdir, BUNDLE_ID, schemadir)
-    discovered_products = discover_products(loc, filter_opts)
+    directories = limit_directories(list(discover_product_dirs(loc, filter_opts)), filter_opts)
     logging.info("Discovey complete, consolidating: %s", basedir)
-    products = limit_products(list(itertools.islice(discovered_products, filter_opts.max_products)), filter_opts.max_nights)
-
+    logging.info(f'Discovered directories: {directories}')
+    products = list(itertools.chain.from_iterable(discover_date_products(loc, inst, year, d) for inst, year, d in directories))
 
 
     logging.info("%i products discovered", len(products))
@@ -262,15 +262,19 @@ def process_upload_dir(basedir, destdir, schemadir, preprocessing_opts, validati
     #logging.info("moving to %s", deletion_area_dest)
     logging.info("done")
 
-def limit_products(products, maxnights=None):
-    if maxnights is None:
-        return products
-    else:
-        dates = sorted(set(product.date for product in products), key=parseDirDate, reverse=True)[:maxnights]
-        return [x for x in products if x.date in dates]
+def limit_directories(directories, filter_opts):
+    dates = set([d for inst, year, d in directories])
+    if filter_opts.specific_date is not None:
+        dates = [d for d in dates if d == filter_opts.specific_date]
+    if filter_opts.ignore_past_days is not None:
+        dates = [d for d in dates if d not in build_ignore_dates(filter_opts.ignore_past_days)]
+    if filter_opts.max_nights is not None:
+        dates = sorted(dates, key=parseDirDate, reverse=True)[:filter_opts.max_nights]
+    logging.info(f'Processing dates: {dates}')
+    return [(inst, year, d) for inst,year,d in directories if d in dates]
 
 
-def discover_products(loc, filter_opts):
+def discover_product_dirs(loc, filter_opts):
     '''
     Find all of the product labels in the directory and convert them
     to product objects
@@ -312,11 +316,8 @@ def process_year_directory(loc, instrument, year, filter_opts):
     logging.info("processing year directory %s/%s", instrument, year)
     yeardir = loc.datadir(instrument, year)
     days_to_ignore = IGNORE_DATES + build_ignore_dates(filter_opts.ignore_past_days)
-    dates = [filter_opts.specific_date] if filter_opts.specific_date else [x.name for x in os.scandir(yeardir) if x.is_dir() and x.name not in days_to_ignore]
-    logging.debug("dates found: %s", dates)
-
-    return itertools.chain.from_iterable(
-        discover_date_products(loc, instrument, year, date) for date in dates)
+    discovered_dates = [x.name for x in os.scandir(yeardir) if x.is_dir() and x.name not in days_to_ignore]
+    return [(instrument, year, d) for d in discovered_dates if date_has_semaphore(loc, instrument, year, d) and date_has_products(loc, instrument, year, d)]
 
 
 def build_ignore_dates(num_days):
@@ -328,6 +329,14 @@ def build_ignore_dates(num_days):
     datestrs = [dt.strftime("%y%b%d") for dt in dates]
     return datestrs
 
+def date_has_semaphore(loc, instrument, year, date):
+    datadir = loc.datadir(instrument, year, date)
+    labeldir = loc.labeldir(instrument, year, date)
+    return semaphore_exists(datadir) and semaphore_exists(labeldir)
+
+def date_has_products(loc, instrument, year, date):
+    labeldir = loc.labeldir(instrument, year, date)
+    return len(get_labels(labeldir))
 
 def discover_date_products(loc, instrument, year, date):
     '''
@@ -368,7 +377,7 @@ def labels_to_products(datadir, labeldir, instrument, year, date):
     labeldir: the absolute path to the label files
     '''
     logging.info("Processing searching for labels in %s/%s/%s", instrument, year, date)
-    files = [x.name for x in os.scandir(labeldir) if is_label(x)]
+    files = get_labels(labeldir)
     empty_labels = [x for x in files if os.path.getsize(os.path.join(labeldir, x)) == 0]
     if empty_labels:
         logging.warn("Empty labels in %s: %s", labeldir, empty_labels)
@@ -378,6 +387,8 @@ def labels_to_products(datadir, labeldir, instrument, year, date):
     logging.info("discovery complete in %s/%s/%s", instrument, year, date)
     return products
 
+def get_labels(labeldir):
+    return [x.name for x in os.scandir(labeldir) if is_label(x)]
 
 def product_whitelisted(product):
     '''
