@@ -240,14 +240,14 @@ def process_upload_dir(basedir, destdir, schemadir, preprocessing_opts, validati
     os.makedirs(logdir, exist_ok=True)
 
     failures = validate_products(products, loc, preprocessing_opts, validation_opts, logdir)
-    failed_files = set([os.path.basename(x['label']) for x in failures])
+    failed_files = set([validation.extract_label_info(x['label']) for x in failures])
     logging.info(failed_files)
 
     if postprocesing_opts.skip_move:
         logging.info("Skipping move")
     else:
         for product in products:
-            move_product(product, loc, postprocesing_opts, product.labelfilename in failed_files)
+            move_product(product, loc, postprocesing_opts, (product.inst, product.year, product.date, product.labelfilename) in failed_files)
 
     if postprocesing_opts.skip_collection_update:
         logging.info("Skipping collection update")
@@ -468,8 +468,9 @@ Writes information about a failure to the disk. If possible, it will write it ne
 failed.
 '''
 def writeFailure(batch, logdir, loc, failure):
-    failfile = os.path.basename(failure['label'])
-    src_products = [x for x in batch if x.labelfilename == failfile]
+    label_info = validation.extract_label_info(failure['label'])
+    inst, year, dateval, failfile = label_info
+    src_products = [x for x in batch if (x.inst, x.year, x.date, x.labelfilename) == label_info]
 
     faildir = loc.productDestDir(src_products[0], True) if src_products else logdir
     os.makedirs(faildir, exist_ok=True)

@@ -2,8 +2,10 @@
 Performs validation on a PDS4 label
 '''
 from json.decoder import JSONDecodeError
+from math import prod
 import subprocess
 import os.path
+import os
 import json
 import product
 import tempfile
@@ -53,7 +55,7 @@ def validate_products(products, schema_path, skip_data):
         return run_validator(temp_dir, schema_path, skip_data)
 
 
-def create_temp_copy(temp_dir, product, skip_data):
+def create_temp_copy(temp_dir, product:product.Product, skip_data):
     '''
     Creates temporary copies of the files for a product. Temporary copies are
     needed because the real copies are compressed, and the labels also need
@@ -69,15 +71,19 @@ def create_temp_copy(temp_dir, product, skip_data):
     label_path = product.labelpath
     data_dir = product.datadir
 
+    temp_product_dir = os.path.join(temp_dir, product.inst, product.year, product.date)
+
     logging.info("Creating temporary copies of %s", label_file_name)
 
-    temp_label_path = os.path.join(temp_dir, label_file_name)
+    os.makedirs(temp_product_dir, exist_ok=True)
+
+    temp_label_path = os.path.join(temp_product_dir, label_file_name)
     shutil.copy(label_path, temp_label_path)
 
     data_file_names = product.filenames()
     for data_file_name in data_file_names:
         data_path = os.path.join(data_dir, data_file_name)
-        temp_data_path = os.path.join(temp_dir, data_file_name)
+        temp_data_path = os.path.join(temp_product_dir, data_file_name)
 
         if skip_data:
             logging.debug("Creating dummy copy of %s", data_path)
@@ -137,6 +143,18 @@ def run_validator(file_name, schema_path, skip_data):
     else:
         logging.info("Validation passed")
     return (failures, successes, unfiltered)
+
+def extract_label_info(labelpath):
+    datepath = os.path.dirname(labelpath)
+    yearpath = os.path.dirname(datepath)
+    instpath= os.path.dirname(yearpath)
+
+    label = os.path.basename(labelpath)
+    dateval = os.path.basename(datepath)
+    yearval = os.path.basename(yearpath)
+    instval = os.path.basename(instpath)
+
+    return (instval, yearval, dateval, label)
 
 def get_schemas(base_path, extension):
     return [os.path.join(base_path, x + extension) for x in DICTIONARIES]
