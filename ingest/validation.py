@@ -71,9 +71,10 @@ def create_temp_copy(temp_dir, product:product.Product, skip_data):
     label_path = product.labelpath
     data_dir = product.datadir
 
+    temp_product_dir = os.path.join(temp_dir, product.inst, product.year, product.date)
+
     logging.info("Creating temporary copies of %s", label_file_name)
 
-    temp_product_dir = os.path.join(temp_dir, product.inst, product.year, product.date)
     os.makedirs(temp_product_dir, exist_ok=True)
 
     temp_label_path = os.path.join(temp_product_dir, label_file_name)
@@ -142,6 +143,18 @@ def run_validator(file_name, schema_path, skip_data):
     else:
         logging.info("Validation passed")
     return (failures, successes, unfiltered)
+
+def extract_label_info(labelpath):
+    datepath = os.path.dirname(labelpath)
+    yearpath = os.path.dirname(datepath)
+    instpath= os.path.dirname(yearpath)
+
+    label = os.path.basename(labelpath)
+    dateval = os.path.basename(datepath)
+    yearval = os.path.basename(yearpath)
+    instval = os.path.basename(instpath)
+
+    return (instval, yearval, dateval, label)
 
 def get_schemas(base_path, extension):
     return [os.path.join(base_path, x + extension) for x in DICTIONARIES]
