@@ -93,8 +93,11 @@ def create_temp_copy(temp_dir, product:product.Product, skip_data):
             shutil.copy(data_path, temp_data_path)
         elif os.path.exists(data_path + ".gz"):
             logging.debug("Gunzipping temporary %s to %s", data_path + ".gz", temp_data_path)
-            with open(temp_data_path, "wb") as uncompressed, gzip.open(data_path + ".gz", "rb") as compressed:
-                shutil.copyfileobj(compressed, uncompressed)
+            try:
+                with open(temp_data_path, "wb") as uncompressed, gzip.open(data_path + ".gz", "rb") as compressed:
+                    shutil.copyfileobj(compressed, uncompressed)
+            except Exception:
+                logging.warn("Could not decpompress %s to %s", data_path + ".gz", temp_data_path)
         elif os.path.exists(data_path + ".fz"):
             logging.debug("Funpacking temporary %s to %s", data_path + ".fz", temp_data_path)
             subprocess.run([FUNPACK_CMD, '-C', '-O', temp_data_path, data_path + ".fz"])

@@ -381,8 +381,14 @@ def labels_to_products(datadir, labeldir, instrument, year, date):
     empty_labels = [x for x in files if os.path.getsize(os.path.join(labeldir, x)) == 0]
     if empty_labels:
         logging.warn("Empty labels in %s: %s", labeldir, empty_labels)
-    nonempty_labels = [x for x in files if os.path.getsize(os.path.join(labeldir, x)) > 0]
-    products = (Product(datadir, os.path.join(labeldir, infile), instrument, year, date) for infile in nonempty_labels)
+
+    unwritable_labels = [x for x in files if not os.access(os.path.join(labeldir, x), os.W_OK)]
+    if unwritable_labels:
+        logging.warn("Unwritable labels in %s: %s", labeldir, unwritable_labels)
+
+    usable_labels = [x for x in files if x not in empty_labels and x not in unwritable_labels]
+    
+    products = (Product(datadir, os.path.join(labeldir, infile), instrument, year, date) for infile in usable_labels)
     #logging.info("%s products in %s/%s/%s", len(products), instrument, year, date)
     logging.info("discovery complete in %s/%s/%s", instrument, year, date)
     return products
