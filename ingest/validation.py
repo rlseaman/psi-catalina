@@ -2,7 +2,6 @@
 Performs validation on a PDS4 label
 '''
 from json.decoder import JSONDecodeError
-from math import prod
 import subprocess
 import os.path
 import os
