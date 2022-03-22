@@ -718,7 +718,13 @@ def is_label(candidate):
     '''
     Determines if the given file is a label file.
     '''
-    return candidate.name.endswith('.xml')
+    return candidate.name.endswith('.xml') and check_writable(candidate)
+
+def check_writable(candidate):
+    if os.access(candidate, os.W_OK):
+        return True
+    logging.warning("Label %s is not writable. Skipping...", candidate.name)
+    return False
 
 
 if __name__ == '__main__':
