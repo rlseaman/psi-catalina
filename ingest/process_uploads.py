@@ -316,7 +316,7 @@ def process_year_directory(loc, instrument, year, filter_opts):
     logging.info("processing year directory %s/%s", instrument, year)
     yeardir = loc.datadir(instrument, year)
     days_to_ignore = IGNORE_DATES + build_ignore_dates(filter_opts.ignore_past_days)
-    discovered_dates = [x.name for x in os.scandir(yeardir) if x.is_dir() and x.name not in days_to_ignore]
+    discovered_dates = [x.name for x in os.scandir(yeardir) if x.is_dir() and os.access(x, os.W_OK) and x.name not in days_to_ignore]
     return [(instrument, year, d) for d in discovered_dates if date_has_semaphore(loc, instrument, year, d) and date_has_products(loc, instrument, year, d)]
 
 
