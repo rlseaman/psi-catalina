@@ -723,7 +723,7 @@ def is_label(candidate):
 def check_writable(candidate):
     if os.access(candidate, os.W_OK):
         return True
-    logging.warning("Label %s is not writable. Skipping...", candidate.name)
+    #logging.warning("Label %s is not writable. Skipping...", candidate.name)
     return False
 
 
