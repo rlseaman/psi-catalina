@@ -25,18 +25,24 @@ class Paths:
         '''
         subdir = "other/pds4" if date else None
         return self._buildpath((self.basedir, inst, year, subdir, date, filename))
-        
-    def destdir(self, collection_id, inst=None, year=None, date=None, failed=False):
+
+    def destdir(self, collection_id, inst=None, year=None, subDir=None, date=None, failed=False):
         '''
         Returns the destination directory
         '''
         if failed:
-            return self._buildpath((self.dest, "failed", collection_id, inst, year, date))
+            return self._buildpath((self.dest, "failed", collection_id, inst, year, None, date))
         else:
-            return self._buildpath((self.dest, self.bundle_id, collection_id, inst, year, date))
+            return self._buildpath((self.dest, self.bundle_id, collection_id, inst, year, subDir, date))
 
     def productDestDir(self, p, failed=False):
         return self.destdir(p.collection_id(), p.inst, p.year, p.date, failed)        
+
+    def validationDataDir(self, p, failed=False):
+        return self.destdir(None, p.inst, p.year, None, p.date, failed)        
+
+    def validationLabelDir(self, p, failed=False):
+        return self.destdir(None, p.inst, p.year, "other/pds4", p.date, failed)        
 
     def _buildpath(self, elements):
         return os.path.join(*self._filledElements(elements))

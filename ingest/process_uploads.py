@@ -95,7 +95,8 @@ def main(argv=None):
         dry_move=args.dry_move,
         copy_files=args.copy_files,
         skip_collection_update=args.skip_collection_update,
-        preserve_collection_version=args.preserve_collection_version
+        preserve_collection_version=args.preserve_collection_version,
+        validate_only=args.validate_only
     )
 
     filter_opts = SimpleNamespace(
@@ -190,6 +191,11 @@ def get_args():
                         default=0,
                         dest='ignore_past_days', 
                         help='Ignores products dated in the past x number of days. This will give products time to accumulate before processing')
+    parser.add_argument('--validate-only', 
+                        type=int,
+                        default=0,
+                        dest='validate_only', 
+                        help='Only perform validation. Passing products will be moved to the destination directory, but they will not be organized in collections.')
 
     return parser.parse_args()
 
@@ -520,8 +526,40 @@ def preprocess_product(product, loc, skip_data_preprocessing, skip_label_preproc
         preprocess.preprocess_labelfile(src_label, file_names)
 
 
-
 def move_product(product, loc, postprocessing_opts, failed):
+    if postprocessing_opts.valdate_only:
+        pass
+    else:
+        move_product_to_collections(product, loc, postprocessing_opts, failed)
+
+def move_product_to_prevaldiated(product, loc, postprocessing_opts, failed):
+    '''
+    move a product to the pre-validated directory. Future runs of this script can now skip the validation.
+    '''
+    logging.info("Moving files for: %s", product.labelfilename)
+
+    datadir = loc.datadir(product.inst, product.year, product.date)
+    label_dest_directory = loc.validationLabelDir(product, failed)
+    data_dest_directory = loc.validationDataDir(product, failed)
+    os.makedirs(label_dest_directory, exist_ok=True)
+    os.makedirs(data_dest_directory, exist_ok=True)
+
+    file_names=product.filenames()
+    if not file_names:
+        raise Exception("No filenames in label:", product.labelfilename)
+
+    src_label = product.labelpath
+    dest_label = os.path.join(label_dest_directory, product.labelfilename)
+    transfer_file(src_label, dest_label, postprocessing_opts)
+
+    for file_name in file_names:
+        actual_file_name = get_actual_file_name(datadir, file_name)
+        if actual_file_name:
+            src_data = os.path.join(datadir, actual_file_name)
+            dest_data = os.path.join(data_dest_directory, actual_file_name)
+            transfer_file(src_data, dest_data, postprocessing_opts)
+
+def move_product_to_collections(product, loc, postprocessing_opts, failed):
     '''
     move a product to the archive directory. For the current workflow, this will be a
     temporary directory on the processing server that will then get synced over
