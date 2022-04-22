@@ -217,7 +217,7 @@ def process_upload_dir(basedir, destdir, schemadir, preprocessing_opts, validati
     '''
     logging.info("Discovering products at: %s", basedir)
     loc = paths.Paths(basedir, destdir, BUNDLE_ID, schemadir)
-    directories = limit_directories(list(discover_product_dirs(loc, filter_opts)), filter_opts)
+    directories = limit_directories(loc, list(discover_product_dirs(loc, filter_opts)), filter_opts)
     logging.info("Discovey complete, consolidating: %s", basedir)
     logging.info(f'Discovered directories: {directories}')
     products = list(itertools.chain.from_iterable(discover_date_products(loc, inst, year, d) for inst, year, d in directories))
@@ -262,14 +262,16 @@ def process_upload_dir(basedir, destdir, schemadir, preprocessing_opts, validati
     #logging.info("moving to %s", deletion_area_dest)
     logging.info("done")
 
-def limit_directories(directories, filter_opts):
+def limit_directories(loc, directories, filter_opts):
     dates = set([d for inst, year, d in directories])
     if filter_opts.specific_date is not None:
         dates = [d for d in dates if d == filter_opts.specific_date]
     if filter_opts.ignore_past_days is not None:
         dates = [d for d in dates if d not in build_ignore_dates(filter_opts.ignore_past_days)]
     if filter_opts.max_nights is not None:
-        dates = sorted(dates, key=parseDirDate, reverse=True)[:filter_opts.max_nights]
+        candidates = sorted(dates, key=parseDirDate, reverse=True)
+        candidates_with_products = (d2 for d2 in candidates if any(label_dir_has_products(loc, inst, year, d) for inst, year, d in directories if d == d2))
+        dates = itertools.islice(candidates_with_products, filter_opts.max_nights)
     logging.info(f'Processing dates: {dates}')
     return [(inst, year, d) for inst,year,d in directories if d in dates]
 
@@ -316,7 +318,7 @@ def process_year_directory(loc, instrument, year, filter_opts):
     logging.info("processing year directory %s/%s", instrument, year)
     yeardir = loc.datadir(instrument, year)
     days_to_ignore = IGNORE_DATES + build_ignore_dates(filter_opts.ignore_past_days)
-    discovered_dates = [x.name for x in os.scandir(yeardir) if x.is_dir() and x.name not in days_to_ignore]
+    discovered_dates = [x.name for x in os.scandir(yeardir) if x.is_dir() and os.access(x, os.W_OK) and x.name not in days_to_ignore]
     return [(instrument, year, d) for d in discovered_dates if date_has_semaphore(loc, instrument, year, d) and date_has_products(loc, instrument, year, d)]
 
 
@@ -335,7 +337,9 @@ def date_has_semaphore(loc, instrument, year, date):
     return semaphore_exists(datadir) and semaphore_exists(labeldir)
 
 def date_has_products(loc, instrument, year, date):
-    labeldir = loc.labeldir(instrument, year, date)
+    return label_dir_has_products(loc.labeldir(instrument, year, date))
+
+def label_dir_has_products(labeldir):
     return len(get_labels(labeldir))
 
 def discover_date_products(loc, instrument, year, date):
@@ -718,7 +722,13 @@ def is_label(candidate):
     '''
     Determines if the given file is a label file.
     '''
-    return candidate.name.endswith('.xml')
+    return candidate.name.endswith('.xml') and check_writable(candidate)
+
+def check_writable(candidate):
+    if os.access(candidate, os.W_OK):
+        return True
+    #logging.warning("Label %s is not writable. Skipping...", candidate.name)
+    return False
 
 
 if __name__ == '__main__':
