@@ -544,6 +544,24 @@ def move_product_to_prevaldiated(product, loc, postprocessing_opts, failed):
     os.makedirs(label_dest_directory, exist_ok=True)
     os.makedirs(data_dest_directory, exist_ok=True)
 
+    do_move(product, postprocessing_opts, datadir, label_dest_directory, data_dest_directory)
+
+def move_product_to_collections(product, loc, postprocessing_opts, failed):
+    '''
+    move a product to the archive directory. For the current workflow, this will be a
+    temporary directory on the processing server that will then get synced over
+    to the archive direcory.
+    '''
+    logging.info("Moving files for: %s", product.labelfilename)
+
+    datadir = loc.datadir(product.inst, product.year, product.date)
+    dest_directory = loc.productDestDir(product, failed)
+    os.makedirs(dest_directory, exist_ok=True)
+
+    do_move(product, postprocessing_opts, datadir, dest_directory, dest_directory)
+
+def do_move(product, postprocessing_opts, datadir, label_dest_directory, data_dest_directory):
+
     file_names=product.filenames()
     if not file_names:
         raise Exception("No filenames in label:", product.labelfilename)
@@ -559,32 +577,6 @@ def move_product_to_prevaldiated(product, loc, postprocessing_opts, failed):
             dest_data = os.path.join(data_dest_directory, actual_file_name)
             transfer_file(src_data, dest_data, postprocessing_opts)
 
-def move_product_to_collections(product, loc, postprocessing_opts, failed):
-    '''
-    move a product to the archive directory. For the current workflow, this will be a
-    temporary directory on the processing server that will then get synced over
-    to the archive direcory.
-    '''
-    logging.info("Moving files for: %s", product.labelfilename)
-
-    datadir = loc.datadir(product.inst, product.year, product.date)
-    dest_directory = loc.productDestDir(product, failed)
-    os.makedirs(dest_directory, exist_ok=True)
-
-    file_names=product.filenames()
-    if not file_names:
-        raise Exception("No filenames in label:", product.labelfilename)
-
-    src_label = product.labelpath
-    dest_label = os.path.join(dest_directory, product.labelfilename)
-    transfer_file(src_label, dest_label, postprocessing_opts)
-
-    for file_name in file_names:
-        actual_file_name = get_actual_file_name(datadir, file_name)
-        if actual_file_name:
-            src_data = os.path.join(datadir, actual_file_name)
-            dest_data = os.path.join(dest_directory, actual_file_name)
-            transfer_file(src_data, dest_data, postprocessing_opts)
 
 
 def transfer_file(src, dest, postprocessing_opts):
