@@ -528,7 +528,7 @@ def preprocess_product(product, loc, skip_data_preprocessing, skip_label_preproc
 
 def move_product(product, loc, postprocessing_opts, failed):
     if postprocessing_opts.valdate_only:
-        pass
+        move_product_to_prevaldiated(product, loc, postprocessing_opts, failed)
     else:
         move_product_to_collections(product, loc, postprocessing_opts, failed)
 
