@@ -1,5 +1,3 @@
-from genericpath import exists
-import subprocess
 import logging
 import os
 import gzip

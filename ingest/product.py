@@ -6,7 +6,6 @@ import os
 from bs4 import BeautifulSoup
 import label
 import logging
-import sys
 
 def extract_label(xmldoc):
     '''

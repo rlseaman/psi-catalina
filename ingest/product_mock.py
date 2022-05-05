@@ -1,5 +1,3 @@
-import os
-
 class ProductMock:
     '''
     Represents the product itself.
