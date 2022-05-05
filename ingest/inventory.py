@@ -27,13 +27,13 @@ def read_inventory(collection_lidvid, collection_dir):
     if collection_lidvid['major']:
         collection_filename = INVENTORY_FILENAME_TEMPLATE.format(**collection_lidvid)
         collection_path = os.path.join(collection_dir, collection_filename)
-        logging.info("Searching for collection file: " + collection_filename)
+        logging.info(f"Searching for collection file: {collection_filename}")
 
         if os.path.exists(collection_path):
             with open(collection_path) as collection_file:
                 return [x.strip() for x in collection_file.readlines() if x]
         else:
-            logging.info("Collection file not found: " + collection_filename)
+            logging.info(f"Collection file not found: {collection_filename}")
             return []
     logging.info("No previous collection found, starting a new collection...")            
     return []
