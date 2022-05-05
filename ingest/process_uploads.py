@@ -107,8 +107,16 @@ def main(argv=None):
         ignore_past_days = args.ignore_past_days
     )
 
+    location_opts = SimpleNamespace(
+        basedir=args.basedir,
+        destdir=args.destdir,
+        validated_dir=args.validated_dir,
+        falied_dir=args.failed_dir,
+        schema_dir=args.schemadir
+    )
+
     logging.info("Basedir: %s, Destdir: %s", args.basedir, args.destdir)
-    lockfile_run(args.basedir, args.destdir, args.schemadir, preprocessing_opts, validation_opts, postprocessing_opts, filter_opts)
+    lockfile_run(location_opts, preprocessing_opts, validation_opts, postprocessing_opts, filter_opts)
 
     return 0
 
@@ -120,6 +128,12 @@ def get_args():
     parser.add_argument('--destdir', 
                         help='The destination directory for the processed data', 
                         required=True)
+    parser.add_argument('--validated-dir', 
+                        help='The destination directory for validated data (overrides destdir)', 
+                        required=False)
+    parser.add_argument('--failed-dir', 
+                        help='The destination directory for failed data (overrides destdir)', 
+                        required=False)
     parser.add_argument('--schemadir', 
                         help='The directory for the schema files', 
                         required=True)
@@ -200,31 +214,31 @@ def get_args():
     return parser.parse_args()
 
 
-def lockfile_run(basedir, destdir, schemadir, preprocessing_opts, validation_opts, postprocesing_opts, filter_opts):
+def lockfile_run(location_opts, preprocessing_opts, validation_opts, postprocesing_opts, filter_opts):
     '''
     Run a function on this directory if one isn't already running. This is
     enforced with a lockfile.
     '''
-    lockfile = os.path.join(basedir, ".lockfile")
+    lockfile = os.path.join(location_opts.basedir, ".lockfile")
     if os.path.exists(lockfile):
         logging.info("Lockfile found at %s, skipping processing", lockfile)
     else:
         with open(lockfile, "w") as lock:
             lock.write(".")
         try:
-            process_upload_dir(basedir, destdir, schemadir, preprocessing_opts, validation_opts, postprocesing_opts, filter_opts)
+            process_upload_dir(location_opts, preprocessing_opts, validation_opts, postprocesing_opts, filter_opts)
         finally:
             os.remove(lockfile)
 
 
-def process_upload_dir(basedir, destdir, schemadir, preprocessing_opts, validation_opts, postprocesing_opts, filter_opts):
+def process_upload_dir(location_opts, preprocessing_opts, validation_opts, postprocesing_opts, filter_opts):
     '''
     process an upload directory, assuming it has been validated.
     '''
-    logging.info("Discovering products at: %s", basedir)
-    loc = paths.Paths(basedir, destdir, BUNDLE_ID, schemadir)
+    logging.info("Discovering products at: %s", location_opts.basedir)
+    loc = paths.Paths(location_opts, BUNDLE_ID)
     directories = limit_directories(loc, list(discover_product_dirs(loc, filter_opts)), filter_opts)
-    logging.info("Discovey complete, consolidating: %s", basedir)
+    logging.info("Discovey complete, consolidating: %s", location_opts.basedir)
     logging.info(f'Discovered directories: {directories}')
     products = list(itertools.chain.from_iterable(discover_date_products(loc, inst, year, d) for inst, year, d in directories))
 
@@ -537,7 +551,6 @@ def move_product_to_prevaldiated(product, loc, postprocessing_opts, failed):
     move a product to the pre-validated directory. Future runs of this script can now skip the validation.
     '''
     logging.info("Moving files for: %s", product.labelfilename)
-
     datadir = loc.datadir(product.inst, product.year, product.date)
     label_dest_directory = loc.validationLabelDir(product, failed)
     data_dest_directory = loc.validationDataDir(product, failed)

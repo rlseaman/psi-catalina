@@ -7,13 +7,13 @@ class Paths:
     provides multiple ways to get at each data file and label file, and
     accounts for the fact that the data and labels are delivered in separate locations.
     '''
-    def __init__(self, basedir, dest, bundle_id, schemadir, failure_dir=None, validated_dir=None):
-        self.basedir = basedir
-        self.dest = dest
+    def __init__(self, location_opts, bundle_id):
+        self.basedir = location_opts.basedir
+        self.dest = location_opts.basedir
         self.bundle_id = bundle_id
-        self.schemadir = schemadir
-        self.failure_dir = failure_dir if failure_dir else self._buildpath(self.dest, "failed")
-        self.validated_dir = validated_dir if validated_dir else self._buildpath(self.dest, self.bundle_id)
+        self.schemadir = location_opts.basedir
+        self.failure_dir = location_opts.failure_dir if location_opts.failure_dir else self._buildpath(self.dest, "failed")
+        self.validated_dir = location_opts.validated_dir if location_opts.validated_dir else self._buildpath(self.dest, self.bundle_id)
 
     def datadir(self, inst=None, year=None, date=None, filename=None):
         '''
