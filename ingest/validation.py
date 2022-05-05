@@ -90,16 +90,16 @@ def create_temp_copy(temp_dir, product:product.Product, skip_data):
         elif os.path.exists(data_path):
             logging.debug(f"Copying temporary {data_path} to {temp_data_path}")
             shutil.copy(data_path, temp_data_path)
-        elif os.path.exists(data_path + ".gz"):
+        elif os.path.exists(f"{data_path}.gz"):
             logging.debug(f"Gunzipping temporary {data_path}.gz to {temp_data_path}")
             try:
-                with open(temp_data_path, "wb") as uncompressed, gzip.open(data_path + ".gz", "rb") as compressed:
+                with open(temp_data_path, "wb") as uncompressed, gzip.open(f"{data_path}.gz", "rb") as compressed:
                     shutil.copyfileobj(compressed, uncompressed)
             except Exception:
                 logging.warn(f"Could not decompress {data_path}.gz to {temp_data_path}")
-        elif os.path.exists(data_path + ".fz"):
+        elif os.path.exists(f"{data_path}.fz"):
             logging.debug(f"Funpacking temporary {data_path} to {temp_data_path}")
-            subprocess.run([FUNPACK_CMD, '-C', '-O', temp_data_path, data_path + ".fz"])
+            subprocess.run([FUNPACK_CMD, '-C', '-O', temp_data_path, f"{data_path}.fz"])
         else:
             logging.error(f"could not find data file: {temp_data_path}")
             #raise Exception("could not find data file: " + temp_data_path)

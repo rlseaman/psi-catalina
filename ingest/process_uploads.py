@@ -356,7 +356,7 @@ def validate_products(products, loc, preprocessing_opts:options.PostprocessingOp
 
 def log_validation_run(output, logdir):
     logdate = datetime.datetime.now().strftime("%Y%m%dT%H%M%S.%f")
-    logfilename = logdate + ".json"
+    logfilename = f"{logdate}.json"
     logfilepath = os.path.join(logdir, logfilename)
     with open(logfilepath, "w") as logfile:
         logfile.write(output)
@@ -373,7 +373,7 @@ def writeFailure(batch, logdir, loc, failure):
     faildir = loc.productDestDir(src_products[0], True) if src_products else logdir
     os.makedirs(faildir, exist_ok=True)
 
-    faillogpath = os.path.join(faildir, failfile + ".log")
+    faillogpath = os.path.join(faildir, f"{failfile}.log")
     with open(faillogpath, "w") as f:
         json.dump(failure, f, indent=2)
 
@@ -503,7 +503,7 @@ def update_data_collection(loc, collection_products: list, collection_id, preser
     new_lidvid, record_count = merge_inventories(collection_path, collection_id, collection_products, old_lidvid, preserve_collection_version)
     previous_collection = collection_with_version(collection_labels, old_lidvid["major"], old_lidvid["minor"])
     modification_history = [x for x in previous_collection.modification_history() if x["version_id"] == "1.0"] if previous_collection else []
-    latest_modification=create_modification_detail(new_lidvid, "routine delivery for: " + ",".join(obs_dates))
+    latest_modification=create_modification_detail(new_lidvid, f"routine delivery for: {','.join(obs_dates)}")
 
 
     template_filename = COLLECTION_FILES.get(collection_id, "other_collection_template.xml")

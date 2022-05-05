@@ -53,7 +53,7 @@ def extract_identification_area(identification_area):
         "logical_id": lid,
         "collection_id": extract_collection_id(lid),
         "version_id": vid,
-        "lidvid": lid + "::" + vid,
+        "lidvid": f"{lid}::{vid}",
         "major": major,
         "minor": minor,
         "modification_history": modification_history
