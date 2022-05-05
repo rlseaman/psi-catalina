@@ -111,8 +111,8 @@ def main(argv=None):
         basedir=args.basedir,
         destdir=args.destdir,
         validated_dir=args.validated_dir,
-        falied_dir=args.failed_dir,
-        schema_dir=args.schemadir
+        failure_dir=args.failed_dir,
+        schemadir=args.schemadir
     )
 
     logging.info("Basedir: %s, Destdir: %s", args.basedir, args.destdir)
@@ -256,7 +256,7 @@ def process_upload_dir(location_opts, preprocessing_opts, validation_opts, postp
     #if not all(product_whitelisted(x) for x in products):
     #    raise Exception('Some products used software not on the whitelist')
 
-    logdir = os.path.join(destdir,"validation")
+    logdir = os.path.join(location_opts.destdir,"validation")
     os.makedirs(logdir, exist_ok=True)
 
     failures = validate_products(products, loc, preprocessing_opts, validation_opts, logdir)
@@ -541,7 +541,7 @@ def preprocess_product(product, loc, skip_data_preprocessing, skip_label_preproc
 
 
 def move_product(product, loc, postprocessing_opts, failed):
-    if postprocessing_opts.valdate_only:
+    if postprocessing_opts.validate_only:
         move_product_to_prevaldiated(product, loc, postprocessing_opts, failed)
     else:
         move_product_to_collections(product, loc, postprocessing_opts, failed)
