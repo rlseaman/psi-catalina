@@ -1,5 +1,6 @@
 import os
 import itertools
+import options
 
 class Paths:
     '''
@@ -7,7 +8,7 @@ class Paths:
     provides multiple ways to get at each data file and label file, and
     accounts for the fact that the data and labels are delivered in separate locations.
     '''
-    def __init__(self, location_opts, bundle_id):
+    def __init__(self, location_opts:options.LocationOpts, bundle_id):
         self.basedir = location_opts.basedir
         self.dest = location_opts.destdir
         self.bundle_id = bundle_id
