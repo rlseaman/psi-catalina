@@ -46,7 +46,7 @@ def validate_products(products, schema_path, skip_data):
     decompressed the data files if needed, and validates the product.
     '''
     with tempfile.TemporaryDirectory() as temp:
-        logging.info("Validating products at: %s", temp)
+        logging.info(f"Validating products at: {temp}")
         temp_dir = temp
         for product in products:
             create_temp_copy(temp_dir, product, skip_data)
@@ -72,7 +72,7 @@ def create_temp_copy(temp_dir, product:product.Product, skip_data):
 
     temp_product_dir = os.path.join(temp_dir, product.inst, product.year, product.date)
 
-    logging.info("Creating temporary copies of %s", label_file_name)
+    logging.info(f"Creating temporary copies of {label_file_name}")
 
     os.makedirs(temp_product_dir, exist_ok=True)
 
@@ -85,23 +85,23 @@ def create_temp_copy(temp_dir, product:product.Product, skip_data):
         temp_data_path = os.path.join(temp_product_dir, data_file_name)
 
         if skip_data:
-            logging.debug("Creating dummy copy of %s", data_path)
+            logging.debug(f"Creating dummy copy of {data_path}")
             with open(temp_data_path, "w") as f: pass
         elif os.path.exists(data_path):
-            logging.debug("Copying temporary %s to %s", data_path, temp_data_path)
+            logging.debug(f"Copying temporary {data_path} to {temp_data_path}")
             shutil.copy(data_path, temp_data_path)
-        elif os.path.exists(data_path + ".gz"):
-            logging.debug("Gunzipping temporary %s to %s", data_path + ".gz", temp_data_path)
+        elif os.path.exists(f"{data_path}.gz"):
+            logging.debug(f"Gunzipping temporary {data_path}.gz to {temp_data_path}")
             try:
-                with open(temp_data_path, "wb") as uncompressed, gzip.open(data_path + ".gz", "rb") as compressed:
+                with open(temp_data_path, "wb") as uncompressed, gzip.open(f"{data_path}.gz", "rb") as compressed:
                     shutil.copyfileobj(compressed, uncompressed)
             except Exception:
-                logging.warn("Could not decpompress %s to %s", data_path + ".gz", temp_data_path)
-        elif os.path.exists(data_path + ".fz"):
-            logging.debug("Funpacking temporary %s to %s", data_path + ".fz", temp_data_path)
-            subprocess.run([FUNPACK_CMD, '-C', '-O', temp_data_path, data_path + ".fz"])
+                logging.warn(f"Could not decompress {data_path}.gz to {temp_data_path}")
+        elif os.path.exists(f"{data_path}.fz"):
+            logging.debug(f"Funpacking temporary {data_path} to {temp_data_path}")
+            subprocess.run([FUNPACK_CMD, '-C', '-O', temp_data_path, f"{data_path}.fz"])
         else:
-            logging.error("could not find data file: %s", temp_data_path)
+            logging.error(f"could not find data file: {temp_data_path}")
             #raise Exception("could not find data file: " + temp_data_path)
             
     return temp_label_path
@@ -139,7 +139,7 @@ def run_validator(file_name, schema_path, skip_data):
 
     if failures:
         filenames = [os.path.basename(x['label']) for x in failures]
-        logging.warn("%s Failures encountered: %s", len(failures), ",".join(filenames))
+        logging.warn(f"{len(failures)} Failures encountered: {','.join(filenames)}")
         #logging.error(failure)
         #logging.error(result)
     else:

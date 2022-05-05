@@ -1,5 +1,6 @@
 import os
 import itertools
+import options
 
 class Paths:
     '''
@@ -7,11 +8,13 @@ class Paths:
     provides multiple ways to get at each data file and label file, and
     accounts for the fact that the data and labels are delivered in separate locations.
     '''
-    def __init__(self, basedir, dest, bundle_id, schemadir):
-        self.basedir = basedir
-        self.dest = dest
+    def __init__(self, location_opts:options.LocationOpts, bundle_id):
+        self.basedir = location_opts.basedir
+        self.dest = location_opts.destdir
         self.bundle_id = bundle_id
-        self.schemadir = schemadir
+        self.schemadir = location_opts.schemadir
+        self.failure_dir = location_opts.failure_dir if location_opts.failure_dir else self._buildpath((self.dest, "failed"))
+        self.validated_dir = location_opts.validated_dir if location_opts.validated_dir else self._buildpath((self.dest, self.bundle_id))
 
     def datadir(self, inst=None, year=None, date=None, filename=None):
         '''
@@ -25,18 +28,25 @@ class Paths:
         '''
         subdir = "other/pds4" if date else None
         return self._buildpath((self.basedir, inst, year, subdir, date, filename))
-        
-    def destdir(self, collection_id, inst=None, year=None, date=None, failed=False):
+
+    def destdir(self, collection_id, inst=None, year=None, subDir=None, date=None, failed=False):
         '''
         Returns the destination directory
         '''
         if failed:
-            return self._buildpath((self.dest, "failed", collection_id, inst, year, date))
+            return self._buildpath((self.failure_dir, collection_id, inst, year, date))
         else:
-            return self._buildpath((self.dest, self.bundle_id, collection_id, inst, year, date))
+            elements = [x for x in [self.validated_dir, collection_id, inst, year, subDir, date] if x is not None]
+            return self._buildpath(elements)
 
     def productDestDir(self, p, failed=False):
-        return self.destdir(p.collection_id(), p.inst, p.year, p.date, failed)        
+        return self.destdir(p.collection_id(), p.inst, p.year, None, p.date, failed)        
+
+    def validationDataDir(self, p, failed=False):
+        return self.destdir(None, p.inst, p.year, None, p.date, failed)        
+
+    def validationLabelDir(self, p, failed=False):
+        return self.destdir(None, p.inst, p.year, "other/pds4", p.date, failed)        
 
     def _buildpath(self, elements):
         return os.path.join(*self._filledElements(elements))

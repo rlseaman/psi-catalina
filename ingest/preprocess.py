@@ -1,15 +1,13 @@
-from genericpath import exists
-import subprocess
 import logging
 import os
 import gzip
 
 
 def has_compressed(filename):
-    return os.path.exists(filename + ".gz")
+    return os.path.exists(f"{filename}.gz")
 
 def file_open(filename, mode="rt"):
-    logging.debug("Opening: %s with mode: %s", filename, mode)
+    logging.debug(f"Opening: {filename} with mode: {mode}")
     if filename.endswith(".gz"):
         return gzip.open(filename, mode)
     return open(filename, mode)
@@ -19,20 +17,20 @@ def linefeed_to_crlf(filename):
     Normalize the line feeds in a data file, replacing them with CRLFs
     '''
 
-    logging.info("Normalizing whitespace for: %s", filename)
+    logging.info(f"Normalizing whitespace for: {filename}")
     if has_compressed(filename):
-        logging.debug("Using compressed version: %s", filename)
-        filename = filename + ".gz"
+        logging.debug(f"Using compressed version: {filename}")
+        filename = f"{filename}.gz"
 
     with file_open(filename) as f:
         lines = [x.strip("\r\n") for x in f.readlines()]
 
-    os.rename(filename, filename + ".bak")
+    os.rename(filename, f"{filename}.bak")
 
     with file_open(filename, "wt") as f2:
         f2.write("\r\n".join(lines) + "\r\n")
 
-    os.remove(filename + ".bak")
+    os.remove(f"{filename}.bak")
 
 def strip_label_fz_extension(contents, datafilename):
     uncompressed_datafilename = datafilename.replace(".fz", "")
@@ -78,7 +76,7 @@ def preprocess_labelfile(filename, datafilenames):
         if extension in LABEL_FUNCS:
             labelcontents = LABEL_FUNCS[extension](labelcontents, datafilename)
 
-    os.rename(filename, filename + ".bak")
+    os.rename(filename, f"{filename}.bak")
 
     with open(filename, "w") as f2:
         f2.write(labelcontents)
