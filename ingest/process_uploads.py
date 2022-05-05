@@ -62,7 +62,7 @@ def main(argv=None):
     if opts.console:
         logfilename = None
     else:
-        logfilebase = "process_uploads_%s.log" % datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
+        logfilebase = f"process_uploads_{datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%f')}.log"
         os.makedirs(os.path.join(opts.location_opts.basedir, "logs"), exist_ok=True)
         logfilename=os.path.join(opts.location_opts.basedir, "logs", logfilebase)
         
@@ -74,7 +74,7 @@ def main(argv=None):
         format='%(asctime)s|%(levelname)s|%(message)s', 
         filename=logfilename)
 
-    logging.info("Basedir: %s, Destdir: %s", opts.location_opts.basedir, opts.location_opts.destdir)
+    logging.info(f"Basedir: {opts.location_opts.basedir}, Destdir: {opts.location_opts.destdir}")
     lockfile_run(opts)
 
     return 0
@@ -89,7 +89,7 @@ def lockfile_run(opts:options.Opts):
     '''
     lockfile = os.path.join(opts.location_opts.basedir, ".lockfile")
     if os.path.exists(lockfile):
-        logging.info("Lockfile found at %s, skipping processing", lockfile)
+        logging.info(f"Lockfile found at {lockfile}, skipping processing")
     else:
         with open(lockfile, "w") as lock:
             lock.write(".")
@@ -103,15 +103,15 @@ def process_upload_dir(opts:options.Opts):
     '''
     process an upload directory, assuming it has been validated.
     '''
-    logging.info("Discovering products at: %s", opts.location_opts.basedir)
+    logging.info(f"Discovering products at: {opts.location_opts.basedir}")
     loc = paths.Paths(opts.location_opts, BUNDLE_ID)
     directories = limit_directories(loc, list(discover_product_dirs(loc, opts.filter_opts)), opts.filter_opts)
-    logging.info("Discovey complete, consolidating: %s", opts.location_opts.basedir)
+    logging.info(f"Discovey complete, consolidating: {opts.location_opts.basedir}")
     logging.info(f'Discovered directories: {directories}')
     products = list(itertools.chain.from_iterable(discover_date_products(loc, inst, year, d) for inst, year, d in directories))
 
 
-    logging.info("%i products discovered", len(products))
+    logging.info(f"{len(products)} products discovered")
 
     #logging.debug(products)
     lidvids = (product.lidvid() for product in products)
@@ -183,10 +183,10 @@ def process_inst_directory(loc, instrument, filter_opts:options.FilterOpts):
     basedir: the absolute path the to the top-level source files
     instrument: the mpc code for the instrument
     '''
-    logging.info("Processing instrument directory: %s", instrument)
+    logging.info(f"Processing instrument directory: {instrument}")
 
     instdir = loc.datadir(instrument)
-    logging.info("processing %s...", instdir)
+    logging.info(f"processing {instdir}...")
     years = (x.name for x in os.scandir(instdir) if x.is_dir())
 
     return itertools.chain.from_iterable(
@@ -203,7 +203,7 @@ def process_year_directory(loc, instrument, year, filter_opts:options.FilterOpts
     instrument: the mpc code of the instrument
     year: the year being processed
     '''
-    logging.info("processing year directory %s/%s", instrument, year)
+    logging.info(f"processing year directory {instrument}/{year}")
     yeardir = loc.datadir(instrument, year)
     days_to_ignore = IGNORE_DATES + build_ignore_dates(filter_opts.ignore_past_days)
     discovered_dates = [x.name for x in os.scandir(yeardir) if x.is_dir() and os.access(x, os.W_OK) and x.name not in days_to_ignore]
@@ -239,14 +239,14 @@ def discover_date_products(loc, instrument, year, date):
     datadir: the absolute path to the actual data files
     labeldir: the absolute path to the label files
     '''
-    logging.info("processing data directory %s/%s/%s", instrument, year, date)
+    logging.info(f"processing data directory {instrument}/{year}/{date}")
 
     datadir = loc.datadir(instrument, year, date)
     labeldir = loc.labeldir(instrument, year, date)
     if semaphore_exists(datadir) and semaphore_exists(labeldir):
         return labels_to_products(datadir, labeldir, instrument, year, date)
     
-    logging.warning("no semaphore: %s and %s", labeldir, datadir)
+    logging.warning(f"no semaphore: {labeldir} and {datadir}")
     return []
 
 
@@ -256,7 +256,7 @@ def semaphore_exists(dirname):
 
     dirname: the absolute path of the directory to check
     '''
-    logging.info("checking for semaphore in %s", dirname)
+    logging.info(f"checking for semaphore in {dirname}")
     semaphore_file = os.path.join(dirname, '.autoxfer')
     return os.path.exists(semaphore_file)
 
@@ -268,21 +268,21 @@ def labels_to_products(datadir, labeldir, instrument, year, date):
     datadir: the absolute path to the actual data files
     labeldir: the absolute path to the label files
     '''
-    logging.info("Processing searching for labels in %s/%s/%s", instrument, year, date)
+    logging.info(f"Processing searching for labels in {instrument}/{year}/{date}")
     files = get_labels(labeldir)
     empty_labels = [x for x in files if os.path.getsize(os.path.join(labeldir, x)) == 0]
     if empty_labels:
-        logging.warn("Empty labels in %s: %s", labeldir, empty_labels)
+        logging.warn(f"Empty labels in {labeldir}: {empty_labels}")
 
     unwritable_labels = [x for x in files if not os.access(os.path.join(labeldir, x), os.W_OK)]
     if unwritable_labels:
-        logging.warn("Unwritable labels in %s: %s", labeldir, unwritable_labels)
+        logging.warn(f"Unwritable labels in {labeldir}: {unwritable_labels}")
 
     usable_labels = [x for x in files if x not in empty_labels and x not in unwritable_labels]
     
     products = (Product(datadir, os.path.join(labeldir, infile), instrument, year, date) for infile in usable_labels)
     #logging.info("%s products in %s/%s/%s", len(products), instrument, year, date)
-    logging.info("discovery complete in %s/%s/%s", instrument, year, date)
+    logging.info(f"discovery complete in {instrument}/{year}/{date}")
     return products
 
 def get_labels(labeldir):
@@ -338,7 +338,7 @@ def validate_products(products, loc, preprocessing_opts:options.PostprocessingOp
     batch_count = math.ceil(len(products)/BATCH_SIZE)
 
     for (batch_num, batch) in enumerate(chunk(products, BATCH_SIZE)):
-        logging.info("Validating a batch of %s (%s/%s)...", len(batch), batch_num + 1, batch_count)
+        logging.info(f"Validating a batch of {len(batch)} ({batch_num + 1}/{batch_count})...")
         if not preprocessing_opts.skip_preprocessing:
             for product in batch:
                 preprocess_product(product, loc, preprocessing_opts.skip_data_preprocessing, preprocessing_opts.skip_label_preprocessing)
@@ -388,7 +388,7 @@ def chunk(items, size):
 
 
 def preprocess_product(product, loc, skip_data_preprocessing, skip_label_preprocessing):
-    logging.debug("Preprocessing files for: %s", product.labelfilename)
+    logging.debug(f"Preprocessing files for: {product.labelfilename}", )
 
     file_names=product.filenames()
     if not file_names:
@@ -418,7 +418,7 @@ def move_product_to_prevaldiated(product, loc, postprocessing_opts:options.Postp
     '''
     move a product to the pre-validated directory. Future runs of this script can now skip the validation.
     '''
-    logging.info("Moving files for: %s", product.labelfilename)
+    logging.info(f"Moving files for: {product.labelfilename}")
     datadir = loc.datadir(product.inst, product.year, product.date)
     label_dest_directory = loc.validationLabelDir(product, failed)
     data_dest_directory = loc.validationDataDir(product, failed)
@@ -433,7 +433,7 @@ def move_product_to_collections(product, loc, postprocessing_opts:options.Postpr
     temporary directory on the processing server that will then get synced over
     to the archive direcory.
     '''
-    logging.info("Moving files for: %s", product.labelfilename)
+    logging.info(f"Moving files for: {product.labelfilename}")
 
     datadir = loc.datadir(product.inst, product.year, product.date)
     dest_directory = loc.productDestDir(product, failed)
@@ -462,13 +462,13 @@ def do_move(product, postprocessing_opts:options.PostprocessingOpts, datadir, la
 
 def transfer_file(src, dest, postprocessing_opts:options.PostprocessingOpts):
     if postprocessing_opts.dry_move:
-        logging.debug('Simulating move from %s to %s', src, dest)
+        logging.debug(f'Simulating move from {src} to {dest}')
     else:   
         if postprocessing_opts.copy_files:
-            logging.debug('Copying from %s to %s', src, dest)
+            logging.debug(f'Copying from {src} to {dest}')
             shutil.copy(src, dest)
         else:
-            logging.debug('Moving from %s to %s', src, dest)
+            logging.debug(f'Moving from {src} to {dest}')
             os.rename(src, dest)        
 
 
@@ -486,12 +486,12 @@ def update_data_collection(loc, collection_products: list, collection_id, preser
     '''
     Create the collection inventory and label.
     '''
-    logging.info("Processing collection: %s", collection_id)
+    logging.info(f"Processing collection: {collection_id}")
     collection_path = loc.destdir(collection_id)
     os.makedirs(collection_path, exist_ok=True)
 
     collection_labels = get_collection_labels(collection_path, collection_id)
-    logging.debug("%s labels found", len(collection_labels))
+    logging.debug(f"{len(collection_labels)} labels found")
 
     start_dates = [x.start_date() for x in collection_products + collection_labels if x.start_date()]
     stop_dates = [x.stop_date() for x in collection_products + collection_labels if x.stop_date()]
@@ -570,7 +570,7 @@ def get_last_version_number(collection_id, collection_labels):
             (x.majorversion(), x.minorversion())
             for x in collection_labels]
         major, minor = max(collection_versions)
-        logging.debug("%s previous collection version: %s.%s", collection_id, major, minor)
+        logging.debug(f"{collection_id} previous collection version: {major}.{minor}")
         return make_collection_lidvid(collection_id, major, minor)
     return make_collection_lidvid(collection_id, 0, 0)
 
@@ -623,7 +623,7 @@ def write_collection(template_filename,
         latest_modification=latest_modification)
     collection_filename = LABEL_FILENAME_TEMPLATE.format(**collection_lidvid)
     collection_path = os.path.join(collection_dir, collection_filename)
-    logging.info("writing to: %s", collection_path)
+    logging.info(f"writing to: {collection_path}")
     logging.debug(contents)
     iotools.write_file(collection_path, contents)
 

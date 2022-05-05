@@ -7,7 +7,7 @@ def has_compressed(filename):
     return os.path.exists(filename + ".gz")
 
 def file_open(filename, mode="rt"):
-    logging.debug("Opening: %s with mode: %s", filename, mode)
+    logging.debug(f"Opening: {filename} with mode: {mode}")
     if filename.endswith(".gz"):
         return gzip.open(filename, mode)
     return open(filename, mode)
@@ -17,9 +17,9 @@ def linefeed_to_crlf(filename):
     Normalize the line feeds in a data file, replacing them with CRLFs
     '''
 
-    logging.info("Normalizing whitespace for: %s", filename)
+    logging.info(f"Normalizing whitespace for: {filename}")
     if has_compressed(filename):
-        logging.debug("Using compressed version: %s", filename)
+        logging.debug(f"Using compressed version: {filename}")
         filename = filename + ".gz"
 
     with file_open(filename) as f:

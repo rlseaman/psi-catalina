@@ -41,7 +41,7 @@ class Product:
         '''
         Parses a label file into a Product
         '''
-        logging.debug("Creating product for: %s", filepath)
+        logging.debug(f"Creating product for: {filepath}")
         with open(filepath) as infile:
             self.keywords = extract_keywords(infile)
             self.inst = inst
