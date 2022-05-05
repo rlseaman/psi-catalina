@@ -35,10 +35,8 @@ class Paths:
         if failed:
             return self._buildpath((self.failure_dir, collection_id, inst, year, date))
         else:
-            if subDir:
-                return self._buildpath((self.validated_dir, collection_id, inst, year, subDir, date))
-            else:
-                return self._buildpath((self.validated_dir, collection_id, inst, year, date))
+            elements = [x for x in [self.validated_dir, collection_id, inst, year, subDir, date] if x is not None]
+            return self._buildpath(elements)
 
     def productDestDir(self, p, failed=False):
         return self.destdir(p.collection_id(), p.inst, p.year, None, p.date, failed)        

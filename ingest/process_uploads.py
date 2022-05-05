@@ -206,8 +206,7 @@ def get_args():
                         dest='ignore_past_days', 
                         help='Ignores products dated in the past x number of days. This will give products time to accumulate before processing')
     parser.add_argument('--validate-only', 
-                        type=int,
-                        default=0,
+                        action='store_true', 
                         dest='validate_only', 
                         help='Only perform validation. Passing products will be moved to the destination directory, but they will not be organized in collections.')
 
