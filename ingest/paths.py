@@ -38,7 +38,7 @@ class Paths:
             return self._buildpath((self.validated_dir, collection_id, inst, year, subDir, date))
 
     def productDestDir(self, p, failed=False):
-        return self.destdir(p.collection_id(), p.inst, p.year, p.date, failed)        
+        return self.destdir(p.collection_id(), p.inst, p.year, None, p.date, failed)        
 
     def validationDataDir(self, p, failed=False):
         return self.destdir(None, p.inst, p.year, None, p.date, failed)        
