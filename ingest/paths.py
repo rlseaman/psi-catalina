@@ -45,8 +45,14 @@ class Paths:
     def validationDataDir(self, p, failed=False):
         return self.destdir(None, p.inst, p.year, None, p.date, failed)        
 
+    def nightValidationDataDir(self, inst, year, date, failed=False):
+        return self.destdir(None, inst, year, None, date, failed)        
+
     def validationLabelDir(self, p, failed=False):
         return self.destdir(None, p.inst, p.year, "other/pds4", p.date, failed)        
+
+    def nightValidationLabelDir(self, inst, year, date, failed=False):
+        return self.destdir(None, inst, year, "other/pds4", date, failed)        
 
     def _buildpath(self, elements):
         return os.path.join(*self._filledElements(elements))

@@ -137,7 +137,7 @@ def process_upload_dir(opts:options.Opts):
         for product in products:
             move_product(product, loc, opts.postprocessing_opts, (product.inst, product.year, product.date, product.labelfilename) in failed_files)
 
-    if opts.postprocessing_opts.skip_collection_update:
+    if opts.postprocessing_opts.skip_collection_update or opts.postprocessing_opts.validate_only:
         logging.info("Skipping collection update")
     else:
         for collection_id in collection_lids:
@@ -145,10 +145,21 @@ def process_upload_dir(opts:options.Opts):
             if collection_products:
                 update_data_collection(loc, collection_products, collection_id, opts.postprocessing_opts.preserve_collection_version)
 
+    if opts.postprocessing_opts.validate_only:
+        logging.info("Regnerating semaphores at destination")
+        for (inst, year, date) in set((p.inst, p.year, p.date) for p in products):
+            recreate_semaphore(loc.nightValidationDataDir(inst, year, date))
+            recreate_semaphore(loc.nightValidationLabelDir(inst, year, date))
+        
     #deletion_area_dest = os.path.join(DELETION_BASE, "placeholder")
     # delete files from temporary directory/move to deletion area
     #logging.info("moving to %s", deletion_area_dest)
     logging.info("done")
+
+def recreate_semaphore(dirname, filename='.autoxfer'):
+    logging.info(f'recreating semaphore {filename} at {dirname}')
+    with open(os.path.join(dirname, filename), 'w'):
+        pass
 
 def limit_directories(loc, directories, filter_opts:options.FilterOpts):
     dates = set([d for inst, year, d in directories])
