@@ -169,8 +169,8 @@ def limit_directories(loc, directories, filter_opts:options.FilterOpts):
         dates = [d for d in dates if d not in build_ignore_dates(filter_opts.ignore_past_days)]
     if filter_opts.max_nights is not None:
         candidates = sorted(dates, key=parseDirDate, reverse=True)
-        candidates_with_products = (d2 for d2 in candidates if any(label_dir_has_products(loc, inst, year, d) for inst, year, d in directories if d == d2))
-        dates = itertools.islice(candidates_with_products, filter_opts.max_nights)
+        candidates_with_products = (d2 for d2 in candidates if any(date_has_semaphore(loc, inst, year, d) and date_has_products(loc, inst, year, d) for inst, year, d in directories if d == d2))
+        dates = [x for x in itertools.islice(candidates_with_products, filter_opts.max_nights)]
     logging.info(f'Processing dates: {dates}')
     return [(inst, year, d) for inst,year,d in directories if d in dates]
 
