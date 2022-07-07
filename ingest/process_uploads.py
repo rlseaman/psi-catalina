@@ -504,8 +504,8 @@ def update_data_collection(loc, collection_products: list, collection_id, preser
     collection_labels = get_collection_labels(collection_path, collection_id)
     logging.debug(f"{len(collection_labels)} labels found")
 
-    start_dates = [x.start_date() for x in collection_products + collection_labels if x.start_date()]
-    stop_dates = [x.stop_date() for x in collection_products + collection_labels if x.stop_date()]
+    start_dates = [x.start_date() for x in collection_products + collection_labels if x.start_date() and is_pds_date(x.start_date())]
+    stop_dates = [x.stop_date() for x in collection_products + collection_labels if x.stop_date() and is_pds_date(x.stop_date())]
     start_date = min(start_dates) if start_dates else None
     stop_date = max(stop_dates) if stop_dates else None
     obs_dates = sorted(set([x.date for x in collection_products if x.date]), key=parseDirDate)
@@ -526,6 +526,9 @@ def update_data_collection(loc, collection_products: list, collection_id, preser
                      record_count,
                      modification_history,
                      latest_modification)
+
+def is_pds_date(value: str):
+    return value and value.startswith('20') and value.endswith('Z')
 
 def parseDirDate(x):
     return datetime.datetime.strptime(x, "%y%b%d")
