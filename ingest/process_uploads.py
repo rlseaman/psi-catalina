@@ -128,7 +128,12 @@ def process_upload_dir(opts:options.Opts):
     os.makedirs(logdir, exist_ok=True)
 
     successes,failures = validate_products(products, loc, opts.preprocessing_opts, opts.validation_opts, logdir)
-    successful_files=set([validation.extract_label_info(x['label']) for x in successes]) 
+    # assume all products succeeded if we are skipping validation
+    if opts.validation_opts.skip_validation:
+        successful_files = set((x.inst, x.year, x.date, x.labelfilename) for x in products)
+    else:
+        successful_files=set([validation.extract_label_info(x['label']) for x in successes]) 
+    
     failed_files = set([validation.extract_label_info(x['label']) for x in failures])
     logging.info(failed_files)
 
