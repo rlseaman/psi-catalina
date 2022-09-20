@@ -127,7 +127,8 @@ def process_upload_dir(opts:options.Opts):
     logdir = os.path.join(opts.location_opts.destdir,"validation")
     os.makedirs(logdir, exist_ok=True)
 
-    failures = validate_products(products, loc, opts.preprocessing_opts, opts.validation_opts, logdir)
+    successes,failures = validate_products(products, loc, opts.preprocessing_opts, opts.validation_opts, logdir)
+    successful_files=set([validation.extract_label_info(x['label']) for x in successes]) 
     failed_files = set([validation.extract_label_info(x['label']) for x in failures])
     logging.info(failed_files)
 
@@ -135,13 +136,13 @@ def process_upload_dir(opts:options.Opts):
         logging.info("Skipping move")
     else:
         for product in products:
-            move_product(product, loc, opts.postprocessing_opts, (product.inst, product.year, product.date, product.labelfilename) in failed_files)
+            move_product(product, loc, opts.postprocessing_opts, (product.inst, product.year, product.date, product.labelfilename) not in successful_files)
 
     if opts.postprocessing_opts.skip_collection_update or opts.postprocessing_opts.validate_only:
         logging.info("Skipping collection update")
     else:
         for collection_id in collection_lids:
-            collection_products = [x for x in products if x.collection_id() == collection_id and (x.inst, x.year, x.date, x.labelfilename) not in failed_files]
+            collection_products = [x for x in products if x.collection_id() == collection_id and (x.inst, x.year, x.date, x.labelfilename) in successful_files]
             if collection_products:
                 update_data_collection(loc, collection_products, collection_id, opts.postprocessing_opts.preserve_collection_version)
 
@@ -340,6 +341,7 @@ def validate_products(products, loc, preprocessing_opts:options.PostprocessingOp
     files from being altered if there are validation errors.
     '''
     all_validation_failures = []
+    all_successes = []
 
     if preprocessing_opts.skip_preprocessing:
         logging.info("Skipping temp preprocessing")
@@ -354,16 +356,17 @@ def validate_products(products, loc, preprocessing_opts:options.PostprocessingOp
             for product in batch:
                 preprocess_product(product, loc, preprocessing_opts.skip_data_preprocessing, preprocessing_opts.skip_label_preprocessing)
         if not validation_opts.skip_validation:
-            validation_failures,_,unfiltered = validation.validate_products(batch, loc.schemadir, validation_opts.skip_data_validation)
+            validation_failures,successes,unfiltered = validation.validate_products(batch, loc.schemadir, validation_opts.skip_data_validation)
             log_validation_run(unfiltered, logdir)
             if validation_failures:
                 for failure in validation_failures:
                     writeFailure(batch, logdir, loc, failure)
                 all_validation_failures.extend(validation_failures)
+            all_successes.extend(successes)
     if all_validation_failures and not validation_opts.permissive_validation:
         raise Exception('There were validation errors')
 
-    return all_validation_failures
+    return all_successes, all_validation_failures
 
 def log_validation_run(output, logdir):
     logdate = datetime.datetime.now().strftime("%Y%m%dT%H%M%S.%f")
