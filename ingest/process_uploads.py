@@ -484,10 +484,10 @@ def transfer_file(src, dest, postprocessing_opts:options.PostprocessingOpts):
         logging.debug(f'Simulating move from {src} to {dest}')
     else:   
         if postprocessing_opts.copy_files:
-            logging.debug(f'Copying from {src} to {dest}')
+            logging.debug(f'Copying from {src} to {dest}, size: {os.path.getsize(src)}')
             shutil.copy(src, dest)
         else:
-            logging.debug(f'Moving from {src} to {dest}')
+            logging.debug(f'Moving from {src} to {dest}, size: {os.path.getsize(src)}')
             os.rename(src, dest)        
 
 
