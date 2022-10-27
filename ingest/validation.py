@@ -115,7 +115,7 @@ def run_validator(file_name, schema_path, skip_data):
     '''
 
     logging.info("Running the validator...")
-    params = [VALIDATE_CMD, '-s', 'json', '-E', '1000'] + (['-D'] if skip_data else []) + ['-x', *get_schemas(schema_path, ".xsd"), '-S', *get_schemas(schema_path, ".sch"), '-t', file_name]
+    params = [VALIDATE_CMD, '-s', 'json', '-E', '2147483647'] + (['-D'] if skip_data else []) + ['-x', *get_schemas(schema_path, ".xsd"), '-S', *get_schemas(schema_path, ".sch"), '-t', file_name]
     process = subprocess.run(params, stdout=subprocess.PIPE, encoding="utf-8")
 
     logging.info("Validation complete, processing results...")
