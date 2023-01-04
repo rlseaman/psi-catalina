@@ -13,6 +13,8 @@ def extract_label(xmldoc):
     '''
     if xmldoc.Product_Observational:
         return label.extract_product_observational(xmldoc.Product_Observational)
+    if xmldoc.Product_Ancillary:
+        return label.extract_product_ancillary(xmldoc.Product_Ancillary)
     if xmldoc.Product_Document:
         return label.extract_product_document(xmldoc.Product_Document)
 
