@@ -26,6 +26,20 @@ def extract_product_observational(product_observational):
         result.update(extract_discipline_area(product_observational.Discipline_Area))
     return result
 
+def extract_product_ancillary(product_ancillary):
+    '''
+    Extracts keywords from the Product_Observational element
+    '''
+    result = {}
+    result.update(extract_identification_area(product_ancillary.Identification_Area))
+    result.update(extract_file_area(product_ancillary.File_Area_Ancillary))
+    if product_ancillary.Context_Area:
+        result.update(extract_context_area(product_ancillary.Context_Area))
+    if product_ancillary.Discipline_Area:
+        result.update(extract_discipline_area(product_ancillary.Discipline_Area))
+    return result
+
+
 def extract_product_document(product_document):
     '''
     Extracts keywords from the Product_Document element
