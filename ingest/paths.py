@@ -34,7 +34,8 @@ class Paths:
         Returns the destination directory
         '''
         if failed:
-            return self._buildpath((self.failure_dir, collection_id, inst, year, date))
+            elements = [x for x in [self.failure_dir, collection_id, inst, year, date] if x is not None]
+            return self._buildpath(elements)
         else:
             elements = [x for x in [self.validated_dir, collection_id, inst, year, subDir, date] if x is not None]
             return self._buildpath(elements)
