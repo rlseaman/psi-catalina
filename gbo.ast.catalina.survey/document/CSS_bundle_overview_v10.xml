@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_1B00.sch" schematypens="http://purl.oclc.org/dsdl/schematron"?>
+
+<Product_Document xmlns="http://pds.nasa.gov/pds4/pds/v1"
+	xmlns:pds="http://pds.nasa.gov/pds4/pds/v1"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://pds.nasa.gov/pds4/pds/v1 https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_1B00.xsd">
+    
+    <Identification_Area>
+        <logical_identifier>urn:nasa:pds:gbo.ast.catalina.survey:document:css_bundle_overview.pdf</logical_identifier>
+        <version_id>2.0</version_id>
+        <title>Overview of Catalina Sky Survey PDS Archive</title>
+        <information_model_version>1.11.0.0</information_model_version>
+        <product_class>Product_Document</product_class>
+        
+        <Citation_Information>
+            <author_list>Seaman, R.;Neese, C.;Stone, J.;Christensen, E.</author_list>
+            <publication_year>2023</publication_year>
+            <description>
+                An outline of the directories and data products in the Catalina Sky Survey Bundle
+            </description>
+        </Citation_Information>
+        
+        <Modification_History>
+            <Modification_Detail>
+                <modification_date>2023-01-27</modification_date>
+                <version_id>1.0</version_id>
+                <description>Initial creation of PDS label for this document. This corresponds to version 8 of the bundle overview.</description>
+            </Modification_Detail>
+            <Modification_Detail>
+                <modification_date>2023-01-27</modification_date>
+                <version_id>2.0</version_id>
+                <description>Delivery of v10 of the bundle overview.</description>
+            </Modification_Detail>
+        </Modification_History>  
+    </Identification_Area>
+    
+    <Context_Area>
+        
+        <Observing_System>
+            <Observing_System_Component>
+                <name>Mount Lemmon (Catalina) Station</name>
+                <type>Observatory</type>
+                <Internal_Reference>
+                    <lid_reference>urn:nasa:pds:context:facility:observatory.mount_lemmon</lid_reference>
+                    <reference_type>is_facility</reference_type>
+                </Internal_Reference>
+            </Observing_System_Component>
+            <Observing_System_Component>
+                <name>1.54-m multipurpose reflector</name>
+                <type>Telescope</type>
+                <Internal_Reference>
+                    <lid_reference>urn:nasa:pds:context:telescope:mount_lemmon.1m54</lid_reference>
+                    <reference_type>is_telescope</reference_type>
+                </Internal_Reference>
+            </Observing_System_Component>
+            <Observing_System_Component>
+                <name>SI_600-386</name>
+                <type>Instrument</type>
+                <Internal_Reference>
+                    <lid_reference>urn:nasa:pds:context:instrument:mount_lemmon.1m54.4kccd</lid_reference>
+                    <reference_type>is_instrument</reference_type>
+                </Internal_Reference>
+            </Observing_System_Component>
+            <Observing_System_Component>
+                <name>SN_110-106/165685-06</name>
+                <type>Instrument</type>
+                <Internal_Reference>
+                    <lid_reference>urn:nasa:pds:context:instrument:mount_lemmon.1m54.10kccd</lid_reference>
+                    <reference_type>is_instrument</reference_type>
+                </Internal_Reference>
+            </Observing_System_Component>
+        </Observing_System>
+        <Observing_System>
+            <Observing_System_Component>
+                <name>Mount Lemmon (Catalina) Station</name>
+                <type>Observatory</type>
+                <Internal_Reference>
+                    <lid_reference>urn:nasa:pds:context:facility:observatory.mount_lemmon</lid_reference>
+                    <reference_type>is_facility</reference_type>
+                </Internal_Reference>
+            </Observing_System_Component>
+            <Observing_System_Component>
+                <name>1.02-m Cassegrain reflector</name>
+                <type>Telescope</type>
+                <Internal_Reference>
+                    <lid_reference>urn:nasa:pds:context:telescope:mount_lemmon.1m02</lid_reference>
+                    <reference_type>is_telescope</reference_type>
+                </Internal_Reference>
+            </Observing_System_Component>
+            <Observing_System_Component>
+                <name>SI_800-594</name>
+                <type>Instrument</type>
+                <Internal_Reference>
+                    <lid_reference>urn:nasa:pds:context:instrument:mount_lemmon.1m02.2kccd</lid_reference>
+                    <reference_type>is_instrument</reference_type>
+                </Internal_Reference>
+            </Observing_System_Component>
+        </Observing_System>
+        <Observing_System>
+            <Observing_System_Component>
+                <name>Mount Bigelow (Catalina) Station</name>
+                <type>Observatory</type>
+                <Internal_Reference>
+                    <lid_reference>urn:nasa:pds:context:facility:observatory.mount_bigelow</lid_reference>
+                    <reference_type>is_facility</reference_type>
+                </Internal_Reference>
+            </Observing_System_Component>
+            <Observing_System_Component>
+                <name>1.54-m Cassegrain/Coude reflector</name>
+                <type>Telescope</type>
+                <Internal_Reference>
+                    <lid_reference>urn:nasa:pds:context:telescope:mount_bigelow.1m54</lid_reference>
+                    <reference_type>is_telescope</reference_type>
+                </Internal_Reference>
+            </Observing_System_Component>
+            <Observing_System_Component>
+                <name>Mont4K CCD Imager</name>
+                <type>Instrument</type>
+                <Internal_Reference>
+                    <lid_reference>urn:nasa:pds:context:instrument:mount_bigelow.1m54.mont4k</lid_reference>
+                    <reference_type>is_instrument</reference_type>
+                </Internal_Reference>
+            </Observing_System_Component>
+        </Observing_System>
+        <Observing_System>
+            <Observing_System_Component>
+                <name>Mount Bigelow (Catalina) Station</name>
+                <type>Observatory</type>
+                <Internal_Reference>
+                    <lid_reference>urn:nasa:pds:context:facility:observatory.mount_bigelow</lid_reference>
+                    <reference_type>is_facility</reference_type>
+                </Internal_Reference>
+            </Observing_System_Component>
+            <Observing_System_Component>
+                <name>Catalina Sky Survey 0.7-m Schmidt telescope (MPC code 703)</name>
+                <type>Telescope</type>
+                <Internal_Reference>
+                    <lid_reference>urn:nasa:pds:context:telescope:mount_bigelow.0m7</lid_reference>
+                    <reference_type>is_telescope</reference_type>
+                </Internal_Reference>
+            </Observing_System_Component>
+            <Observing_System_Component>
+                <name>SI_600-277</name>
+                <type>Instrument</type>
+                <Internal_Reference>
+                    <lid_reference>urn:nasa:pds:context:instrument:mount_bigelow.0m7.4kccd</lid_reference>
+                    <reference_type>is_instrument</reference_type>
+                </Internal_Reference>
+            </Observing_System_Component>
+            <Observing_System_Component>
+                <name>SN_110-108/165685-06</name>
+                <type>Instrument</type>
+                <Internal_Reference>
+                    <lid_reference>urn:nasa:pds:context:instrument:mount_bigelow.0m7.10kccd</lid_reference>
+                    <reference_type>is_instrument</reference_type>
+                </Internal_Reference>
+            </Observing_System_Component>
+        </Observing_System>
+        <Observing_System>
+            <Observing_System_Component>
+                <name>Kitt Peak Station, Steward Observatory</name>
+                <type>Observatory</type>
+                <Internal_Reference>
+                    <lid_reference>urn:nasa:pds:context:facility:observatory.steward-kittpeak</lid_reference>
+                    <reference_type>is_facility</reference_type>
+                </Internal_Reference>
+            </Observing_System_Component>
+            <Observing_System_Component>
+                <name>2.29-m Bok Boller &amp; Chivens Ritchey-Chretien refl.</name>
+                <type>Telescope</type>
+                <Internal_Reference>
+                    <lid_reference>urn:nasa:pds:context:telescope:steward-kittpeak.bok2m3</lid_reference>
+                    <reference_type>is_telescope</reference_type>
+                </Internal_Reference>
+            </Observing_System_Component>
+            <Observing_System_Component>
+                <name>90Prime Mosaic camera</name>
+                <type>Instrument</type>
+                <Internal_Reference>
+                    <lid_reference>urn:nasa:pds:context:instrument:steward-kittpeak.bok2m3.90prime</lid_reference>
+                    <reference_type>is_instrument</reference_type>
+                </Internal_Reference>
+            </Observing_System_Component>
+        </Observing_System>
+        <Observing_System>
+            <Observing_System_Component>
+                <name>Siding Spring Observatory</name>
+                <type>Observatory</type>
+                <Internal_Reference>
+                    <lid_reference>urn:nasa:pds:context:facility:observatory.siding_spring</lid_reference>
+                    <reference_type>is_facility</reference_type>
+                </Internal_Reference>
+            </Observing_System_Component>
+            <Observing_System_Component>
+                <name>Catalina Sky Survey 0.5-m Uppsala Schmidt telescope (MPC code E12)</name>
+                <type>Telescope</type>
+                <Internal_Reference>
+                    <lid_reference>urn:nasa:pds:context:telescope:siding_spring.uppsala0m5</lid_reference>
+                    <reference_type>is_telescope</reference_type>
+                </Internal_Reference>
+            </Observing_System_Component>
+            <Observing_System_Component>
+                <name> SI_600-263</name>
+                <type>Instrument</type>
+                <Internal_Reference>
+                    <lid_reference>urn:nasa:pds:context:telescope:siding_spring.uppsala0m5</lid_reference>
+                    <reference_type>is_instrument</reference_type>
+                </Internal_Reference>
+            </Observing_System_Component>
+        </Observing_System>
+    </Context_Area>
+    
+    <Document>
+        <publication_date>2022-11-15</publication_date>
+        <description>
+            The PDF version of the document.
+        </description>
+        <Document_Edition>
+            <edition_name>PDF/A</edition_name>
+            <language>English</language>
+            <files>1</files>
+            <description>
+                This document is conformant to PDF/A.
+            </description>
+            <Document_File>
+                <file_name>CSS_bundle_overview_v10.pdf</file_name>
+                <document_standard_id>PDF/A</document_standard_id>
+            </Document_File>
+        </Document_Edition>
+    </Document>
+</Product_Document>
