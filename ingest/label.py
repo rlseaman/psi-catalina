@@ -149,9 +149,13 @@ def extract_software(software):
     '''
     Extract from the software element
     '''
+
+    if software is None:
+        return {"software_id": "", "software_version_id": ""}
+
     return {
         "software_id": str(software.software_id.string) if software.software_id else '', 
-        "software_version_id": str(software.software_version_id.string) if software.software_version_id else ''
+        "software_version_id": str(software.software_version_id.string) if software.software_version_id is not None else ''
     }
 
 def extract_document(document):
