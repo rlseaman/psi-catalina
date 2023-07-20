@@ -137,26 +137,39 @@ def extract_processing_information(processing_information):
     '''
     Extracts information from the processing area
     '''
-    return {'software': [extract_process(process) for process in processing_information.find_all("Process")]}
+    return {'process': [extract_process(process) for process in processing_information.find_all("Process")]}
 
 def extract_process(process):
     '''
     Extract from the process element
     '''
-    return extract_software(process.Software)
+    return {
+        'name': str(process.name.string) if process.name else '',
+        'description': str(process.description.string) if process.description else '',
+        'software': [extract_software(software) for software in process.find_all("Software")]
+    }
 
 def extract_software(software):
     '''
     Extract from the software element
     '''
-
-    if software is None:
-        return {"software_id": "", "software_version_id": ""}
-
     return {
         "software_id": str(software.software_id.string) if software.software_id else '', 
-        "software_version_id": str(software.software_version_id.string) if software.software_version_id is not None else ''
+        "software_version_id":
+            str(software.software_version_id.string) if software.software_version_id is not None else '',
+        'software_program': [extract_software_program(software_program) for software_program in software]
     }
+
+def extract_software_program(software_program):
+    '''
+    Extract from the software element
+    '''
+    return {
+        "name": str(software_program.name.string) if software_program.name else '',
+        "program_version":
+            str(software_program.program_version.string) if software_program.program_version is not None else ''
+    }
+
 
 def extract_document(document):
     '''
