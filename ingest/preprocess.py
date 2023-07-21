@@ -15,9 +15,9 @@ def file_open(filename, mode="rt"):
 
 
 def linefeed_to_crlf(filename):
-    '''
+    """
     Normalize the line feeds in a data file, replacing them with CRLFs
-    '''
+    """
 
     logging.info(f"Normalizing whitespace for: {filename}")
     if has_compressed(filename):
@@ -55,12 +55,12 @@ LABEL_FUNCS = {
 
 
 def preprocess_datafile(filename):
-    '''
-    Preprocesses the file. If the file is of an appropriate type 
+    """
+    Preprocesses the file. If the file is of an appropriate type
     (defined by membership in DATA_FUNCS), decompress the file,
     run the preprocessing routine indicated in DATA_FUNCS, and
     recompress the file.
-    '''
+    """
     newfilename = filename.replace(".gz", "")
     extension = newfilename.split(".")[-1]
 
@@ -69,12 +69,12 @@ def preprocess_datafile(filename):
 
 
 def preprocess_labelfile(filename, datafilenames):
-    '''
+    """
     Preproesses the label. If the file is of an appropriate type
     (defined in LABEL_FUNCS), apply the appropriate transformation
     to the contents. In most cases, this will remove the gz of fz
     extensions from the data file names.
-    '''
+    """
     with open(filename) as f:
         labelcontents = f.read()
 

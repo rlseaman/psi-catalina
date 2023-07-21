@@ -1,6 +1,6 @@
-'''
+"""
 Performs validation on a PDS4 label
-'''
+"""
 from json.decoder import JSONDecodeError
 import subprocess
 import os.path
@@ -35,18 +35,18 @@ FUNPACK_CMD='funpack'
 
 
 def validate_product(product, schema_path, skip_data):
-    '''
+    """
     Moves the entirety of the product to a temporary location,
     decompressed the data files if needed, and validates the product.
-    '''
+    """
     return validate_products([product], schema_path, skip_data)
 
 
 def validate_products(products, schema_path, skip_data):
-    '''
+    """
     Moves the entirety of the product to a temporary location,
     decompressed the data files if needed, and validates the product.
-    '''
+    """
     with tempfile.TemporaryDirectory() as temp:
         logging.info(f"Validating products at: {temp}")
         temp_dir = temp
@@ -57,7 +57,7 @@ def validate_products(products, schema_path, skip_data):
 
 
 def create_temp_copy(temp_dir, product:product.Product, skip_data):
-    '''
+    """
     Creates temporary copies of the files for a product. Temporary copies are
     needed because the real copies are compressed, and the labels also need
     to be copied so that they can be modified to point to these copies.
@@ -67,7 +67,7 @@ def create_temp_copy(temp_dir, product:product.Product, skip_data):
 
     If data validation is being skipped, this will still create an empty
     dummy file, so that the validator will not fail.
-    '''
+    """
     label_file_name = product.labelfilename
     label_path = product.labelpath
     data_dir = product.datadir
@@ -110,9 +110,9 @@ def create_temp_copy(temp_dir, product:product.Product, skip_data):
 
 
 def run_validator(file_name, schema_path, skip_data):
-    '''
+    """
     Runs the label validatior on the given file or directory
-    '''
+    """
 
     logging.info("Running the validator...")
     params = [VALIDATE_CMD, '-s', 'json', '-E', '2147483647'] + (['-D'] if skip_data else []) + ['-x', *get_schemas(schema_path, ".xsd"), '-S', *get_schemas(schema_path, ".sch"), '-t', file_name]
@@ -165,10 +165,10 @@ def get_schemas(base_path, extension):
     
 
 class Validation:
-    '''
+    """
     Runs the validation on a label or directory, and stores the successes
     and failures
-    '''
+    """
     def __init__(self, dirname):
         result = run_validator(dirname, True)
         self.failures, self.successes = result

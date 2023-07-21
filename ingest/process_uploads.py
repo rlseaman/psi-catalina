@@ -1,8 +1,8 @@
 #! /usr/bin/env python3
-'''
+"""
 Python script to process submissions from Catalina Sky Survey and convert them
 to PDS4 format.
-'''
+"""
 
 from operator import mod
 import sys
@@ -53,10 +53,10 @@ env = Environment(
 
 
 def main(argv=None):
-    '''
+    """
     Extract command line arguments, ensure that the script is not already running,
     and process the current upload directory.
-    '''
+    """
     opts = options.get_args()
 
     if opts.console:
@@ -81,10 +81,10 @@ def main(argv=None):
 
 
 def lockfile_run(opts:options.Opts):
-    '''
+    """
     Run a function on this directory if one isn't already running. This is
     enforced with a lockfile.
-    '''
+    """
     lockfile = os.path.join(opts.location_opts.basedir, ".lockfile")
     if os.path.exists(lockfile):
         logging.info(f"Lockfile found at {lockfile}, skipping processing")
@@ -98,9 +98,9 @@ def lockfile_run(opts:options.Opts):
 
 
 def process_upload_dir(opts:options.Opts):
-    '''
+    """
     process an upload directory, assuming it has been validated.
-    '''
+    """
     logging.info(f"Discovering products at: {opts.location_opts.basedir}")
     loc = paths.Paths(opts.location_opts, BUNDLE_ID)
     directories = limit_directories(loc, list(discover_product_dirs(loc, opts.filter_opts)), opts.filter_opts)
@@ -181,24 +181,24 @@ def limit_directories(loc, directories, filter_opts:options.FilterOpts):
 
 
 def discover_product_dirs(loc, filter_opts:options.FilterOpts):
-    '''
+    """
     Find all of the product labels in the directory and convert them
     to product objects
-    '''
+    """
     instruments = [filter_opts.specific_instrument] if filter_opts.specific_instrument else INSTRUMENTS
     return itertools.chain.from_iterable(
         process_inst_directory(loc, instrument, filter_opts) for instrument in instruments)
 
 
 def process_inst_directory(loc, instrument, filter_opts:options.FilterOpts):
-    '''
+    """
     Processes the given instrument directory
 
     Inside of an instrument directory, the labels are organized in subdirectories by year.
 
     basedir: the absolute path the to the top-level source files
     instrument: the mpc code for the instrument
-    '''
+    """
     logging.info(f"Processing instrument directory: {instrument}")
 
     instdir = loc.datadir(instrument)
@@ -210,7 +210,7 @@ def process_inst_directory(loc, instrument, filter_opts:options.FilterOpts):
 
 
 def process_year_directory(loc, instrument, year, filter_opts:options.FilterOpts):
-    '''
+    """
     Processes the given year directory.
 
     Inside of a year directory, the labels are organized in subdirectories by date.
@@ -218,7 +218,7 @@ def process_year_directory(loc, instrument, year, filter_opts:options.FilterOpts
     yeardir: the absolute path to the files for the given year
     instrument: the mpc code of the instrument
     year: the year being processed
-    '''
+    """
     logging.info(f"processing year directory {instrument}/{year}")
     yeardir = loc.datadir(instrument, year)
     days_to_ignore = IGNORE_DATES + build_ignore_dates(filter_opts.ignore_past_days)
@@ -227,9 +227,9 @@ def process_year_directory(loc, instrument, year, filter_opts:options.FilterOpts
 
 
 def build_ignore_dates(num_days):
-    '''
+    """
     Builds a list of days to ignore when processing. This will be the past n days
-    '''
+    """
     deltas = [datetime.timedelta(days=x) for x in range (0, num_days)]
     dates=[datetime.datetime.now() - delta for delta in deltas]
     datestrs = [dt.strftime("%y%b%d") for dt in dates]
@@ -251,14 +251,14 @@ def label_dir_has_products(labeldir):
 
 
 def discover_date_products(loc, instrument, year, date):
-    '''
+    """
     Processes the data in a given data directory and label directory pair.
 
     This checks for a semaphore file before actually doing the processing.
 
     datadir: the absolute path to the actual data files
     labeldir: the absolute path to the label files
-    '''
+    """
     logging.info(f"processing data directory {instrument}/{year}/{date}")
 
     datadir = loc.datadir(instrument, year, date)
@@ -271,23 +271,23 @@ def discover_date_products(loc, instrument, year, date):
 
 
 def semaphore_exists(dirname):
-    '''
+    """
     Verifies that a semaphore file exists in the given directory.
 
     dirname: the absolute path of the directory to check
-    '''
+    """
     logging.info(f"checking for semaphore in {dirname}")
     semaphore_file = os.path.join(dirname, '.autoxfer')
     return os.path.exists(semaphore_file)
 
 
 def labels_to_products(datadir, labeldir, instrument, year, date):
-    '''
+    """
     Processes the data in a given data directory and label directory pair.
 
     datadir: the absolute path to the actual data files
     labeldir: the absolute path to the label files
-    '''
+    """
     logging.info(f"Processing searching for labels in {instrument}/{year}/{date}")
     files = get_labels(labeldir)
     empty_labels = [x for x in files if os.path.getsize(os.path.join(labeldir, x)) == 0]
@@ -311,25 +311,25 @@ def get_labels(labeldir):
 
 
 def product_whitelisted(product):
-    '''
+    """
     determines if all of the software for the product has been approved
-    '''
+    """
     if product.software:
         return all([software_whitelisted(x) for x in product.software()])
     return True
 
 
 def software_whitelisted(software):
-    '''
+    """
     determines if a single piece of software has been approved
-    '''
+    """
     return True
 
 
 def index(items, indexfunc):
-    '''
+    """
     Indexes a list of objects based on the output of a supplied function
-    '''
+    """
     dictionary = {}
     for item in items:
         key = indexfunc(item)
@@ -338,18 +338,18 @@ def index(items, indexfunc):
 
 
 def extract_collection_id(lid):
-    '''
+    """
     Extracts the collection id component from a LID
-    '''
+    """
     return lid.split(':')[4]
 
 
 def validate_products(products, loc, preprocessing_opts:options.PostprocessingOpts, validation_opts:options.ValidationOpts, logdir):
-    '''
+    """
     Preprocess and validates the products. 
     The files will be preprocessed in the same manner as after validation. This prevents the original 
     files from being altered if there are validation errors.
-    '''
+    """
     all_validation_failures = []
     all_successes = []
 
@@ -387,10 +387,10 @@ def log_validation_run(output, logdir):
         logfile.write(output)
 
 
-'''
+"""
 Writes information about a failure to the disk. If possible, it will write it next to the file that
 failed.
-'''
+"""
 
 
 def writeFailure(batch, logdir, loc, failure):
@@ -407,9 +407,9 @@ def writeFailure(batch, logdir, loc, failure):
 
 
 def chunk(items, size):
-    '''
+    """
     Subdivides a list into chunks of the given size
-    '''
+    """
     for i in range(0, len(items), size):
         yield items[i:i+size]
 
@@ -443,9 +443,9 @@ def move_product(product, loc, postprocessing_opts:options.PostprocessingOpts, f
 
 
 def move_product_to_prevaldiated(product, loc, postprocessing_opts:options.PostprocessingOpts, failed):
-    '''
+    """
     move a product to the pre-validated directory. Future runs of this script can now skip the validation.
-    '''
+    """
     logging.info(f"Moving files for: {product.labelfilename}")
     datadir = loc.datadir(product.inst, product.year, product.date)
     label_dest_directory = loc.validationLabelDir(product, failed)
@@ -457,11 +457,11 @@ def move_product_to_prevaldiated(product, loc, postprocessing_opts:options.Postp
 
 
 def move_product_to_collections(product, loc, postprocessing_opts:options.PostprocessingOpts, failed):
-    '''
+    """
     move a product to the archive directory. For the current workflow, this will be a
     temporary directory on the processing server that will then get synced over
     to the archive direcory.
-    '''
+    """
     logging.info(f"Moving files for: {product.labelfilename}")
 
     datadir = loc.datadir(product.inst, product.year, product.date)
@@ -511,9 +511,9 @@ def get_actual_file_name(data_dir, file_name):
 
 
 def update_data_collection(loc, collection_products: list, collection_id, preserve_collection_version):
-    '''
+    """
     Create the collection inventory and label.
-    '''
+    """
     logging.info(f"Processing collection: {collection_id}")
     collection_path = loc.destdir(collection_id)
     os.makedirs(collection_path, exist_ok=True)
@@ -553,25 +553,25 @@ def parseDirDate(x):
 
 
 def get_collection_labels(collection_path, collection_id):
-    '''
+    """
     Gets the most recent known version number for a collection
-    '''
+    """
     collection_files = [x for x in os.scandir(collection_path) if is_collection_file(x)]
     return [Collection(collection_path, x.name) for x in collection_files]
     
 
 def is_collection_file(candidate):
-    '''
+    """
     Determine if the passed in file is a collection file.
-    '''
+    """
     return candidate.name.startswith('collection') and candidate.name.endswith('.xml')
 
 
 def merge_inventories(collection_path, collection_id, collection_products, old_lidvid, preserve_collection_version):
-    '''
+    """
     Produces a new collection inventory file, and returns the lidvid for the
     new collection
-    '''
+    """
     product_lidvids = [x.lidvid() for x in collection_products]
 
     old_inv = inventory.read_inventory(old_lidvid, collection_path)
@@ -593,9 +593,9 @@ def merge_inventories(collection_path, collection_id, collection_products, old_l
 
 
 def get_last_version_number(collection_id, collection_labels):
-    '''
+    """
     Gets the most recent known version number for a collection
-    '''
+    """
     if collection_labels:
         collection_versions = [
             (x.majorversion(), x.minorversion())
@@ -607,9 +607,9 @@ def get_last_version_number(collection_id, collection_labels):
 
 
 def make_collection_lidvid(collection_id, major, minor):
-    '''
+    """
     Creates a collection lidvid from its component parts
-    '''
+    """
     return {
         'major': major,
         'minor': minor,
@@ -638,9 +638,9 @@ def write_collection(template_filename,
                      record_count,
                      modification_history,
                      latest_modification):
-    '''
+    """
     Writes the collection label to a file.
-    '''
+    """
     template=env.get_template(template_filename)
     contents = template.render(
         collection_id=collection_lidvid['collection_id'],
@@ -661,9 +661,9 @@ def write_collection(template_filename,
 
 
 def is_label(candidate):
-    '''
+    """
     Determines if the given file is a label file.
-    '''
+    """
     return candidate.name.endswith('.xml') and check_writable(candidate)
 
 

@@ -1,7 +1,7 @@
-'''
+"""
 This class represents a product, and contains the necessary
 attributes for running through the pipeline.
-'''
+"""
 import os
 from bs4 import BeautifulSoup
 import label
@@ -9,9 +9,9 @@ import logging
 
 
 def extract_label(xmldoc, filepath=''):
-    '''
+    """
     Extracts keywords from a PDS4 label.
-    '''
+    """
     if xmldoc.Product_Observational:
         return label.extract_product_observational(xmldoc.Product_Observational)
     if xmldoc.Product_Ancillary:
@@ -23,10 +23,10 @@ def extract_label(xmldoc, filepath=''):
     
 
 def extract_keywords(infile, filepath=''):
-    '''
+    """
     Wrapper for extract_label. This handles creation and destruction of
     the BeautifulSoup object.
-    '''
+    """
     xmldoc = BeautifulSoup(infile, 'lxml-xml')
     if xmldoc:
         keywords = extract_label(xmldoc, filepath)
@@ -37,14 +37,14 @@ def extract_keywords(infile, filepath=''):
 
 
 class Product:
-    '''
+    """
     Represents the product itself.
-    '''
+    """
 
     def __init__(self, datadir, filepath, inst=None, year=None, date=None):
-        '''
+        """
         Parses a label file into a Product
-        '''
+        """
         logging.debug(f"Creating product for: {filepath}")
         with open(filepath) as infile:
             self.keywords = extract_keywords(infile, filepath)
