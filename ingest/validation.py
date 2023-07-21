@@ -15,23 +15,23 @@ import re
 
 
 DICTIONARIES_1A = ['PDS4_IMG_1900',
-                'PDS4_DISP_1900',
-                'PDS4_GEOM_1900_1510',
-                'PDS4_SURVEY_1A00_1000',
-                'PDS4_PROC_1900',
-                'PDS4_PDS_1A00']
+                   'PDS4_DISP_1900',
+                   'PDS4_GEOM_1900_1510',
+                   'PDS4_SURVEY_1A00_1000',
+                   'PDS4_PROC_1900',
+                   'PDS4_PDS_1A00']
 
 DICTIONARIES_1G = ['PDS4_IMG_1G00_1850',
-                'PDS4_DISP_1G00_1500',
-                'PDS4_GEOM_1G00_1920',
-                'PDS4_PDS_1G00',
-                'PDS4_PROC_1G00_1210',
-                'PDS4_SURVEY_1G00_1010']
+                   'PDS4_DISP_1G00_1500',
+                   'PDS4_GEOM_1G00_1920',
+                   'PDS4_PDS_1G00',
+                   'PDS4_PROC_1G00_1210',
+                   'PDS4_SURVEY_1G00_1010']
 
 DICTIONARIES = DICTIONARIES_1G
 
-VALIDATE_CMD='validate'
-FUNPACK_CMD='funpack'
+VALIDATE_CMD = 'validate'
+FUNPACK_CMD = 'funpack'
 
 
 def validate_product(product, schema_path, skip_data):
@@ -56,7 +56,7 @@ def validate_products(products, schema_path, skip_data):
         return run_validator(temp_dir, schema_path, skip_data)
 
 
-def create_temp_copy(temp_dir, product:product.Product, skip_data):
+def create_temp_copy(temp_dir, product: product.Product, skip_data):
     """
     Creates temporary copies of the files for a product. Temporary copies are
     needed because the real copies are compressed, and the labels also need

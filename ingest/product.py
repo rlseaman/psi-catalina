@@ -19,7 +19,7 @@ def extract_label(xmldoc, filepath=''):
     if xmldoc.Product_Document:
         return label.extract_product_document(xmldoc.Product_Document)
 
-    raise RuntimeError(f"Unknown product type: {filepath}" )
+    raise RuntimeError(f"Unknown product type: {filepath}")
     
 
 def extract_keywords(infile, filepath=''):

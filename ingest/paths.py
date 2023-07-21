@@ -9,7 +9,7 @@ class Paths:
     provides multiple ways to get at each data file and label file, and
     accounts for the fact that the data and labels are delivered in separate locations.
     """
-    def __init__(self, location_opts:options.LocationOpts, bundle_id):
+    def __init__(self, location_opts: options.LocationOpts, bundle_id):
         self.basedir = location_opts.basedir
         self.dest = location_opts.destdir
         self.bundle_id = bundle_id
@@ -78,4 +78,4 @@ if __name__ == '__main__':
     print(p.labeldir("I52", "2020", "20Aug01"))
     print(p.labeldir("I52", "2020", "20Aug01", "test.fit"))
 
-    print(p.destdir("data","I52", "2020", "20Aug01"))
+    print(p.destdir("data", "I52", "2020", "20Aug01"))

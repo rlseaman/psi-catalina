@@ -84,7 +84,7 @@ def extract_modification_detail(modification_detail):
     return {
         "version_id": modification_detail.version_id.text,
         "modification_date": modification_detail.modification_date.text,
-        "description" : modification_detail.description.text
+        "description": modification_detail.description.text
     }
 
 
