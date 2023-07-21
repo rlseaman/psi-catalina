@@ -2,6 +2,7 @@ import os
 import itertools
 import options
 
+
 class Paths:
     '''
     A helper class that determines where data files and labels are stored. This
@@ -63,6 +64,7 @@ class Paths:
         if any(itertools.dropwhile(lambda x: x, elementList)):
             raise Exception("Gaps detected in path:", elementList)
         return list(itertools.takewhile(lambda x: x, elementList))
+
 
 if __name__ == '__main__':
     p = Paths("base", "dest")

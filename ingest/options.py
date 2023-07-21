@@ -1,7 +1,6 @@
 import argparse
 
 
-
 class Opts:
     def __init__(self, args:argparse.Namespace):
         self.validation_opts = ValidationOpts(args)
@@ -12,17 +11,20 @@ class Opts:
         self.console = args.console
         self.verbose = args.verbose
 
+
 class ValidationOpts:
     def __init__(self, args:argparse.Namespace):
        self.skip_validation=args.skip_validation
        self.skip_data_validation=args.skip_data_validation
        self.permissive_validation=args.permissive_validation
 
+
 class PreprocessingOpts:
     def __init__(self, args:argparse.Namespace):
         self.skip_preprocessing=args.skip_preprocessing
         self.skip_data_preprocessing=args.skip_data_preprocessing
         self.skip_label_preprocessing=args.skip_label_preprocessing
+
 
 class PostprocessingOpts:
     def __init__(self, args:argparse.Namespace):
@@ -33,6 +35,7 @@ class PostprocessingOpts:
         self.preserve_collection_version=args.preserve_collection_version
         self.validate_only=args.validate_only
 
+
 class FilterOpts:
     def __init__(self, args:argparse.Namespace):
         self.specific_date = args.specific_date
@@ -40,6 +43,7 @@ class FilterOpts:
         self.max_products = args.max_products
         self.max_nights = args.max_nights
         self.ignore_past_days = args.ignore_past_days
+
 
 class LocationOpts:
     def __init__(self, args:argparse.Namespace):

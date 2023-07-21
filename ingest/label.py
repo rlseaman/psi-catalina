@@ -4,6 +4,7 @@ Common code for label extraction
 import os
 import itertools
 
+
 def extract_collection(collection):
     '''
     Extracts keywords from the Product_Collection element
@@ -13,6 +14,7 @@ def extract_collection(collection):
     result.update(extract_context_area(collection.Context_Area))
 
     return result
+
 
 def extract_product_observational(product_observational):
     '''
@@ -25,6 +27,7 @@ def extract_product_observational(product_observational):
     if product_observational.Discipline_Area:
         result.update(extract_discipline_area(product_observational.Discipline_Area))
     return result
+
 
 def extract_product_ancillary(product_ancillary):
     '''
@@ -73,10 +76,12 @@ def extract_identification_area(identification_area):
         "modification_history": modification_history
     }
 
+
 def extract_modification_history(modification_history):
     if modification_history:
         return [extract_modification_detail(d) for d in modification_history.find_all("Modification_Detail")]
     return []
+
 
 def extract_modification_detail(modification_detail):
     return {
@@ -85,11 +90,13 @@ def extract_modification_detail(modification_detail):
         "description" : modification_detail.description.text
     }
 
+
 def extract_observation_area(context_area):
     '''
     Extract from the observation_area element
     '''
     return extract_time_coordinates(context_area.Time_Coordinates)
+
 
 def extract_context_area(context_area):
     '''
@@ -110,6 +117,7 @@ def extract_time_coordinates(time_coordinates):
         "stop_date": optstr(time_coordinates.stop_date_time.string)
     }
 
+
 def extract_file_area(file_area):
     '''
     Extracts keywords from the File_Area element
@@ -118,11 +126,13 @@ def extract_file_area(file_area):
         "file_name": os.path.basename(str(file_area.File.file_name.string))
     }
 
+
 def extract_collection_id(lid):
     '''
     Extracts the collection id component from a LID
     '''
     return lid.split(':')[4]
+
 
 def extract_discipline_area(discipline_area):
     '''
@@ -133,17 +143,20 @@ def extract_discipline_area(discipline_area):
         return extract_processing_information(discipline_area.Processing_Information)
     return {}
 
+
 def extract_processing_information(processing_information):
     '''
     Extracts information from the processing area
     '''
     return {'software': [extract_process(process) for process in processing_information.find_all("Process")]}
 
+
 def extract_process(process):
     '''
     Extract from the process element
     '''
     return extract_software(process.Software)
+
 
 def extract_software(software):
     '''
@@ -153,6 +166,7 @@ def extract_software(software):
         "software_id": str(software.software_id.string) if software.software_id else '', 
         "software_version_id": str(software.software_version_id.string) if software.software_version_id else ''
     }
+
 
 def extract_document(document):
     '''
@@ -164,6 +178,7 @@ def extract_document(document):
         'file_names': list(itertools.chain.from_iterable([edition['file_names'] for edition in editions]))
     }
 
+
 def extract_document_edition(document_edition):
     '''
     Extracts keywords form the Document_Edition element
@@ -173,6 +188,7 @@ def extract_document_edition(document_edition):
         'file_names': [docfile['filename'] for docfile in files]
     }
 
+
 def extract_document_file(document_file):
     '''
     Extracts keywords form the Document_File element
@@ -180,6 +196,7 @@ def extract_document_file(document_file):
     return {
         'filename': str(document_file.file_name.string)
     }
+
 
 def optstr(value):
     return str(value) if value else None

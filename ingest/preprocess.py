@@ -6,11 +6,13 @@ import gzip
 def has_compressed(filename):
     return os.path.exists(f"{filename}.gz")
 
+
 def file_open(filename, mode="rt"):
     logging.debug(f"Opening: {filename} with mode: {mode}")
     if filename.endswith(".gz"):
         return gzip.open(filename, mode)
     return open(filename, mode)
+
 
 def linefeed_to_crlf(filename):
     '''
@@ -32,13 +34,16 @@ def linefeed_to_crlf(filename):
 
     os.remove(f"{filename}.bak")
 
+
 def strip_label_fz_extension(contents, datafilename):
     uncompressed_datafilename = datafilename.replace(".fz", "")
     return contents.replace(datafilename, uncompressed_datafilename)
 
+
 def strip_label_gz_extension(contents, datafilename):
     uncompressed_datafilename = datafilename.replace(".gz", "")
     return contents.replace(datafilename, uncompressed_datafilename)
+
 
 DATA_FUNCS = {
 }
@@ -47,6 +52,7 @@ LABEL_FUNCS = {
     "fz": strip_label_fz_extension,
     "gz": strip_label_gz_extension
 }
+
 
 def preprocess_datafile(filename):
     '''
@@ -60,6 +66,7 @@ def preprocess_datafile(filename):
 
     if extension in DATA_FUNCS:
         DATA_FUNCS[extension](filename)
+
 
 def preprocess_labelfile(filename, datafilenames):
     '''
@@ -80,5 +87,3 @@ def preprocess_labelfile(filename, datafilenames):
 
     with open(filename, "w") as f2:
         f2.write(labelcontents)
-    
-

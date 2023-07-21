@@ -20,6 +20,7 @@ def write_inventory(inventory, collection_lidvid, collection_dir):
     logging.info(f"writing to: {collection_path}")
     iotools.write_file(collection_path, '\n'.join(sorted(inventory)) + '\n')
 
+
 def read_inventory(collection_lidvid, collection_dir):
     '''
     Reads in the inventory for the most recent collection update before this one
@@ -38,11 +39,13 @@ def read_inventory(collection_lidvid, collection_dir):
     logging.info("No previous collection found, starting a new collection...")            
     return []
 
+
 def from_lidvids(member_type, product_lidvids):
     '''
     Generates an inventory from a list of product lidvids
     '''
     return [f"{member_type},{x}" for x in product_lidvids if x]
+
 
 def merge(old_inv, new_inv):
     '''

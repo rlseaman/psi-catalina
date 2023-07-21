@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 import label
 import os
 
+
 def extract_label(xmldoc):
     '''
     Extracts keywords from a PDS4 label.
@@ -13,6 +14,7 @@ def extract_label(xmldoc):
     if xmldoc.Product_Collection:
         return label.extract_collection(xmldoc.Product_Collection)
     return {}
+
 
 class Collection:
     '''

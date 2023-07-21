@@ -80,8 +80,6 @@ def main(argv=None):
     return 0
 
 
-
-
 def lockfile_run(opts:options.Opts):
     '''
     Run a function on this directory if one isn't already running. This is
@@ -109,7 +107,6 @@ def process_upload_dir(opts:options.Opts):
     logging.info(f"Discovey complete, consolidating: {opts.location_opts.basedir}")
     logging.info(f'Discovered directories: {directories}')
     products = list(itertools.chain.from_iterable(discover_date_products(loc, inst, year, d) for inst, year, d in directories))
-
 
     logging.info(f"{len(products)} products discovered")
 
@@ -162,10 +159,12 @@ def process_upload_dir(opts:options.Opts):
     #logging.info("moving to %s", deletion_area_dest)
     logging.info("done")
 
+
 def recreate_semaphore(dirname, filename='.autoxfer'):
     logging.info(f'recreating semaphore {filename} at {dirname}')
     with open(os.path.join(dirname, filename), 'w'):
         pass
+
 
 def limit_directories(loc, directories, filter_opts:options.FilterOpts):
     dates = set([d for inst, year, d in directories])
@@ -236,16 +235,20 @@ def build_ignore_dates(num_days):
     datestrs = [dt.strftime("%y%b%d") for dt in dates]
     return datestrs
 
+
 def date_has_semaphore(loc, instrument, year, date):
     datadir = loc.datadir(instrument, year, date)
     labeldir = loc.labeldir(instrument, year, date)
     return semaphore_exists(datadir) and semaphore_exists(labeldir)
 
+
 def date_has_products(loc, instrument, year, date):
     return label_dir_has_products(loc.labeldir(instrument, year, date))
 
+
 def label_dir_has_products(labeldir):
     return len(get_labels(labeldir))
+
 
 def discover_date_products(loc, instrument, year, date):
     '''
@@ -302,8 +305,10 @@ def labels_to_products(datadir, labeldir, instrument, year, date):
     logging.info(f"discovery complete in {instrument}/{year}/{date}")
     return products
 
+
 def get_labels(labeldir):
     return [x.name for x in os.scandir(labeldir) if is_label(x)]
+
 
 def product_whitelisted(product):
     '''
@@ -373,6 +378,7 @@ def validate_products(products, loc, preprocessing_opts:options.PostprocessingOp
 
     return all_successes, all_validation_failures
 
+
 def log_validation_run(output, logdir):
     logdate = datetime.datetime.now().strftime("%Y%m%dT%H%M%S.%f")
     logfilename = f"{logdate}.json"
@@ -380,10 +386,13 @@ def log_validation_run(output, logdir):
     with open(logfilepath, "w") as logfile:
         logfile.write(output)
 
+
 '''
 Writes information about a failure to the disk. If possible, it will write it next to the file that
 failed.
 '''
+
+
 def writeFailure(batch, logdir, loc, failure):
     label_info = validation.extract_label_info(failure['label'])
     inst, year, dateval, failfile = label_info
@@ -395,7 +404,6 @@ def writeFailure(batch, logdir, loc, failure):
     faillogpath = os.path.join(faildir, f"{failfile}.log")
     with open(faillogpath, "w") as f:
         json.dump(failure, f, indent=2)
-
 
 
 def chunk(items, size):
@@ -433,6 +441,7 @@ def move_product(product, loc, postprocessing_opts:options.PostprocessingOpts, f
     else:
         move_product_to_collections(product, loc, postprocessing_opts, failed)
 
+
 def move_product_to_prevaldiated(product, loc, postprocessing_opts:options.PostprocessingOpts, failed):
     '''
     move a product to the pre-validated directory. Future runs of this script can now skip the validation.
@@ -445,6 +454,7 @@ def move_product_to_prevaldiated(product, loc, postprocessing_opts:options.Postp
     os.makedirs(data_dest_directory, exist_ok=True)
 
     do_move(product, postprocessing_opts, datadir, label_dest_directory, data_dest_directory)
+
 
 def move_product_to_collections(product, loc, postprocessing_opts:options.PostprocessingOpts, failed):
     '''
@@ -459,6 +469,7 @@ def move_product_to_collections(product, loc, postprocessing_opts:options.Postpr
     os.makedirs(dest_directory, exist_ok=True)
 
     do_move(product, postprocessing_opts, datadir, dest_directory, dest_directory)
+
 
 def do_move(product, postprocessing_opts:options.PostprocessingOpts, datadir, label_dest_directory, data_dest_directory):
 
@@ -476,7 +487,6 @@ def do_move(product, postprocessing_opts:options.PostprocessingOpts, datadir, la
             src_data = os.path.join(datadir, actual_file_name)
             dest_data = os.path.join(data_dest_directory, actual_file_name)
             transfer_file(src_data, dest_data, postprocessing_opts)
-
 
 
 def transfer_file(src, dest, postprocessing_opts:options.PostprocessingOpts):
@@ -498,7 +508,6 @@ def get_actual_file_name(data_dir, file_name):
         return file_names[0]
     return None
     #raise(Exception('cannot find file:' + os.path.join(data_dir, file_name)))
-
 
 
 def update_data_collection(loc, collection_products: list, collection_id, preserve_collection_version):
@@ -524,7 +533,6 @@ def update_data_collection(loc, collection_products: list, collection_id, preser
     modification_history = [x for x in previous_collection.modification_history() if x["version_id"] == "1.0"] if previous_collection else []
     latest_modification=create_modification_detail(new_lidvid, f"routine delivery for: {','.join(obs_dates)}")
 
-
     template_filename = COLLECTION_FILES.get(collection_id, "other_collection_template.xml")
     write_collection(template_filename,
                      new_lidvid,
@@ -535,11 +543,14 @@ def update_data_collection(loc, collection_products: list, collection_id, preser
                      modification_history,
                      latest_modification)
 
+
 def is_pds_date(value: str):
     return value and value.startswith('20') and value.endswith('Z')
 
+
 def parseDirDate(x):
     return datetime.datetime.strptime(x, "%y%b%d")
+
 
 def get_collection_labels(collection_path, collection_id):
     '''
@@ -566,14 +577,12 @@ def merge_inventories(collection_path, collection_id, collection_products, old_l
     old_inv = inventory.read_inventory(old_lidvid, collection_path)
     new_inv = inventory.from_lidvids('P', product_lidvids)
 
-    
     if preserve_collection_version:
         new_major = max(old_lidvid['major'], 1)
         new_minor = old_lidvid['minor']
     else:
         new_major = old_lidvid['major'] + 1
         new_minor = 0
-
 
     new_lidvid = make_collection_lidvid(collection_id, new_major, new_minor)
     merged_inv = inventory.merge(old_inv, new_inv)
@@ -597,7 +606,6 @@ def get_last_version_number(collection_id, collection_labels):
     return make_collection_lidvid(collection_id, 0, 0)
 
 
-
 def make_collection_lidvid(collection_id, major, minor):
     '''
     Creates a collection lidvid from its component parts
@@ -608,9 +616,11 @@ def make_collection_lidvid(collection_id, major, minor):
         'collection_id': collection_id
     }
 
+
 def collection_with_version(collection_labels:list, major:str, minor:str):
     candidates = [x for x in collection_labels if x.majorversion() == major and x.minorversion() == minor]
     return candidates[0] if candidates else None
+
 
 def create_modification_detail(new_lidvid, description):
     return {
@@ -650,12 +660,12 @@ def write_collection(template_filename,
     iotools.write_file(collection_path, contents)
 
 
-
 def is_label(candidate):
     '''
     Determines if the given file is a label file.
     '''
     return candidate.name.endswith('.xml') and check_writable(candidate)
+
 
 def check_writable(candidate):
     if os.access(candidate, os.W_OK):

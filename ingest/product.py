@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 import label
 import logging
 
+
 def extract_label(xmldoc, filepath=''):
     '''
     Extracts keywords from a PDS4 label.
@@ -34,6 +35,7 @@ def extract_keywords(infile, filepath=''):
     else:
         raise RuntimeError(f"Not a valid xml document: {filepath}")
 
+
 class Product:
     '''
     Represents the product itself.
@@ -53,7 +55,6 @@ class Product:
             self.labeldir = os.path.dirname(filepath)
             self.labelpath = filepath
             self.datadir = datadir
-
 
     def lidvid(self):
         return self.keywords['lidvid']
@@ -78,5 +79,3 @@ class Product:
 
     def software(self):
         return self.keywords.get('software')
-
-

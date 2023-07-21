@@ -33,12 +33,14 @@ DICTIONARIES = DICTIONARIES_1G
 VALIDATE_CMD='validate'
 FUNPACK_CMD='funpack'
 
+
 def validate_product(product, schema_path, skip_data):
     '''
     Moves the entirety of the product to a temporary location,
     decompressed the data files if needed, and validates the product.
     '''
     return validate_products([product], schema_path, skip_data)
+
 
 def validate_products(products, schema_path, skip_data):
     '''
@@ -107,8 +109,6 @@ def create_temp_copy(temp_dir, product:product.Product, skip_data):
     return temp_label_path
 
 
-
-
 def run_validator(file_name, schema_path, skip_data):
     '''
     Runs the label validatior on the given file or directory
@@ -146,6 +146,7 @@ def run_validator(file_name, schema_path, skip_data):
         logging.info("Validation passed")
     return (failures, successes, unfiltered)
 
+
 def extract_label_info(labelpath):
     datepath = os.path.dirname(labelpath)
     yearpath = os.path.dirname(datepath)
@@ -157,6 +158,7 @@ def extract_label_info(labelpath):
     instval = os.path.basename(instpath)
 
     return (instval, yearval, dateval, label)
+
 
 def get_schemas(base_path, extension):
     return [os.path.join(base_path, x + extension) for x in DICTIONARIES]
