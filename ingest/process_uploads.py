@@ -110,7 +110,6 @@ def process_upload_dir(opts:options.Opts):
 
     logging.info(f"{len(products)} products discovered")
 
-    #logging.debug(products)
     lidvids = (product.lidvid() for product in products)
     collection_lids = index(lidvids, extract_collection_id)
 
@@ -118,8 +117,6 @@ def process_upload_dir(opts:options.Opts):
     logging.debug(collection_lids)
 
     # check whitelist here
-    #if not all(product_whitelisted(x) for x in products):
-    #    raise Exception('Some products used software not on the whitelist')
 
     logdir = os.path.join(opts.location_opts.destdir,"validation")
     os.makedirs(logdir, exist_ok=True)
@@ -154,9 +151,6 @@ def process_upload_dir(opts:options.Opts):
             recreate_semaphore(loc.nightValidationDataDir(inst, year, date))
             recreate_semaphore(loc.nightValidationLabelDir(inst, year, date))
         
-    #deletion_area_dest = os.path.join(DELETION_BASE, "placeholder")
-    # delete files from temporary directory/move to deletion area
-    #logging.info("moving to %s", deletion_area_dest)
     logging.info("done")
 
 
@@ -301,7 +295,6 @@ def labels_to_products(datadir, labeldir, instrument, year, date):
     usable_labels = [x for x in files if x not in empty_labels and x not in unwritable_labels]
     
     products = (Product(datadir, os.path.join(labeldir, infile), instrument, year, date) for infile in usable_labels)
-    #logging.info("%s products in %s/%s/%s", len(products), instrument, year, date)
     logging.info(f"discovery complete in {instrument}/{year}/{date}")
     return products
 
@@ -507,7 +500,6 @@ def get_actual_file_name(data_dir, file_name):
     if file_names:
         return file_names[0]
     return None
-    #raise(Exception('cannot find file:' + os.path.join(data_dir, file_name)))
 
 
 def update_data_collection(loc, collection_products: list, collection_id, preserve_collection_version):
@@ -670,7 +662,6 @@ def is_label(candidate):
 def check_writable(candidate):
     if os.access(candidate, os.W_OK):
         return True
-    #logging.warning("Label %s is not writable. Skipping...", candidate.name)
     return False
 
 

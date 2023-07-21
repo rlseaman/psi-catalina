@@ -104,8 +104,7 @@ def create_temp_copy(temp_dir, product:product.Product, skip_data):
             subprocess.run([FUNPACK_CMD, '-C', '-O', temp_data_path, f"{data_path}.fz"])
         else:
             logging.error(f"could not find data file: {temp_data_path}")
-            #raise Exception("could not find data file: " + temp_data_path)
-            
+
     return temp_label_path
 
 
@@ -140,8 +139,6 @@ def run_validator(file_name, schema_path, skip_data):
     if failures:
         filenames = [os.path.basename(x['label']) for x in failures]
         logging.warn(f"{len(failures)} Failures encountered: {','.join(filenames)}")
-        #logging.error(failure)
-        #logging.error(result)
     else:
         logging.info("Validation passed")
     return (failures, successes, unfiltered)
