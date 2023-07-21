@@ -337,7 +337,7 @@ def extract_collection_id(lid):
     return lid.split(':')[4]
 
 
-def validate_products(products, loc, preprocessing_opts:options.PostprocessingOpts, validation_opts:options.ValidationOpts, logdir):
+def validate_products(products, loc, preprocessing_opts:options.PreprocessingOpts, validation_opts:options.ValidationOpts, logdir):
     """
     Preprocess and validates the products. 
     The files will be preprocessed in the same manner as after validation. This prevents the original 
