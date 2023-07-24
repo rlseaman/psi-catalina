@@ -7,6 +7,7 @@ import json
 import argparse
 import logging
 
+
 def main(argv=None):
     if argv is None:
         argv = sys.argv
@@ -17,13 +18,14 @@ def main(argv=None):
     args = parser.parse_args()
 
     loglevel = logging.DEBUG if args.verbose else logging.INFO
-    logging.basicConfig(level=loglevel,format='%(asctime)s|%(levelname)s|%(message)s')
+    logging.basicConfig(level=loglevel, format='%(asctime)s|%(levelname)s|%(message)s')
 
     logging.info("Processing: " + args.filename)
 
     with (open(args.filename)) as f:
         extracted = json.load(f)
         cssdb.write_directory(extracted, args.filename)
+
 
 if __name__ == '__main__':
     sys.exit(main())
