@@ -517,7 +517,7 @@ def update_data_collection(loc, collection_products: list, collection_id, preser
     collection_path = loc.destdir(collection_id)
     os.makedirs(collection_path, exist_ok=True)
 
-    collection_labels = get_collection_labels(collection_path, collection_id)
+    collection_labels = get_collection_labels(collection_path)
     logging.debug(f"{len(collection_labels)} labels found")
 
     start_dates = [x.start_date() for x
@@ -558,7 +558,7 @@ def parse_dir_date(x):
     return datetime.datetime.strptime(x, "%y%b%d")
 
 
-def get_collection_labels(collection_path, collection_id):
+def get_collection_labels(collection_path):
     """
     Gets the most recent known version number for a collection
     """
