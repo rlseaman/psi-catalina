@@ -64,18 +64,3 @@ class Paths:
         if any(itertools.dropwhile(lambda x: x, elementList)):
             raise Exception("Gaps detected in path:", elementList)
         return list(itertools.takewhile(lambda x: x, elementList))
-
-
-if __name__ == '__main__':
-    p = Paths("base", "dest")
-    print(p.datadir("I52"))
-    print(p.datadir("I52", "2020"))
-    print(p.datadir("I52", "2020", "20Aug01"))
-    print(p.datadir("I52", "2020", "20Aug01", "test.fit"))
-
-    print(p.labeldir("I52"))
-    print(p.labeldir("I52", "2020"))
-    print(p.labeldir("I52", "2020", "20Aug01"))
-    print(p.labeldir("I52", "2020", "20Aug01", "test.fit"))
-
-    print(p.destdir("data", "I52", "2020", "20Aug01"))
