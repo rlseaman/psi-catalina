@@ -88,7 +88,8 @@ def create_temp_copy(temp_dir, product_to_copy: product.Product, skip_data):
 
         if skip_data:
             logging.debug(f"Creating dummy copy of {data_path}")
-            with open(temp_data_path, "w") as f: pass
+            with open(temp_data_path, "w") as _:
+                pass
         elif os.path.exists(data_path):
             logging.debug(f"Copying temporary {data_path} to {temp_data_path}")
             shutil.copy(data_path, temp_data_path)
