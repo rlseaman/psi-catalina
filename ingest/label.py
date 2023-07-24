@@ -170,7 +170,7 @@ def extract_document(document):
     Extracts keywords form the Document element
     """
 
-    editions = [extract_document_edition(document_edition) for document_edition in document.find_all("Document_Edition")]
+    editions = [extract_document_edition(edition) for edition in document.find_all("Document_Edition")]
     return {
         'file_names': list(itertools.chain.from_iterable([edition['file_names'] for edition in editions]))
     }

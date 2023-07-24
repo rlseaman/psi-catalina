@@ -105,7 +105,8 @@ def process_upload_dir(opts: options.Opts):
     directories = limit_directories(loc, list(discover_product_dirs(loc, opts.filter_opts)), opts.filter_opts)
     logging.info(f"Discovey complete, consolidating: {opts.location_opts.basedir}")
     logging.info(f'Discovered directories: {directories}')
-    products = list(itertools.chain.from_iterable(discover_date_products(loc, inst, year, d) for inst, year, d in directories))
+    products = list(itertools.chain.from_iterable(
+        discover_date_products(loc, inst, year, d) for inst, year, d in directories))
 
     logging.info(f"{len(products)} products discovered")
 
@@ -134,15 +135,21 @@ def process_upload_dir(opts: options.Opts):
         logging.info("Skipping move")
     else:
         for product in products:
-            move_product(product, loc, opts.postprocessing_opts, (product.inst, product.year, product.date, product.labelfilename) not in successful_files)
+            is_failed = (product.inst, product.year, product.date, product.labelfilename)
+            move_product(product, loc, opts.postprocessing_opts, is_failed not in successful_files)
 
     if opts.postprocessing_opts.skip_collection_update or opts.postprocessing_opts.validate_only:
         logging.info("Skipping collection update")
     else:
         for collection_id in collection_lids:
-            collection_products = [x for x in products if x.collection_id() == collection_id and (x.inst, x.year, x.date, x.labelfilename) in successful_files]
+            collection_products = [x for x in products
+                                   if x.collection_id() == collection_id
+                                   and (x.inst, x.year, x.date, x.labelfilename) in successful_files]
             if collection_products:
-                update_data_collection(loc, collection_products, collection_id, opts.postprocessing_opts.preserve_collection_version)
+                update_data_collection(loc,
+                                       collection_products,
+                                       collection_id,
+                                       opts.postprocessing_opts.preserve_collection_version)
 
     if opts.postprocessing_opts.validate_only:
         logging.info("Regnerating semaphores at destination")
@@ -167,7 +174,10 @@ def limit_directories(loc, directories, filter_opts: options.FilterOpts):
         dates = [d for d in dates if d not in build_ignore_dates(filter_opts.ignore_past_days)]
     if filter_opts.max_nights is not None:
         candidates = sorted(dates, key=parseDirDate, reverse=True)
-        candidates_with_products = (d2 for d2 in candidates if any(date_has_semaphore(loc, inst, year, d) and date_has_products(loc, inst, year, d) for inst, year, d in directories if d == d2))
+        candidates_with_products = (d2 for d2 in candidates
+                                    if any(date_has_semaphore(loc, inst, year, d)
+                                           and date_has_products(loc, inst, year, d)
+                                           for inst, year, d in directories if d == d2))
         dates = [x for x in itertools.islice(candidates_with_products, filter_opts.max_nights)]
     logging.info(f'Processing dates: {dates}')
     return [(inst, year, d) for inst, year, d in directories if d in dates]
@@ -215,8 +225,10 @@ def process_year_directory(loc, instrument, year, filter_opts: options.FilterOpt
     logging.info(f"processing year directory {instrument}/{year}")
     yeardir = loc.datadir(instrument, year)
     days_to_ignore = IGNORE_DATES + build_ignore_dates(filter_opts.ignore_past_days)
-    discovered_dates = [x.name for x in os.scandir(yeardir) if x.is_dir() and os.access(x, os.W_OK) and x.name not in days_to_ignore]
-    return [(instrument, year, d) for d in discovered_dates if date_has_semaphore(loc, instrument, year, d) and date_has_products(loc, instrument, year, d)]
+    discovered_dates = [x.name for x in os.scandir(yeardir)
+                        if x.is_dir() and os.access(x, os.W_OK) and x.name not in days_to_ignore]
+    return [(instrument, year, d) for d in discovered_dates
+            if date_has_semaphore(loc, instrument, year, d) and date_has_products(loc, instrument, year, d)]
 
 
 def build_ignore_dates(num_days):
@@ -336,7 +348,11 @@ def extract_collection_id(lid):
     return lid.split(':')[4]
 
 
-def validate_products(products, loc, preprocessing_opts: options.PreprocessingOpts, validation_opts: options.ValidationOpts, logdir):
+def validate_products(products,
+                      loc,
+                      preprocessing_opts: options.PreprocessingOpts,
+                      validation_opts: options.ValidationOpts,
+                      logdir):
     """
     Preprocess and validates the products. 
     The files will be preprocessed in the same manner as after validation. This prevents the original 
@@ -356,9 +372,12 @@ def validate_products(products, loc, preprocessing_opts: options.PreprocessingOp
         logging.info(f"Validating a batch of {len(batch)} ({batch_num + 1}/{batch_count})...")
         if not preprocessing_opts.skip_preprocessing:
             for product in batch:
-                preprocess_product(product, loc, preprocessing_opts.skip_data_preprocessing, preprocessing_opts.skip_label_preprocessing)
+                preprocess_product(product, loc,
+                                   preprocessing_opts.skip_data_preprocessing,
+                                   preprocessing_opts.skip_label_preprocessing)
         if not validation_opts.skip_validation:
-            validation_failures, successes, unfiltered = validation.validate_products(batch, loc.schemadir, validation_opts.skip_data_validation)
+            validation_failures, successes, unfiltered = \
+                validation.validate_products(batch, loc.schemadir, validation_opts.skip_data_validation)
             log_validation_run(unfiltered, logdir)
             if validation_failures:
                 for failure in validation_failures:
@@ -463,7 +482,11 @@ def move_product_to_collections(product, loc, postprocessing_opts: options.Postp
     do_move(product, postprocessing_opts, datadir, dest_directory, dest_directory)
 
 
-def do_move(product, postprocessing_opts: options.PostprocessingOpts, datadir, label_dest_directory, data_dest_directory):
+def do_move(product,
+            postprocessing_opts: options.PostprocessingOpts,
+            datadir,
+            label_dest_directory,
+            data_dest_directory):
 
     file_names = product.filenames()
     if not file_names:
@@ -495,7 +518,8 @@ def transfer_file(src, dest, postprocessing_opts: options.PostprocessingOpts):
 
 def get_actual_file_name(data_dir, file_name):
     suffixes = ['', '.gz', '.fz']
-    file_names = [file_name + suffix for suffix in suffixes if os.path.exists(os.path.join(data_dir, file_name + suffix))]
+    file_names = [file_name + suffix for suffix in suffixes
+                  if os.path.exists(os.path.join(data_dir, file_name + suffix))]
     if file_names:
         return file_names[0]
     return None
@@ -512,16 +536,23 @@ def update_data_collection(loc, collection_products: list, collection_id, preser
     collection_labels = get_collection_labels(collection_path, collection_id)
     logging.debug(f"{len(collection_labels)} labels found")
 
-    start_dates = [x.start_date() for x in collection_products + collection_labels if x.start_date() and is_pds_date(x.start_date())]
-    stop_dates = [x.stop_date() for x in collection_products + collection_labels if x.stop_date() and is_pds_date(x.stop_date())]
+    start_dates = [x.start_date() for x
+                   in collection_products + collection_labels
+                   if x.start_date() and is_pds_date(x.start_date())]
+    stop_dates = [x.stop_date() for x
+                  in collection_products + collection_labels
+                  if x.stop_date() and is_pds_date(x.stop_date())]
     start_date = min(start_dates) if start_dates else None
     stop_date = max(stop_dates) if stop_dates else None
     obs_dates = sorted(set([x.date for x in collection_products if x.date]), key=parseDirDate)
     
     old_lidvid = get_last_version_number(collection_id, collection_labels)
-    new_lidvid, record_count = merge_inventories(collection_path, collection_id, collection_products, old_lidvid, preserve_collection_version)
+    new_lidvid, record_count = merge_inventories(
+        collection_path, collection_id, collection_products, old_lidvid, preserve_collection_version)
     previous_collection = collection_with_version(collection_labels, old_lidvid["major"], old_lidvid["minor"])
-    modification_history = [x for x in previous_collection.modification_history() if x["version_id"] == "1.0"] if previous_collection else []
+    modification_history = [x for x
+                            in previous_collection.modification_history()
+                            if x["version_id"] == "1.0"] if previous_collection else []
     latest_modification = create_modification_detail(new_lidvid, f"routine delivery for: {','.join(obs_dates)}")
 
     template_filename = COLLECTION_FILES.get(collection_id, "other_collection_template.xml")

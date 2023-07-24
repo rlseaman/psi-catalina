@@ -14,8 +14,12 @@ class Paths:
         self.dest = location_opts.destdir
         self.bundle_id = bundle_id
         self.schemadir = location_opts.schemadir
-        self.failure_dir = location_opts.failure_dir if location_opts.failure_dir else self._buildpath((self.dest, "failed"))
-        self.validated_dir = location_opts.validated_dir if location_opts.validated_dir else self._buildpath((self.dest, self.bundle_id))
+        self.failure_dir = location_opts.failure_dir \
+            if location_opts.failure_dir \
+            else self._buildpath((self.dest, "failed"))
+        self.validated_dir = location_opts.validated_dir \
+            if location_opts.validated_dir \
+            else self._buildpath((self.dest, self.bundle_id))
 
     def datadir(self, inst=None, year=None, date=None, filename=None):
         """
