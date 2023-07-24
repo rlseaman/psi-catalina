@@ -167,7 +167,8 @@ def extract_software(software):
         "software_id": str(software.software_id.string) if software.software_id else '', 
         "software_version_id":
             str(software.software_version_id.string) if software.software_version_id is not None else '',
-        'software_program': [extract_software_program(software_program) for software_program in software]
+        'software_program': [extract_software_program(software_program)
+                             for software_program in software.find_all("Software_Program")]
     }
 
 
