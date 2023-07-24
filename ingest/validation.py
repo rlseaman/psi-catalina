@@ -34,12 +34,12 @@ VALIDATE_CMD = 'validate'
 FUNPACK_CMD = 'funpack'
 
 
-def validate_product(product, schema_path, skip_data):
+def validate_product(candidate, schema_path, skip_data):
     """
     Moves the entirety of the product to a temporary location,
     decompressed the data files if needed, and validates the product.
     """
-    return validate_products([product], schema_path, skip_data)
+    return validate_products([candidate], schema_path, skip_data)
 
 
 def validate_products(products, schema_path, skip_data):
@@ -50,13 +50,13 @@ def validate_products(products, schema_path, skip_data):
     with tempfile.TemporaryDirectory() as temp:
         logging.info(f"Validating products at: {temp}")
         temp_dir = temp
-        for product in products:
-            create_temp_copy(temp_dir, product, skip_data)
+        for product_to_copy in products:
+            create_temp_copy(temp_dir, product_to_copy, skip_data)
 
         return run_validator(temp_dir, schema_path, skip_data)
 
 
-def create_temp_copy(temp_dir, product: product.Product, skip_data):
+def create_temp_copy(temp_dir, product_to_copy: product.Product, skip_data):
     """
     Creates temporary copies of the files for a product. Temporary copies are
     needed because the real copies are compressed, and the labels also need
@@ -68,11 +68,11 @@ def create_temp_copy(temp_dir, product: product.Product, skip_data):
     If data validation is being skipped, this will still create an empty
     dummy file, so that the validator will not fail.
     """
-    label_file_name = product.labelfilename
-    label_path = product.labelpath
-    data_dir = product.datadir
+    label_file_name = product_to_copy.labelfilename
+    label_path = product_to_copy.labelpath
+    data_dir = product_to_copy.datadir
 
-    temp_product_dir = os.path.join(temp_dir, product.inst, product.year, product.date)
+    temp_product_dir = os.path.join(temp_dir, product_to_copy.inst, product_to_copy.year, product_to_copy.date)
 
     logging.info(f"Creating temporary copies of {label_file_name}")
 
@@ -81,7 +81,7 @@ def create_temp_copy(temp_dir, product: product.Product, skip_data):
     temp_label_path = os.path.join(temp_product_dir, label_file_name)
     shutil.copy(label_path, temp_label_path)
 
-    data_file_names = product.filenames()
+    data_file_names = product_to_copy.filenames()
     for data_file_name in data_file_names:
         data_path = os.path.join(data_dir, data_file_name)
         temp_data_path = os.path.join(temp_product_dir, data_file_name)
