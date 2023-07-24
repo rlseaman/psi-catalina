@@ -143,7 +143,7 @@ def run_validator(file_name, schema_path, skip_data):
         logging.warning(f"{len(failures)} Failures encountered: {','.join(filenames)}")
     else:
         logging.info("Validation passed")
-    return (failures, successes, unfiltered)
+    return failures, successes, unfiltered
 
 
 def extract_label_info(labelpath):
@@ -156,7 +156,7 @@ def extract_label_info(labelpath):
     yearval = os.path.basename(yearpath)
     instval = os.path.basename(instpath)
 
-    return (instval, yearval, dateval, label)
+    return instval, yearval, dateval, label
 
 
 def get_schemas(base_path, extension):
