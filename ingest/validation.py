@@ -98,7 +98,7 @@ def create_temp_copy(temp_dir, product: product.Product, skip_data):
                 with open(temp_data_path, "wb") as uncompressed, gzip.open(f"{data_path}.gz", "rb") as compressed:
                     shutil.copyfileobj(compressed, uncompressed)
             except Exception:
-                logging.warn(f"Could not decompress {data_path}.gz to {temp_data_path}")
+                logging.warning(f"Could not decompress {data_path}.gz to {temp_data_path}")
         elif os.path.exists(f"{data_path}.fz"):
             logging.debug(f"Funpacking temporary {data_path} to {temp_data_path}")
             subprocess.run([FUNPACK_CMD, '-C', '-O', temp_data_path, f"{data_path}.fz"])
@@ -138,7 +138,7 @@ def run_validator(file_name, schema_path, skip_data):
 
     if failures:
         filenames = [os.path.basename(x['label']) for x in failures]
-        logging.warn(f"{len(failures)} Failures encountered: {','.join(filenames)}")
+        logging.warning(f"{len(failures)} Failures encountered: {','.join(filenames)}")
     else:
         logging.info("Validation passed")
     return (failures, successes, unfiltered)
