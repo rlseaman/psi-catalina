@@ -34,7 +34,7 @@ class Paths:
         subdir = "other/pds4" if date else None
         return self._buildpath((self.basedir, inst, year, subdir, date, filename))
 
-    def destdir(self, collection_id, inst=None, year=None, subDir=None, date=None, failed=False):
+    def destdir(self, collection_id, inst=None, year=None, sub_dir=None, date=None, failed=False):
         """
         Returns the destination directory
         """
@@ -42,29 +42,29 @@ class Paths:
             elements = [x for x in [self.failure_dir, collection_id, inst, year, date] if x is not None]
             return self._buildpath(elements)
         else:
-            elements = [x for x in [self.validated_dir, collection_id, inst, year, subDir, date] if x is not None]
+            elements = [x for x in [self.validated_dir, collection_id, inst, year, sub_dir, date] if x is not None]
             return self._buildpath(elements)
 
-    def productDestDir(self, p, failed=False):
+    def product_dest_dir(self, p, failed=False):
         return self.destdir(p.collection_id(), p.inst, p.year, None, p.date, failed)
 
-    def validationDataDir(self, p, failed=False):
+    def validation_data_dir(self, p, failed=False):
         return self.destdir(None, p.inst, p.year, None, p.date, failed)        
 
-    def nightValidationDataDir(self, inst, year, date, failed=False):
+    def night_validation_data_dir(self, inst, year, date, failed=False):
         return self.destdir(None, inst, year, None, date, failed)        
 
-    def validationLabelDir(self, p, failed=False):
+    def validation_label_dir(self, p, failed=False):
         return self.destdir(None, p.inst, p.year, "other/pds4", p.date, failed)        
 
-    def nightValidationLabelDir(self, inst, year, date, failed=False):
+    def night_validation_label_dir(self, inst, year, date, failed=False):
         return self.destdir(None, inst, year, "other/pds4", date, failed)        
 
     def _buildpath(self, elements):
-        return os.path.join(*self._filledElements(elements))
+        return os.path.join(*self._filled_elements(elements))
 
-    def _filledElements(self, elements):
-        elementList = list(elements)
-        if any(itertools.dropwhile(lambda x: x, elementList)):
-            raise Exception("Gaps detected in path:", elementList)
-        return list(itertools.takewhile(lambda x: x, elementList))
+    def _filled_elements(self, elements):
+        element_list = list(elements)
+        if any(itertools.dropwhile(lambda x: x, element_list)):
+            raise Exception("Gaps detected in path:", element_list)
+        return list(itertools.takewhile(lambda x: x, element_list))

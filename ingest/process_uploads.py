@@ -154,8 +154,8 @@ def process_upload_dir(opts: options.Opts):
     if opts.postprocessing_opts.validate_only:
         logging.info("Regnerating semaphores at destination")
         for (inst, year, date) in set((p.inst, p.year, p.date) for p in products):
-            recreate_semaphore(loc.nightValidationDataDir(inst, year, date))
-            recreate_semaphore(loc.nightValidationLabelDir(inst, year, date))
+            recreate_semaphore(loc.night_validation_data_dir(inst, year, date))
+            recreate_semaphore(loc.night_validation_label_dir(inst, year, date))
         
     logging.info("done")
 
@@ -409,7 +409,7 @@ def writeFailure(batch, logdir, loc, failure):
     inst, year, dateval, failfile = label_info
     src_products = [x for x in batch if (x.inst, x.year, x.date, x.labelfilename) == label_info]
 
-    faildir = loc.productDestDir(src_products[0], True) if src_products else logdir
+    faildir = loc.product_dest_dir(src_products[0], True) if src_products else logdir
     os.makedirs(faildir, exist_ok=True)
 
     faillogpath = os.path.join(faildir, f"{failfile}.log")
@@ -459,8 +459,8 @@ def move_product_to_prevaldiated(product, loc, postprocessing_opts: options.Post
     """
     logging.info(f"Moving files for: {product.labelfilename}")
     datadir = loc.datadir(product.inst, product.year, product.date)
-    label_dest_directory = loc.validationLabelDir(product, failed)
-    data_dest_directory = loc.validationDataDir(product, failed)
+    label_dest_directory = loc.validation_label_dir(product, failed)
+    data_dest_directory = loc.validation_data_dir(product, failed)
     os.makedirs(label_dest_directory, exist_ok=True)
     os.makedirs(data_dest_directory, exist_ok=True)
 
@@ -476,7 +476,7 @@ def move_product_to_collections(product, loc, postprocessing_opts: options.Postp
     logging.info(f"Moving files for: {product.labelfilename}")
 
     datadir = loc.datadir(product.inst, product.year, product.date)
-    dest_directory = loc.productDestDir(product, failed)
+    dest_directory = loc.product_dest_dir(product, failed)
     os.makedirs(dest_directory, exist_ok=True)
 
     do_move(product, postprocessing_opts, datadir, dest_directory, dest_directory)
