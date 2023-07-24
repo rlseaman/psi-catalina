@@ -1,8 +1,6 @@
 import sqlite3
-import json
-from sqlite3.dbapi2 import converters
 
-from flask import Flask, escape, request, render_template, send_file, Response, jsonify
+from flask import Flask, render_template, Response, jsonify
 
 import cssquery
 import plotting

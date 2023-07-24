@@ -12,7 +12,7 @@ import cssextract
 COLLECTIONS = ['data_calibrated', 'data_derived', 'data_partially_processed', 'data_raw', 'data_reduced']
 
 
-def main(argv=None):
+def main():
     parser = argparse.ArgumentParser(description='Convert the nightly files from the CSS archive into json format')
     parser.add_argument('--basedir', help='The base directory for the delivered data', required=True)
     parser.add_argument('--inst', help='The instrument code for the batch', required=True)

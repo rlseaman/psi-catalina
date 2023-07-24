@@ -16,7 +16,7 @@ COLLECTIONS = ['data_calibrated', 'data_derived', 'data_partially_processed', 'd
 INSTS = ['703', 'G96', 'I52', 'V06']
 
 
-def main(argv=None):
+def main():
     logging.basicConfig(level=logging.INFO, format='%(asctime)s|%(levelname)s|%(message)s')
 
     parser = argparse.ArgumentParser(description='Convert the nightly files from the CSS archive into json format')

@@ -8,10 +8,7 @@ import argparse
 import logging
 
 
-def main(argv=None):
-    if argv is None:
-        argv = sys.argv
-
+def main():
     parser = argparse.ArgumentParser(description='Parse a CSS JSON file and write it to the database')
     parser.add_argument('--filename', help='The file name for the JSON file', required=True)
     parser.add_argument('--verbose', help='Includes additonal log information if true', action="store_true")

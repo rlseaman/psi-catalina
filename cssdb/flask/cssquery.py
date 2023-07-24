@@ -85,7 +85,6 @@ def get_surveyfields_for_night(night_id):
     match_param = (night_id,)
     with get_connection() as conn:
         c = conn.cursor()
-        match_param = (night_id,)
         return query(c, "select ra, declination from surveyfields where night_id = ?", match_param)
 
 
