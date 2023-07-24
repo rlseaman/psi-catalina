@@ -1,9 +1,8 @@
 import argparse
 
 
-
 class Opts:
-    def __init__(self, args:argparse.Namespace):
+    def __init__(self, args: argparse.Namespace):
         self.validation_opts = ValidationOpts(args)
         self.preprocessing_opts = PreprocessingOpts(args)
         self.postprocessing_opts = PostprocessingOpts(args)
@@ -12,42 +11,47 @@ class Opts:
         self.console = args.console
         self.verbose = args.verbose
 
+
 class ValidationOpts:
-    def __init__(self, args:argparse.Namespace):
-       self.skip_validation=args.skip_validation
-       self.skip_data_validation=args.skip_data_validation
-       self.permissive_validation=args.permissive_validation
+    def __init__(self, args: argparse.Namespace):
+        self.skip_validation = args.skip_validation
+        self.skip_data_validation = args.skip_data_validation
+        self.permissive_validation = args.permissive_validation
+
 
 class PreprocessingOpts:
-    def __init__(self, args:argparse.Namespace):
-        self.skip_preprocessing=args.skip_preprocessing
-        self.skip_data_preprocessing=args.skip_data_preprocessing
-        self.skip_label_preprocessing=args.skip_label_preprocessing
+    def __init__(self, args: argparse.Namespace):
+        self.skip_preprocessing = args.skip_preprocessing
+        self.skip_data_preprocessing = args.skip_data_preprocessing
+        self.skip_label_preprocessing = args.skip_label_preprocessing
+
 
 class PostprocessingOpts:
-    def __init__(self, args:argparse.Namespace):
-        self.skip_move=args.skip_move
-        self.dry_move=args.dry_move
-        self.copy_files=args.copy_files
-        self.skip_collection_update=args.skip_collection_update
-        self.preserve_collection_version=args.preserve_collection_version
-        self.validate_only=args.validate_only
+    def __init__(self, args: argparse.Namespace):
+        self.skip_move = args.skip_move
+        self.dry_move = args.dry_move
+        self.copy_files = args.copy_files
+        self.skip_collection_update = args.skip_collection_update
+        self.preserve_collection_version = args.preserve_collection_version
+        self.validate_only = args.validate_only
+
 
 class FilterOpts:
-    def __init__(self, args:argparse.Namespace):
+    def __init__(self, args: argparse.Namespace):
         self.specific_date = args.specific_date
         self.specific_instrument = args.specific_instrument
         self.max_products = args.max_products
         self.max_nights = args.max_nights
         self.ignore_past_days = args.ignore_past_days
 
+
 class LocationOpts:
-    def __init__(self, args:argparse.Namespace):
-        self.basedir=args.basedir
-        self.destdir=args.destdir
-        self.validated_dir=args.validated_dir
-        self.failure_dir=args.failed_dir
-        self.schemadir=args.schemadir
+    def __init__(self, args: argparse.Namespace):
+        self.basedir = args.basedir
+        self.destdir = args.destdir
+        self.validated_dir = args.validated_dir
+        self.failure_dir = args.failed_dir
+        self.schemadir = args.schemadir
 
 
 def get_args() -> Opts:

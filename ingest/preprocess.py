@@ -6,16 +6,18 @@ import gzip
 def has_compressed(filename):
     return os.path.exists(f"{filename}.gz")
 
+
 def file_open(filename, mode="rt"):
     logging.debug(f"Opening: {filename} with mode: {mode}")
     if filename.endswith(".gz"):
         return gzip.open(filename, mode)
     return open(filename, mode)
 
+
 def linefeed_to_crlf(filename):
-    '''
+    """
     Normalize the line feeds in a data file, replacing them with CRLFs
-    '''
+    """
 
     logging.info(f"Normalizing whitespace for: {filename}")
     if has_compressed(filename):
@@ -32,13 +34,16 @@ def linefeed_to_crlf(filename):
 
     os.remove(f"{filename}.bak")
 
+
 def strip_label_fz_extension(contents, datafilename):
     uncompressed_datafilename = datafilename.replace(".fz", "")
     return contents.replace(datafilename, uncompressed_datafilename)
 
+
 def strip_label_gz_extension(contents, datafilename):
     uncompressed_datafilename = datafilename.replace(".gz", "")
     return contents.replace(datafilename, uncompressed_datafilename)
+
 
 DATA_FUNCS = {
 }
@@ -48,26 +53,28 @@ LABEL_FUNCS = {
     "gz": strip_label_gz_extension
 }
 
+
 def preprocess_datafile(filename):
-    '''
-    Preprocesses the file. If the file is of an appropriate type 
+    """
+    Preprocesses the file. If the file is of an appropriate type
     (defined by membership in DATA_FUNCS), decompress the file,
     run the preprocessing routine indicated in DATA_FUNCS, and
     recompress the file.
-    '''
+    """
     newfilename = filename.replace(".gz", "")
     extension = newfilename.split(".")[-1]
 
     if extension in DATA_FUNCS:
         DATA_FUNCS[extension](filename)
 
+
 def preprocess_labelfile(filename, datafilenames):
-    '''
+    """
     Preproesses the label. If the file is of an appropriate type
     (defined in LABEL_FUNCS), apply the appropriate transformation
     to the contents. In most cases, this will remove the gz of fz
     extensions from the data file names.
-    '''
+    """
     with open(filename) as f:
         labelcontents = f.read()
 
@@ -80,5 +87,3 @@ def preprocess_labelfile(filename, datafilenames):
 
     with open(filename, "w") as f2:
         f2.write(labelcontents)
-    
-
