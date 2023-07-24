@@ -14,6 +14,9 @@ import math
 import json
 import datetime
 import shutil
+import typing
+from typing import Iterable
+
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from product import Product
 from collection import Collection
@@ -51,7 +54,7 @@ env = Environment(
 )
 
 
-def main():
+def main() -> int:
     """
     Extract command line arguments, ensure that the script is not already running,
     and process the current upload directory.
@@ -79,7 +82,7 @@ def main():
     return 0
 
 
-def lockfile_run(opts: options.Opts):
+def lockfile_run(opts: options.Opts) -> None:
     """
     Run a function on this directory if one isn't already running. This is
     enforced with a lockfile.
@@ -96,7 +99,7 @@ def lockfile_run(opts: options.Opts):
             os.remove(lockfile)
 
 
-def process_upload_dir(opts: options.Opts):
+def process_upload_dir(opts: options.Opts) -> None:
     """
     process an upload directory, assuming it has been validated.
     """
@@ -160,13 +163,15 @@ def process_upload_dir(opts: options.Opts):
     logging.info("done")
 
 
-def recreate_semaphore(dirname, filename='.autoxfer'):
+def recreate_semaphore(dirname: str, filename: str = '.autoxfer') -> None:
     logging.info(f'recreating semaphore {filename} at {dirname}')
     with open(os.path.join(dirname, filename), 'w'):
         pass
 
 
-def limit_directories(loc, directories, filter_opts: options.FilterOpts):
+def limit_directories(loc: paths.Paths,
+                      directories: list[tuple[str, str, str]],
+                      filter_opts: options.FilterOpts) -> list[tuple[str, str, str]]:
     dates = set([d for inst, year, d in directories])
     if filter_opts.specific_date is not None:
         dates = [d for d in dates if d == filter_opts.specific_date]
@@ -183,7 +188,7 @@ def limit_directories(loc, directories, filter_opts: options.FilterOpts):
     return [(inst, year, d) for inst, year, d in directories if d in dates]
 
 
-def discover_product_dirs(loc, filter_opts: options.FilterOpts):
+def discover_product_dirs(loc: paths.Paths, filter_opts: options.FilterOpts) -> Iterable[tuple[str, str, str]]:
     """
     Find all of the product labels in the directory and convert them
     to product objects
@@ -193,7 +198,9 @@ def discover_product_dirs(loc, filter_opts: options.FilterOpts):
         process_inst_directory(loc, instrument, filter_opts) for instrument in instruments)
 
 
-def process_inst_directory(loc, instrument, filter_opts: options.FilterOpts):
+def process_inst_directory(loc: paths.Paths,
+                           instrument: str,
+                           filter_opts: options.FilterOpts) -> Iterable[tuple[str, str, str]]:
     """
     Processes the given instrument directory
 
@@ -212,7 +219,10 @@ def process_inst_directory(loc, instrument, filter_opts: options.FilterOpts):
         process_year_directory(loc, instrument, year, filter_opts) for year in years)
 
 
-def process_year_directory(loc, instrument, year, filter_opts: options.FilterOpts):
+def process_year_directory(loc: paths.Paths,
+                           instrument: str,
+                           year: str,
+                           filter_opts: options.FilterOpts) -> Iterable[tuple[str, str, str]]:
     """
     Processes the given year directory.
 
@@ -231,7 +241,7 @@ def process_year_directory(loc, instrument, year, filter_opts: options.FilterOpt
             if date_has_semaphore(loc, instrument, year, d) and date_has_products(loc, instrument, year, d)]
 
 
-def build_ignore_dates(num_days):
+def build_ignore_dates(num_days: int) -> list[str]:
     """
     Builds a list of days to ignore when processing. This will be the past n days
     """
@@ -241,21 +251,21 @@ def build_ignore_dates(num_days):
     return datestrs
 
 
-def date_has_semaphore(loc, instrument, year, date):
+def date_has_semaphore(loc: paths.Paths, instrument: str, year: str, date: str) -> bool:
     datadir = loc.datadir(instrument, year, date)
     labeldir = loc.labeldir(instrument, year, date)
     return semaphore_exists(datadir) and semaphore_exists(labeldir)
 
 
-def date_has_products(loc, instrument, year, date):
+def date_has_products(loc: paths.Paths, instrument: str, year: str, date: str) -> bool:
     return label_dir_has_products(loc.labeldir(instrument, year, date))
 
 
-def label_dir_has_products(labeldir):
-    return len(get_labels(labeldir))
+def label_dir_has_products(labeldir: str) -> bool:
+    return len(get_labels(labeldir)) > 0
 
 
-def discover_date_products(loc, instrument, year, date):
+def discover_date_products(loc: paths.Paths, instrument: str, year: str, date: str) -> Iterable[Product]:
     """
     Processes the data in a given data directory and label directory pair.
 
@@ -275,7 +285,7 @@ def discover_date_products(loc, instrument, year, date):
     return []
 
 
-def semaphore_exists(dirname):
+def semaphore_exists(dirname: str) -> bool:
     """
     Verifies that a semaphore file exists in the given directory.
 
@@ -286,7 +296,7 @@ def semaphore_exists(dirname):
     return os.path.exists(semaphore_file)
 
 
-def labels_to_products(datadir, labeldir, instrument, year, date):
+def labels_to_products(datadir: str, labeldir: str, instrument: str, year: str, date: str) -> Iterable[Product]:
     """
     Processes the data in a given data directory and label directory pair.
 
@@ -310,11 +320,11 @@ def labels_to_products(datadir, labeldir, instrument, year, date):
     return products
 
 
-def get_labels(labeldir):
+def get_labels(labeldir: str) -> list[str]:
     return [x.name for x in os.scandir(labeldir) if is_label(x)]
 
 
-def index(items, indexfunc):
+def index(items: Iterable[str], indexfunc: typing.Callable[[str], str]) -> dict:
     """
     Indexes a list of objects based on the output of a supplied function
     """
@@ -325,18 +335,18 @@ def index(items, indexfunc):
     return dictionary
 
 
-def extract_collection_id(lid):
+def extract_collection_id(lid: str) -> str:
     """
     Extracts the collection id component from a LID
     """
     return lid.split(':')[4]
 
 
-def validate_products(products,
-                      loc,
+def validate_products(products: list[Product],
+                      loc: paths.Paths,
                       preprocessing_opts: options.PreprocessingOpts,
                       validation_opts: options.ValidationOpts,
-                      logdir):
+                      logdir: str) -> tuple[list, list]:
     """
     Preprocess and validates the products. 
     The files will be preprocessed in the same manner as after validation. This prevents the original 
@@ -374,7 +384,7 @@ def validate_products(products,
     return all_successes, all_validation_failures
 
 
-def log_validation_run(output, logdir):
+def log_validation_run(output: str, logdir: str) -> None:
     logdate = datetime.datetime.now().strftime("%Y%m%dT%H%M%S.%f")
     logfilename = f"{logdate}.json"
     logfilepath = os.path.join(logdir, logfilename)
@@ -388,7 +398,7 @@ failed.
 """
 
 
-def write_failure(batch, logdir, loc, failure):
+def write_failure(batch: Iterable[Product], logdir: str, loc: paths.Paths, failure: dict) -> None:
     label_info = validation.extract_label_info(failure['label'])
     inst, year, dateval, failfile = label_info
     src_products = [x for x in batch if (x.inst, x.year, x.date, x.labelfilename) == label_info]
@@ -401,7 +411,7 @@ def write_failure(batch, logdir, loc, failure):
         json.dump(failure, f, indent=2)
 
 
-def chunk(items, size):
+def chunk(items: list[Product], size: int) -> Iterable[list[Product]]:
     """
     Subdivides a list into chunks of the given size
     """
@@ -409,7 +419,10 @@ def chunk(items, size):
         yield items[i:i+size]
 
 
-def preprocess_product(product, loc, skip_data_preprocessing, skip_label_preprocessing):
+def preprocess_product(product: Product,
+                       loc: paths.Paths,
+                       skip_data_preprocessing: bool,
+                       skip_label_preprocessing: bool) -> None:
     logging.debug(f"Preprocessing files for: {product.labelfilename}", )
 
     file_names = product.filenames()
@@ -430,14 +443,21 @@ def preprocess_product(product, loc, skip_data_preprocessing, skip_label_preproc
         preprocess.preprocess_labelfile(src_label, file_names)
 
 
-def move_product(product, loc, postprocessing_opts: options.PostprocessingOpts, failed):
+def move_product(product: Product,
+                 loc: paths.Paths,
+                 postprocessing_opts:
+                 options.PostprocessingOpts,
+                 failed: bool) -> None:
     if postprocessing_opts.validate_only:
         move_product_to_prevaldiated(product, loc, postprocessing_opts, failed)
     else:
         move_product_to_collections(product, loc, postprocessing_opts, failed)
 
 
-def move_product_to_prevaldiated(product, loc, postprocessing_opts: options.PostprocessingOpts, failed):
+def move_product_to_prevaldiated(product: Product,
+                                 loc: paths.Paths,
+                                 postprocessing_opts: options.PostprocessingOpts,
+                                 failed: bool) -> None:
     """
     move a product to the pre-validated directory. Future runs of this script can now skip the validation.
     """
@@ -451,7 +471,10 @@ def move_product_to_prevaldiated(product, loc, postprocessing_opts: options.Post
     do_move(product, postprocessing_opts, datadir, label_dest_directory, data_dest_directory)
 
 
-def move_product_to_collections(product, loc, postprocessing_opts: options.PostprocessingOpts, failed):
+def move_product_to_collections(product: Product,
+                                loc: paths.Paths,
+                                postprocessing_opts: options.PostprocessingOpts,
+                                failed: bool) -> None:
     """
     move a product to the archive directory. For the current workflow, this will be a
     temporary directory on the processing server that will then get synced over
@@ -466,11 +489,11 @@ def move_product_to_collections(product, loc, postprocessing_opts: options.Postp
     do_move(product, postprocessing_opts, datadir, dest_directory, dest_directory)
 
 
-def do_move(product,
+def do_move(product: Product,
             postprocessing_opts: options.PostprocessingOpts,
-            datadir,
-            label_dest_directory,
-            data_dest_directory):
+            datadir: str,
+            label_dest_directory: str,
+            data_dest_directory: str) -> None:
 
     file_names = product.filenames()
     if not file_names:
@@ -488,7 +511,7 @@ def do_move(product,
             transfer_file(src_data, dest_data, postprocessing_opts)
 
 
-def transfer_file(src, dest, postprocessing_opts: options.PostprocessingOpts):
+def transfer_file(src: str, dest: str, postprocessing_opts: options.PostprocessingOpts) -> None:
     if postprocessing_opts.dry_move:
         logging.debug(f'Simulating move from {src} to {dest}')
     else:   
@@ -500,7 +523,7 @@ def transfer_file(src, dest, postprocessing_opts: options.PostprocessingOpts):
             os.rename(src, dest)        
 
 
-def get_actual_file_name(data_dir, file_name):
+def get_actual_file_name(data_dir: str, file_name: str) -> typing.Optional[str]:
     suffixes = ['', '.gz', '.fz']
     file_names = [file_name + suffix for suffix in suffixes
                   if os.path.exists(os.path.join(data_dir, file_name + suffix))]
@@ -509,7 +532,10 @@ def get_actual_file_name(data_dir, file_name):
     return None
 
 
-def update_data_collection(loc, collection_products: list, collection_id, preserve_collection_version):
+def update_data_collection(loc,
+                           collection_products: list,
+                           collection_id: str,
+                           preserve_collection_version: bool) -> None:
     """
     Create the collection inventory and label.
     """
@@ -550,15 +576,15 @@ def update_data_collection(loc, collection_products: list, collection_id, preser
                      latest_modification)
 
 
-def is_pds_date(value: str):
+def is_pds_date(value: str) -> bool:
     return value and value.startswith('20') and value.endswith('Z')
 
 
-def parse_dir_date(x):
+def parse_dir_date(x: str) -> datetime.datetime:
     return datetime.datetime.strptime(x, "%y%b%d")
 
 
-def get_collection_labels(collection_path):
+def get_collection_labels(collection_path: str) -> list[Collection]:
     """
     Gets the most recent known version number for a collection
     """
@@ -566,14 +592,18 @@ def get_collection_labels(collection_path):
     return [Collection(collection_path, x.name) for x in collection_files]
     
 
-def is_collection_file(candidate):
+def is_collection_file(candidate: os.DirEntry) -> bool:
     """
     Determine if the passed in file is a collection file.
     """
     return candidate.name.startswith('collection') and candidate.name.endswith('.xml')
 
 
-def merge_inventories(collection_path, collection_id, collection_products, old_lidvid, preserve_collection_version):
+def merge_inventories(collection_path: str,
+                      collection_id: str,
+                      collection_products: list[Product],
+                      old_lidvid: dict,
+                      preserve_collection_version: bool):
     """
     Produces a new collection inventory file, and returns the lidvid for the
     new collection
@@ -598,7 +628,7 @@ def merge_inventories(collection_path, collection_id, collection_products, old_l
     return new_lidvid, len(merged_inv)
 
 
-def get_last_version_number(collection_id, collection_labels):
+def get_last_version_number(collection_id: str, collection_labels: list[Collection]) -> dict:
     """
     Gets the most recent known version number for a collection
     """
@@ -612,7 +642,7 @@ def get_last_version_number(collection_id, collection_labels):
     return make_collection_lidvid(collection_id, 0, 0)
 
 
-def make_collection_lidvid(collection_id, major, minor):
+def make_collection_lidvid(collection_id: str, major: int, minor: int) -> dict:
     """
     Creates a collection lidvid from its component parts
     """
@@ -623,12 +653,12 @@ def make_collection_lidvid(collection_id, major, minor):
     }
 
 
-def collection_with_version(collection_labels: list, major: str, minor: str):
+def collection_with_version(collection_labels: list[Collection], major: str, minor: str) -> Collection:
     candidates = [x for x in collection_labels if x.majorversion() == major and x.minorversion() == minor]
     return candidates[0] if candidates else None
 
 
-def create_modification_detail(new_lidvid, description):
+def create_modification_detail(new_lidvid: dict, description: str) -> dict:
     return {
         "modification_date": datetime.datetime.now().strftime("%Y-%m-%d"),
         "version_id": f'{new_lidvid["major"]}.{new_lidvid["minor"]}',
@@ -636,14 +666,14 @@ def create_modification_detail(new_lidvid, description):
     }
 
 
-def write_collection(template_filename,
-                     collection_lidvid,
-                     collection_dir,
-                     start_date,
-                     stop_date,
-                     record_count,
-                     modification_history,
-                     latest_modification):
+def write_collection(template_filename: str,
+                     collection_lidvid: dict,
+                     collection_dir: str,
+                     start_date: str,
+                     stop_date: str,
+                     record_count: int,
+                     modification_history: list[dict],
+                     latest_modification: dict) -> None:
     """
     Writes the collection label to a file.
     """
@@ -666,14 +696,14 @@ def write_collection(template_filename,
     iotools.write_file(collection_path, contents)
 
 
-def is_label(candidate):
+def is_label(candidate: os.DirEntry) -> bool:
     """
     Determines if the given file is a label file.
     """
     return candidate.name.endswith('.xml') and check_writable(candidate)
 
 
-def check_writable(candidate):
+def check_writable(candidate: os.DirEntry) -> bool:
     if os.access(candidate, os.W_OK):
         return True
     return False

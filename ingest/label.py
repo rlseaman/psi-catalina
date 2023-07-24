@@ -4,8 +4,10 @@ Common code for label extraction
 import os
 import itertools
 
+import bs4
 
-def extract_collection(collection):
+
+def extract_collection(collection: bs4.Tag) -> dict:
     """
     Extracts keywords from the Product_Collection element
     """
@@ -16,7 +18,7 @@ def extract_collection(collection):
     return result
 
 
-def extract_product_observational(product_observational):
+def extract_product_observational(product_observational: bs4.Tag) -> dict:
     """
     Extracts keywords from the Product_Observational element
     """
@@ -29,7 +31,7 @@ def extract_product_observational(product_observational):
     return result
 
 
-def extract_product_ancillary(product_ancillary):
+def extract_product_ancillary(product_ancillary: bs4.Tag) -> dict:
     """
     Extracts keywords from the Product_Observational element
     """
@@ -43,7 +45,7 @@ def extract_product_ancillary(product_ancillary):
     return result
 
 
-def extract_product_document(product_document):
+def extract_product_document(product_document: bs4.Tag) -> dict:
     """
     Extracts keywords from the Product_Document element
     """
@@ -53,7 +55,7 @@ def extract_product_document(product_document):
     return result
 
 
-def extract_identification_area(identification_area):
+def extract_identification_area(identification_area: bs4.Tag) -> dict:
     """
     Extracts keywords from the Identification_Area element
     """
@@ -74,13 +76,13 @@ def extract_identification_area(identification_area):
     }
 
 
-def extract_modification_history(modification_history):
+def extract_modification_history(modification_history: bs4.Tag) -> list[dict]:
     if modification_history:
         return [extract_modification_detail(d) for d in modification_history.find_all("Modification_Detail")]
     return []
 
 
-def extract_modification_detail(modification_detail):
+def extract_modification_detail(modification_detail: bs4.Tag) -> dict:
     return {
         "version_id": modification_detail.version_id.text,
         "modification_date": modification_detail.modification_date.text,
@@ -88,14 +90,14 @@ def extract_modification_detail(modification_detail):
     }
 
 
-def extract_observation_area(context_area):
+def extract_observation_area(context_area: bs4.Tag) -> dict:
     """
     Extract from the observation_area element
     """
     return extract_time_coordinates(context_area.Time_Coordinates)
 
 
-def extract_context_area(context_area):
+def extract_context_area(context_area: bs4.Tag) -> dict:
     """
     Extract from the observation_area element
     """
@@ -105,7 +107,7 @@ def extract_context_area(context_area):
     return result
 
 
-def extract_time_coordinates(time_coordinates):
+def extract_time_coordinates(time_coordinates: bs4.Tag) -> dict:
     """
     gets the start and stop time from the time_coordinates element
     """
@@ -115,7 +117,7 @@ def extract_time_coordinates(time_coordinates):
     }
 
 
-def extract_file_area(file_area):
+def extract_file_area(file_area: bs4.Tag) -> dict:
     """
     Extracts keywords from the File_Area element
     """
@@ -124,14 +126,14 @@ def extract_file_area(file_area):
     }
 
 
-def extract_collection_id(lid):
+def extract_collection_id(lid: str) -> str:
     """
     Extracts the collection id component from a LID
     """
     return lid.split(':')[4]
 
 
-def extract_discipline_area(discipline_area):
+def extract_discipline_area(discipline_area: bs4.Tag) -> dict:
     """
     Extracts discipline information from the discipline area
     """
@@ -141,25 +143,25 @@ def extract_discipline_area(discipline_area):
     return {}
 
 
-def extract_processing_information(processing_information):
+def extract_processing_information(processing_information: bs4.Tag) -> dict:
     """
     Extracts information from the processing area
     """
     return {'process': [extract_process(process) for process in processing_information.find_all("Process")]}
 
 
-def extract_process(process):
+def extract_process(process: bs4.Tag) -> dict:
     """
     Extract from the process element
     """
     return {
-        'name': str(process.name.string) if process.name else '',
+        'name': str(process.find("name").string) if process.find("name") else '',
         'description': str(process.description.string) if process.description else '',
         'software': [extract_software(software) for software in process.find_all("Software")]
     }
 
 
-def extract_software(software):
+def extract_software(software: bs4.Tag) -> dict:
     """
     Extract from the software element
     """
@@ -167,22 +169,23 @@ def extract_software(software):
         "software_id": str(software.software_id.string) if software.software_id else '', 
         "software_version_id":
             str(software.software_version_id.string) if software.software_version_id is not None else '',
-        'software_program': [extract_software_program(software_program) for software_program in software]
+        'software_program': [extract_software_program(software_program)
+                             for software_program in software.find_all("Software_Program")]
     }
 
 
-def extract_software_program(software_program):
+def extract_software_program(software_program: bs4.Tag) -> dict:
     """
     Extract from the software element
     """
     return {
-        "name": str(software_program.name.string) if software_program.name else '',
+        "name": str(software_program.find("name").string) if software_program.find("name") else '',
         "program_version":
             str(software_program.program_version.string) if software_program.program_version is not None else ''
     }
 
 
-def extract_document(document):
+def extract_document(document: bs4.Tag) -> dict:
     """
     Extracts keywords form the Document element
     """
@@ -193,7 +196,7 @@ def extract_document(document):
     }
 
 
-def extract_document_edition(document_edition):
+def extract_document_edition(document_edition: bs4.Tag) -> dict:
     """
     Extracts keywords form the Document_Edition element
     """
@@ -203,7 +206,7 @@ def extract_document_edition(document_edition):
     }
 
 
-def extract_document_file(document_file):
+def extract_document_file(document_file: bs4.Tag) -> dict:
     """
     Extracts keywords form the Document_File element
     """
@@ -212,5 +215,5 @@ def extract_document_file(document_file):
     }
 
 
-def optstr(value):
+def optstr(value: str) -> str:
     return str(value) if value else None

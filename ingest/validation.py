@@ -34,7 +34,9 @@ VALIDATE_CMD = 'validate'
 FUNPACK_CMD = 'funpack'
 
 
-def validate_product(candidate, schema_path, skip_data):
+def validate_product(candidate: product.Product,
+                     schema_path: str,
+                     skip_data: bool) -> tuple[list[dict], list[dict], str]:
     """
     Moves the entirety of the product to a temporary location,
     decompressed the data files if needed, and validates the product.
@@ -42,7 +44,9 @@ def validate_product(candidate, schema_path, skip_data):
     return validate_products([candidate], schema_path, skip_data)
 
 
-def validate_products(products, schema_path, skip_data):
+def validate_products(products: list[product.Product],
+                      schema_path: str,
+                      skip_data: bool) -> tuple[list[dict], list[dict], str]:
     """
     Moves the entirety of the product to a temporary location,
     decompressed the data files if needed, and validates the product.
@@ -56,7 +60,7 @@ def validate_products(products, schema_path, skip_data):
         return run_validator(temp_dir, schema_path, skip_data)
 
 
-def create_temp_copy(temp_dir, product_to_copy: product.Product, skip_data):
+def create_temp_copy(temp_dir: str, product_to_copy: product.Product, skip_data: bool) -> str:
     """
     Creates temporary copies of the files for a product. Temporary copies are
     needed because the real copies are compressed, and the labels also need
@@ -109,7 +113,7 @@ def create_temp_copy(temp_dir, product_to_copy: product.Product, skip_data):
     return temp_label_path
 
 
-def run_validator(file_name, schema_path, skip_data):
+def run_validator(file_name: str, schema_path: str, skip_data: bool) -> tuple[list[dict], list[dict], str]:
     """
     Runs the label validatior on the given file or directory
     """
@@ -146,7 +150,7 @@ def run_validator(file_name, schema_path, skip_data):
     return failures, successes, unfiltered
 
 
-def extract_label_info(labelpath):
+def extract_label_info(labelpath: str) -> tuple[str, str, str, str]:
     datepath = os.path.dirname(labelpath)
     yearpath = os.path.dirname(datepath)
     instpath = os.path.dirname(yearpath)
@@ -159,5 +163,5 @@ def extract_label_info(labelpath):
     return instval, yearval, dateval, label
 
 
-def get_schemas(base_path, extension):
+def get_schemas(base_path: str, extension: str) -> list[str]:
     return [os.path.join(base_path, x + extension) for x in DICTIONARIES]
