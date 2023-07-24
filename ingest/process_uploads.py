@@ -173,7 +173,7 @@ def limit_directories(loc, directories, filter_opts: options.FilterOpts):
     if filter_opts.ignore_past_days is not None:
         dates = [d for d in dates if d not in build_ignore_dates(filter_opts.ignore_past_days)]
     if filter_opts.max_nights is not None:
-        candidates = sorted(dates, key=parseDirDate, reverse=True)
+        candidates = sorted(dates, key=parse_dir_date, reverse=True)
         candidates_with_products = (d2 for d2 in candidates
                                     if any(date_has_semaphore(loc, inst, year, d)
                                            and date_has_products(loc, inst, year, d)
@@ -365,7 +365,7 @@ def validate_products(products,
             log_validation_run(unfiltered, logdir)
             if validation_failures:
                 for failure in validation_failures:
-                    writeFailure(batch, logdir, loc, failure)
+                    write_failure(batch, logdir, loc, failure)
                 all_validation_failures.extend(validation_failures)
             all_successes.extend(successes)
     if all_validation_failures and not validation_opts.permissive_validation:
@@ -388,7 +388,7 @@ failed.
 """
 
 
-def writeFailure(batch, logdir, loc, failure):
+def write_failure(batch, logdir, loc, failure):
     label_info = validation.extract_label_info(failure['label'])
     inst, year, dateval, failfile = label_info
     src_products = [x for x in batch if (x.inst, x.year, x.date, x.labelfilename) == label_info]
@@ -528,7 +528,7 @@ def update_data_collection(loc, collection_products: list, collection_id, preser
                   if x.stop_date() and is_pds_date(x.stop_date())]
     start_date = min(start_dates) if start_dates else None
     stop_date = max(stop_dates) if stop_dates else None
-    obs_dates = sorted(set([x.date for x in collection_products if x.date]), key=parseDirDate)
+    obs_dates = sorted(set([x.date for x in collection_products if x.date]), key=parse_dir_date)
     
     old_lidvid = get_last_version_number(collection_id, collection_labels)
     new_lidvid, record_count = merge_inventories(
@@ -554,7 +554,7 @@ def is_pds_date(value: str):
     return value and value.startswith('20') and value.endswith('Z')
 
 
-def parseDirDate(x):
+def parse_dir_date(x):
     return datetime.datetime.strptime(x, "%y%b%d")
 
 
