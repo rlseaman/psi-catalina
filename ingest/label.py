@@ -153,7 +153,7 @@ def extract_process(process):
     Extract from the process element
     """
     return {
-        'name': str(process.name.string) if process.name else '',
+        'name': str(process.find("name").string) if process.find("name") else '',
         'description': str(process.description.string) if process.description else '',
         'software': [extract_software(software) for software in process.find_all("Software")]
     }
@@ -176,7 +176,7 @@ def extract_software_program(software_program):
     Extract from the software element
     """
     return {
-        "name": str(software_program.name.string) if software_program.name else '',
+        "name": str(software_program.find("name").string) if software_program.find("name") else '',
         "program_version":
             str(software_program.program_version.string) if software_program.program_version is not None else ''
     }
