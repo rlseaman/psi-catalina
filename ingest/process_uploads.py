@@ -314,22 +314,6 @@ def get_labels(labeldir):
     return [x.name for x in os.scandir(labeldir) if is_label(x)]
 
 
-def product_whitelisted(product):
-    """
-    determines if all of the software for the product has been approved
-    """
-    if product.software:
-        return all([software_whitelisted(x) for x in product.software()])
-    return True
-
-
-def software_whitelisted(software):
-    """
-    determines if a single piece of software has been approved
-    """
-    return True
-
-
 def index(items, indexfunc):
     """
     Indexes a list of objects based on the output of a supplied function
