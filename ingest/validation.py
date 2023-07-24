@@ -122,8 +122,8 @@ def run_validator(file_name, schema_path, skip_data):
 
     unfiltered = process.stdout
 
-    output = re.sub('\}\.+', '}', unfiltered)
-    output = re.sub('\.+\{', '{', output)
+    output = re.sub(r'}\.+', '}', unfiltered)
+    output = re.sub(r'\.+\{', '{', output)
     
     try:
         result = json.loads(output)
