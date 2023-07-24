@@ -149,7 +149,7 @@ def run_validator(file_name, schema_path, skip_data):
 def extract_label_info(labelpath):
     datepath = os.path.dirname(labelpath)
     yearpath = os.path.dirname(datepath)
-    instpath= os.path.dirname(yearpath)
+    instpath = os.path.dirname(yearpath)
 
     label = os.path.basename(labelpath)
     dateval = os.path.basename(datepath)
@@ -161,5 +161,3 @@ def extract_label_info(labelpath):
 
 def get_schemas(base_path, extension):
     return [os.path.join(base_path, x + extension) for x in DICTIONARIES]
-    
-
