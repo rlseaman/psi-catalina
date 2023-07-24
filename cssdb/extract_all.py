@@ -95,8 +95,8 @@ def has_name(name):
     return lambda x: os.path.basename(x) == name
 
 
-def first_matching_file(filelist, filter, desc="file"):
-    candidates = [x for x in filelist if filter(x)]
+def first_matching_file(filelist, file_filter, desc="file"):
+    candidates = [x for x in filelist if file_filter(x)]
     if candidates:
         logging.debug("Found %s: %s", desc, candidates[0])
         return candidates[0]

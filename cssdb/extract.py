@@ -72,8 +72,8 @@ def has_name(name):
     return lambda x: os.path.basename(x) == name
 
 
-def filter_files(filelist, filter):
-    candidates = [x for x in filelist if filter(x)]
+def filter_files(filelist, file_filter):
+    candidates = [x for x in filelist if file_filter(x)]
     if candidates:
         return candidates[0]
     return None
