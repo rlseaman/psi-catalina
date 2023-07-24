@@ -4,7 +4,6 @@ Python script to process submissions from Catalina Sky Survey and convert them
 to PDS4 format.
 """
 
-from operator import mod
 import sys
 
 import os
