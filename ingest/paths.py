@@ -63,7 +63,8 @@ class Paths:
     def _buildpath(self, elements):
         return os.path.join(*self._filled_elements(elements))
 
-    def _filled_elements(self, elements):
+    @staticmethod
+    def _filled_elements(elements):
         element_list = list(elements)
         if any(itertools.dropwhile(lambda x: x, element_list)):
             raise Exception("Gaps detected in path:", element_list)
