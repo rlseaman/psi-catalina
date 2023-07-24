@@ -162,11 +162,3 @@ def get_schemas(base_path, extension):
     return [os.path.join(base_path, x + extension) for x in DICTIONARIES]
     
 
-class Validation:
-    """
-    Runs the validation on a label or directory, and stores the successes
-    and failures
-    """
-    def __init__(self, dirname):
-        result = run_validator(dirname, True)
-        self.failures, self.successes = result
