@@ -98,7 +98,7 @@ def create_temp_copy(temp_dir, product_to_copy: product.Product, skip_data):
             try:
                 with open(temp_data_path, "wb") as uncompressed, gzip.open(f"{data_path}.gz", "rb") as compressed:
                     shutil.copyfileobj(compressed, uncompressed)
-            except Exception:
+            except (IOError, OSError):
                 logging.warning(f"Could not decompress {data_path}.gz to {temp_data_path}")
         elif os.path.exists(f"{data_path}.fz"):
             logging.debug(f"Funpacking temporary {data_path} to {temp_data_path}")
