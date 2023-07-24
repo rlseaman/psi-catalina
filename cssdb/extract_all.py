@@ -11,11 +11,13 @@ import json
 import logging
 import cssextract
 
-
-COLLECTIONS=['data_calibrated', 'data_derived', 'data_partially_processed', 'data_raw', 'data_reduced', 'miscellaneous']
+COLLECTIONS = ['data_calibrated', 'data_derived', 'data_partially_processed', 'data_raw', 'data_reduced',
+               'miscellaneous']
 INSTS = ['703', 'G96', 'I52', 'V06']
-def main(argv=None):
-    logging.basicConfig(level=logging.INFO,format='%(asctime)s|%(levelname)s|%(message)s')
+
+
+def main():
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s|%(levelname)s|%(message)s')
 
     parser = argparse.ArgumentParser(description='Convert the nightly files from the CSS archive into json format')
     parser.add_argument('--basedir', help='The base directory for the delivered data', required=True)
@@ -34,35 +36,38 @@ def main(argv=None):
 
             if not os.path.exists(outfilename):
                 extracted = extract_night(args.basedir, inst, year, night)
-                
-        
+
                 if extracted:
                     with open(outfilename, 'w') as f:
                         json.dump(extracted, f)
             else:
                 logging.info("Output file exists: %s, skipping..." % outfilename)
 
+
 def extract_night(directory_name, inst, year, night):
-    '''
+    """
     Extract information from the files in a single directory (which should correspond to
     a combination of instrument and observing night), and return it as a single dictionary.
-    '''
+    """
 
-    files_for_night=get_files_for_night(directory_name, inst, year, night)
+    files_for_night = get_files_for_night(directory_name, inst, year, night)
 
     if files_for_night:
         return extract_files(pointing_file=first_matching_file(files_for_night, has_extension(".point")),
-                            coverage_file=first_matching_file(files_for_night, has_extension(".cov")), 
-                            control_file=first_matching_file(files_for_night, has_name("controlconfig.json")), 
-                            followup_file=first_matching_file(files_for_night, has_name("followup.txt")), 
-                            fields_file=first_matching_file(files_for_night, has_name("userfields.txt")), 
-                            surveyplan_file=first_matching_file(files_for_night, has_prefix("survey"), desc="Survey plan"), 
-                            astrometry_file=first_matching_file(files_for_night, has_extension(".mpcd.mrpt")), 
-                            neo_file=first_matching_file(files_for_night, has_extension(".neos.mrpt")))
+                             coverage_file=first_matching_file(files_for_night, has_extension(".cov")),
+                             control_file=first_matching_file(files_for_night, has_name("controlconfig.json")),
+                             followup_file=first_matching_file(files_for_night, has_name("followup.txt")),
+                             fields_file=first_matching_file(files_for_night, has_name("userfields.txt")),
+                             surveyplan_file=first_matching_file(files_for_night, has_prefix("survey"),
+                                                                 desc="Survey plan"),
+                             astrometry_file=first_matching_file(files_for_night, has_extension(".mpcd.mrpt")),
+                             neo_file=first_matching_file(files_for_night, has_extension(".neos.mrpt")))
     else:
-        logging.info("No data for %s, %s, %s",inst, year, night)
+        logging.info("No data for %s, %s, %s", inst, year, night)
 
-def extract_files(pointing_file, coverage_file, control_file, followup_file, fields_file, surveyplan_file, astrometry_file, neo_file):
+
+def extract_files(pointing_file, coverage_file, control_file, followup_file, fields_file, surveyplan_file,
+                  astrometry_file, neo_file):
     return {
         "pointing": cssextract.process_pointing_file(pointing_file) if pointing_file else [],
         "coverage": cssextract.process_coverage_file(coverage_file) if coverage_file else [],
@@ -70,28 +75,34 @@ def extract_files(pointing_file, coverage_file, control_file, followup_file, fie
         "followup": cssextract.process_field_file(followup_file) if followup_file else [],
         "fields": cssextract.process_field_file(fields_file) if fields_file else [],
         "surveyplan": cssextract.process_plan_file(surveyplan_file) if surveyplan_file else [],
-        "astrometry": cssextract.process_astrometry_file(astrometry_file)  if astrometry_file else [],
-        "neos": cssextract.process_astrometry_file(neo_file)  if neo_file else []
+        "astrometry": cssextract.process_astrometry_file(astrometry_file) if astrometry_file else [],
+        "neos": cssextract.process_astrometry_file(neo_file) if neo_file else []
     }
+
 
 def has_extension(extension):
     return lambda x: x.endswith(extension)
 
+
 def has_prefix(prefix):
     def fn(x):
         return os.path.basename(x).startswith(prefix)
+
     return fn
+
 
 def has_name(name):
     return lambda x: os.path.basename(x) == name
 
-def first_matching_file(filelist, filter, desc="file"):
-    candidates = [x for x in filelist if filter(x)]
+
+def first_matching_file(filelist, file_filter, desc="file"):
+    candidates = [x for x in filelist if file_filter(x)]
     if candidates:
-        logging.debug("Found %s: %s", desc, candidates[0] )
+        logging.debug("Found %s: %s", desc, candidates[0])
         return candidates[0]
     logging.debug("No match for %s", desc)
     return None
+
 
 def get_files_for_night(search_dir, inst, year, night):
     directories = get_directories_for_night(search_dir, inst, year, night)
@@ -100,12 +111,15 @@ def get_files_for_night(search_dir, inst, year, night):
             get_files_in_path(path) for path in directories)
         )
 
+
 def get_files_in_path(path):
     return (os.path.join(path, filename) for filename in os.listdir(path) if not filename.endswith(".xml"))
+
 
 def get_directories_for_night(search_dir, inst="", year="", night=""):
     candidates = (os.path.join(search_dir, collection, inst, year, night) for collection in COLLECTIONS)
     return [x for x in candidates if os.path.exists(x)]
+
 
 if __name__ == '__main__':
     sys.exit(main())

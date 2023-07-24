@@ -2,12 +2,14 @@ import sqlite3
 import logging
 import hashlib
 
+
 def make_insert_template(tablename, fields):
     return "INSERT INTO {}({}) VALUES ({})".format(
         tablename,
         ",".join(fields),
         ",".join(["?"] * len(fields))
     )
+
 
 def make_update_templates(tablename, fields, pk_fields):
     assigns = [x + " = ?" for x in fields]
@@ -18,6 +20,7 @@ def make_update_templates(tablename, fields, pk_fields):
         " AND ".join(wheres)
     )
 
+
 def make_search_template(tablename, fields, search_fields):
     wheres = [x + " = ?" for x in search_fields]
     return "SELECT {} FROM {} WHERE {}".format(
@@ -25,20 +28,22 @@ def make_search_template(tablename, fields, search_fields):
         tablename,
         " AND ".join(wheres)
     )
-    
 
-OBSNIGHT_FIELDS = ['survey', 'observatory', 'telescope', 'camera', 'obsdate', 'operator', 'limiting_magnitude', 'directory']
-OBSNIGHT_SEARCH_FIELDS=['survey', 'observatory', 'telescope', 'camera', 'obsdate']
+
+OBSNIGHT_FIELDS = ['survey', 'observatory', 'telescope', 'camera', 'obsdate', 'operator', 'limiting_magnitude',
+                   'directory']
+OBSNIGHT_SEARCH_FIELDS = ['survey', 'observatory', 'telescope', 'camera', 'obsdate']
 OBSNIGHT_FIELDS_PK = ['night_id'] + OBSNIGHT_FIELDS
 
 SURVEYFIELD_FIELDS = ['surveyfield_code', 'mjd', 'ra', 'declination', 'night_id']
 SURVEYFIELD_FIELDS_PK = ['surveyfield_id'] + SURVEYFIELD_FIELDS
 
-
-FOLLOWUP_FIELDS = ["followup_code", "followup_name", "ra", "declination", "magnitude", "comment", "field_code", "night_id"]
+FOLLOWUP_FIELDS = ["followup_code", "followup_name", "ra", "declination", "magnitude", "comment", "field_code",
+                   "night_id"]
 FOLLOWUP_FIELDS_PK = ["followup_id"] + FOLLOWUP_FIELDS
 
-USERFIELD_FIELDS = ["userfield_code", "userfield_name", "ra", "declination", "magnitude", "comment", "field_code", "night_id"]
+USERFIELD_FIELDS = ["userfield_code", "userfield_name", "ra", "declination", "magnitude", "comment", "field_code",
+                    "night_id"]
 USERFIELD_FIELDS_PK = ['userfield_id'] + USERFIELD_FIELDS
 
 OBS_FIELDS = ["night_id", "obsfile", "obsdir"]
@@ -58,10 +63,11 @@ SURVEYFIELD_INSERT = make_insert_template("surveyfields", SURVEYFIELD_FIELDS)
 ASTR_INSERT = make_insert_template("astrometry", ASTR_FIELDS)
 NEO_INSERT = make_insert_template("neo", NEO_FIELDS)
 
+
 def write_directory(extracted, directory_name):
-    '''
+    """
     Writes all of the information extracted from the files in the directory to the database.
-    '''
+    """
     conn = sqlite3.connect("/data/cssdb.sqlite")
     c = conn.cursor()
     logging.debug("Writing info...")
@@ -100,19 +106,20 @@ def write_directory(extracted, directory_name):
 
 def write_obsnight(c, extracted, directory_name):
     key = hash_key(get_night_key_params(extracted))
-    params = (key, 
-        'CSS',
-        extracted['coverage']['Source'],
-        extracted['control']['Telescope'],
-        extracted['control']['Detector'],
-        extracted['coverage']['Date'],
-        extracted['pointing']['Observer'],
-        extracted['coverage']['Limiting Magnitude'],
-        directory_name
-    )
+    params = (key,
+              'CSS',
+              extracted['coverage']['Source'],
+              extracted['control']['Telescope'],
+              extracted['control']['Detector'],
+              extracted['coverage']['Date'],
+              extracted['pointing']['Observer'],
+              extracted['coverage']['Limiting Magnitude'],
+              directory_name
+              )
 
     exec_insert(c, OBSNIGHT_INSERT, params)
     return key
+
 
 def obsnight_exists(c: sqlite3.Cursor, extracted):
     query = make_search_template("obsnight", "*", OBSNIGHT_SEARCH_FIELDS)
@@ -121,12 +128,13 @@ def obsnight_exists(c: sqlite3.Cursor, extracted):
     c.execute(query, params)
     return c.fetchone()
 
+
 def get_night_key_params(extracted):
     return ('CSS',
-        extracted['coverage']['Source'],
-        extracted['control']['Telescope'],
-        extracted['control']['Detector'],
-        extracted['coverage']['Date'])
+            extracted['coverage']['Source'],
+            extracted['control']['Telescope'],
+            extracted['control']['Detector'],
+            extracted['coverage']['Date'])
 
 
 def hash_key(params):
@@ -134,6 +142,7 @@ def hash_key(params):
     for param in params:
         m.update(param.encode('utf-8'))
     return m.hexdigest()
+
 
 def write_followup(c, night_id, followup):
     params = (
@@ -149,6 +158,7 @@ def write_followup(c, night_id, followup):
 
     c.execute(FOLLOWUP_INSERT, params)
 
+
 def write_userfield(c, night_id, userfield):
     params = (
         userfield["id"],
@@ -163,9 +173,11 @@ def write_userfield(c, night_id, userfield):
 
     c.execute(USERFIELD_INSERT, params)
 
+
 def write_observation(c, night_id, obsfile, obsdir):
     params = (night_id, obsfile, obsdir)
     c.execute(OBS_INSERT, params)
+
 
 def write_plan(c, night_id, plan):
     params = (
@@ -177,16 +189,18 @@ def write_plan(c, night_id, plan):
     )
     c.execute(SURVEYFIELD_INSERT, params)
 
+
 def write_astr(c, night_id, astr):
     params = (
         astr["code"],
         astr["date"],
         astr["ra"],
         astr["dec"],
-        astr["mag"],        
+        astr["mag"],
         night_id
     )
     c.execute(ASTR_INSERT, params)
+
 
 def write_neo(c, night_id, neo):
     params = (
@@ -194,7 +208,7 @@ def write_neo(c, night_id, neo):
         neo["date"],
         neo["ra"],
         neo["dec"],
-        neo["mag"],        
+        neo["mag"],
         night_id
     )
     c.execute(NEO_INSERT, params)
@@ -204,6 +218,7 @@ def exec_insert_key(c, sql, params):
     c.execute(sql, params)
     c.execute("select last_insert_rowid()")
     return c.fetchone()[0]
+
 
 def exec_insert(c, sql, params):
     c.execute(sql, params)
