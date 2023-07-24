@@ -16,3 +16,4 @@ class ProductMock:
         self.year = year
         self.date = date
         self.labelfilename = filename
+        self.datapath = datapath
