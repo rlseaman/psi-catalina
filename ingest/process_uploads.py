@@ -51,7 +51,7 @@ env = Environment(
 )
 
 
-def main(argv=None):
+def main():
     """
     Extract command line arguments, ensure that the script is not already running,
     and process the current upload directory.
