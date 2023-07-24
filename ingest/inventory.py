@@ -10,7 +10,7 @@ import logging
 INVENTORY_FILENAME_TEMPLATE = 'collection_inventory_{collection_id}_v{major}.{minor}.csv'
 
 
-def write_inventory(inventory, collection_lidvid, collection_dir):
+def write_inventory(inventory: list[str], collection_lidvid: dict, collection_dir: str) -> None:
     """
     Writes the collection inventory to a file
     """
@@ -21,7 +21,7 @@ def write_inventory(inventory, collection_lidvid, collection_dir):
     iotools.write_file(collection_path, '\n'.join(sorted(inventory)) + '\n')
 
 
-def read_inventory(collection_lidvid, collection_dir):
+def read_inventory(collection_lidvid: dict, collection_dir: str) -> list[str]:
     """
     Reads in the inventory for the most recent collection update before this one
     """
@@ -40,14 +40,14 @@ def read_inventory(collection_lidvid, collection_dir):
     return []
 
 
-def from_lidvids(member_type, product_lidvids):
+def from_lidvids(member_type, product_lidvids) -> list[str]:
     """
     Generates an inventory from a list of product lidvids
     """
     return [f"{member_type},{x}" for x in product_lidvids if x]
 
 
-def merge(old_inv, new_inv):
+def merge(old_inv: list[str], new_inv: list[str]) -> list[str]:
     """
     Merges two inventories together. There is no collision resolution yet.
     """

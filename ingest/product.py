@@ -3,12 +3,14 @@ This class represents a product, and contains the necessary
 attributes for running through the pipeline.
 """
 import os
+from typing import IO
+
 from bs4 import BeautifulSoup
 import label
 import logging
 
 
-def extract_label(xmldoc, filepath=''):
+def extract_label(xmldoc: BeautifulSoup, filepath: str = '') -> dict:
     """
     Extracts keywords from a PDS4 label.
     """
@@ -22,7 +24,7 @@ def extract_label(xmldoc, filepath=''):
     raise RuntimeError(f"Unknown product type: {filepath}")
     
 
-def extract_keywords(infile, filepath=''):
+def extract_keywords(infile: IO, filepath: str = '') -> dict:
     """
     Wrapper for extract_label. This handles creation and destruction of
     the BeautifulSoup object.
@@ -41,7 +43,7 @@ class Product:
     Represents the product itself.
     """
 
-    def __init__(self, datadir, filepath, inst=None, year=None, date=None):
+    def __init__(self, datadir: str, filepath: str, inst: str = None, year: str = None, date: str = None) -> None:
         """
         Parses a label file into a Product
         """
@@ -56,26 +58,26 @@ class Product:
             self.labelpath = filepath
             self.datadir = datadir
 
-    def lidvid(self):
+    def lidvid(self) -> str:
         return self.keywords['lidvid']
 
-    def filenames(self):
+    def filenames(self) -> list[str]:
         return self.keywords['file_names'] if 'file_names' in self.keywords else [self.keywords['file_name']]
 
-    def start_date(self):
+    def start_date(self) -> str:
         return self.keywords.get('start_date')
 
-    def stop_date(self):
+    def stop_date(self) -> str:
         return self.keywords.get('stop_date')
 
-    def majorversion(self):
+    def majorversion(self) -> str:
         return self.keywords.get('majorversion')
 
-    def minorversion(self):
+    def minorversion(self) -> str:
         return self.keywords.get('minorversion')
 
-    def collection_id(self):
+    def collection_id(self) -> str:
         return self.keywords.get('collection_id')
 
-    def software(self):
+    def software(self) -> dict:
         return self.keywords.get('software')

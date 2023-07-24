@@ -1,20 +1,21 @@
 import logging
 import os
 import gzip
+from typing import IO, Iterable
 
 
-def has_compressed(filename):
+def has_compressed(filename: str) -> bool:
     return os.path.exists(f"{filename}.gz")
 
 
-def file_open(filename, mode="rt"):
+def file_open(filename: str, mode: str = "rt") -> IO:
     logging.debug(f"Opening: {filename} with mode: {mode}")
     if filename.endswith(".gz"):
         return gzip.open(filename, mode)
     return open(filename, mode)
 
 
-def linefeed_to_crlf(filename):
+def linefeed_to_crlf(filename: str) -> None:
     """
     Normalize the line feeds in a data file, replacing them with CRLFs
     """
@@ -35,12 +36,12 @@ def linefeed_to_crlf(filename):
     os.remove(f"{filename}.bak")
 
 
-def strip_label_fz_extension(contents, datafilename):
+def strip_label_fz_extension(contents: str, datafilename: str) -> str:
     uncompressed_datafilename = datafilename.replace(".fz", "")
     return contents.replace(datafilename, uncompressed_datafilename)
 
 
-def strip_label_gz_extension(contents, datafilename):
+def strip_label_gz_extension(contents: str, datafilename: str) -> str:
     uncompressed_datafilename = datafilename.replace(".gz", "")
     return contents.replace(datafilename, uncompressed_datafilename)
 
@@ -54,7 +55,7 @@ LABEL_FUNCS = {
 }
 
 
-def preprocess_datafile(filename):
+def preprocess_datafile(filename: str) -> None:
     """
     Preprocesses the file. If the file is of an appropriate type
     (defined by membership in DATA_FUNCS), decompress the file,
@@ -68,7 +69,7 @@ def preprocess_datafile(filename):
         DATA_FUNCS[extension](filename)
 
 
-def preprocess_labelfile(filename, datafilenames):
+def preprocess_labelfile(filename: str, datafilenames: Iterable[str]) -> None:
     """
     Preproesses the label. If the file is of an appropriate type
     (defined in LABEL_FUNCS), apply the appropriate transformation
