@@ -40,6 +40,7 @@ class ValidationResult:
         self.label = vresult.get("label", "")
         self.messages = [ValidationMessage(x) for x in vresult.get("messages")]
         self.dataContents = [ValidationData(x) for x in vresult.get("dataContents")]
+        self.src = vresult
 
 
 class ValidationMessage:
@@ -59,7 +60,7 @@ class ValidationData:
 
 def validate_product(candidate: product.Product,
                      schema_path: str,
-                     skip_data: bool) -> tuple[list[dict], list[dict], str]:
+                     skip_data: bool) -> tuple[list[ValidationResult], list[ValidationResult], str]:
     """
     Moves the entirety of the product to a temporary location,
     decompressed the data files if needed, and validates the product.
@@ -69,7 +70,7 @@ def validate_product(candidate: product.Product,
 
 def validate_products(products: list[product.Product],
                       schema_path: str,
-                      skip_data: bool) -> tuple[list[dict], list[dict], str]:
+                      skip_data: bool) -> tuple[list[ValidationResult], list[ValidationResult], str]:
     """
     Moves the entirety of the product to a temporary location,
     decompressed the data files if needed, and validates the product.
@@ -136,7 +137,7 @@ def create_temp_copy(temp_dir: str, product_to_copy: product.Product, skip_data:
     return temp_label_path
 
 
-def run_validator(file_name: str, schema_path: str, skip_data: bool) -> tuple[list[dict], list[dict], str]:
+def run_validator(file_name: str, schema_path: str, skip_data: bool) -> tuple[list[ValidationResult], list[ValidationResult], str]:
     """
     Runs the label validatior on the given file or directory
     """
@@ -160,13 +161,13 @@ def run_validator(file_name: str, schema_path: str, skip_data: bool) -> tuple[li
         print(output)
         raise
 
-    failures = [x for x in result['productLevelValidationResults']
+    failures = [ValidationResult(x) for x in result['productLevelValidationResults']
                 if x['status'] == "FAIL"]
-    successes = [x for x in result['productLevelValidationResults']
+    successes = [ValidationResult(x) for x in result['productLevelValidationResults']
                  if x['status'] == "PASS"]
 
     if failures:
-        filenames = [os.path.basename(x['label']) for x in failures]
+        filenames = [os.path.basename(x.label) for x in failures]
         logging.warning(f"{len(failures)} Failures encountered: {','.join(filenames)}")
     else:
         logging.info("Validation passed")
@@ -188,6 +189,3 @@ def extract_label_info(labelpath: str) -> tuple[str, str, str, str]:
 
 def get_schemas(base_path: str, extension: str) -> list[str]:
     return [os.path.join(base_path, x + extension) for x in DICTIONARIES]
-
-
-
