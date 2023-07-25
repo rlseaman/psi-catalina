@@ -34,6 +34,29 @@ VALIDATE_CMD = 'validate'
 FUNPACK_CMD = 'funpack'
 
 
+class ValidationResult:
+    def __init__(self, vresult: dict) -> None:
+        self.status = vresult.get("status", "")
+        self.label = vresult.get("label", "")
+        self.messages = [ValidationMessage(x) for x in vresult.get("messages")]
+        self.dataContents = [ValidationData(x) for x in vresult.get("dataContents")]
+
+
+class ValidationMessage:
+    def __init__(self, vmessage: dict) -> None:
+        self.severity = vmessage.get("severity", "")
+        self.type = vmessage.get("type", "")
+        self.line = vmessage.get("line")
+        self.column = vmessage.get("column")
+        self.message = vmessage.get("message")
+
+
+class ValidationData:
+    def __init__(self, vdata: dict) -> None:
+        self.datafile = vdata.get("dataFile")
+        self.messages = [ValidationMessage(x) for x in vdata.get("messages")]
+
+
 def validate_product(candidate: product.Product,
                      schema_path: str,
                      skip_data: bool) -> tuple[list[dict], list[dict], str]:
@@ -165,3 +188,6 @@ def extract_label_info(labelpath: str) -> tuple[str, str, str, str]:
 
 def get_schemas(base_path: str, extension: str) -> list[str]:
     return [os.path.join(base_path, x + extension) for x in DICTIONARIES]
+
+
+
