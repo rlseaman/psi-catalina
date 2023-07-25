@@ -129,9 +129,9 @@ def process_upload_dir(opts: options.Opts) -> None:
     if opts.validation_opts.skip_validation:
         successful_files = set((x.inst, x.year, x.date, x.labelfilename) for x in products)
     else:
-        successful_files = set([validation.extract_label_info(x['label']) for x in successes])
+        successful_files = set([validation.extract_label_info(x.label) for x in successes])
     
-    failed_files = set([validation.extract_label_info(x['label']) for x in failures])
+    failed_files = set([validation.extract_label_info(x.label) for x in failures])
     logging.info(failed_files)
 
     if opts.postprocessing_opts.skip_move:
@@ -346,7 +346,7 @@ def validate_products(products: list[Product],
                       loc: paths.Paths,
                       preprocessing_opts: options.PreprocessingOpts,
                       validation_opts: options.ValidationOpts,
-                      logdir: str) -> tuple[list, list]:
+                      logdir: str) -> tuple[list[validation.ValidationResult], list[validation.ValidationResult]]:
     """
     Preprocess and validates the products. 
     The files will be preprocessed in the same manner as after validation. This prevents the original 
@@ -398,8 +398,11 @@ failed.
 """
 
 
-def write_failure(batch: Iterable[Product], logdir: str, loc: paths.Paths, failure: dict) -> None:
-    label_info = validation.extract_label_info(failure['label'])
+def write_failure(batch: Iterable[Product],
+                  logdir: str,
+                  loc: paths.Paths,
+                  failure: validation.ValidationResult) -> None:
+    label_info = validation.extract_label_info(failure.label)
     inst, year, dateval, failfile = label_info
     src_products = [x for x in batch if (x.inst, x.year, x.date, x.labelfilename) == label_info]
 
@@ -408,7 +411,7 @@ def write_failure(batch: Iterable[Product], logdir: str, loc: paths.Paths, failu
 
     faillogpath = os.path.join(faildir, f"{failfile}.log")
     with open(faillogpath, "w") as f:
-        json.dump(failure, f, indent=2)
+        json.dump(failure.src, f, indent=2)
 
 
 def chunk(items: list[Product], size: int) -> Iterable[list[Product]]:
