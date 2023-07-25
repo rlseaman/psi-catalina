@@ -106,7 +106,7 @@ def process_upload_dir(opts: options.Opts) -> None:
     logging.info(f"Discovering products at: {opts.location_opts.basedir}")
     loc = paths.Paths(opts.location_opts, BUNDLE_ID)
     directories = limit_directories(loc, list(discover_product_dirs(loc, opts.filter_opts)), opts.filter_opts)
-    logging.info(f"Discovey complete, consolidating: {opts.location_opts.basedir}")
+    logging.info(f"Discovery complete, consolidating: {opts.location_opts.basedir}")
     logging.info(f'Discovered directories: {directories}')
     products = list(itertools.chain.from_iterable(
         discover_date_products(loc, inst, year, d) for inst, year, d in directories))
