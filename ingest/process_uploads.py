@@ -134,17 +134,18 @@ def process_product_list(loc: paths.Paths, opts: options.Opts, products: list[Pr
         successful_files = set([validation.extract_label_info(x.label) for x in successes])
     failed_files = set([validation.extract_label_info(x.label) for x in failures])
     logging.info(failed_files)
+
+    if opts.postprocessing_opts.skip_collection_update or opts.postprocessing_opts.validate_only:
+        logging.info("Skipping collection update")
+    else:
+        update_collections(collection_lids, loc, opts, products, successful_files)
+
     if opts.postprocessing_opts.skip_move:
         logging.info("Skipping move")
     else:
         for product in products:
             is_failed = (product.inst, product.year, product.date, product.labelfilename)
             move_product(product, loc, opts.postprocessing_opts, is_failed not in successful_files)
-
-    if opts.postprocessing_opts.skip_collection_update or opts.postprocessing_opts.validate_only:
-        logging.info("Skipping collection update")
-    else:
-        update_collections(collection_lids, loc, opts, products, successful_files)
 
     if opts.postprocessing_opts.validate_only:
         logging.info("Regnerating semaphores at destination")
