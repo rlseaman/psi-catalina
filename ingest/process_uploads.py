@@ -20,6 +20,8 @@ from typing import Iterable
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 import prevalidate
+
+from pds4types import ModificationDetail
 from product import Product
 from collection import Collection
 import iotools
@@ -116,26 +118,30 @@ def process_upload_dir(opts: options.Opts) -> None:
 
     logging.info(f"{len(products)} products discovered")
 
+    process_product_list(loc, opts, products)
+
+
+def process_product_list(loc: paths.Paths, opts: options.Opts, products: list[Product]):
     lidvids = (product.lidvid() for product in products)
     collection_lids = index(lidvids, extract_collection_id)
-
     logging.debug(lidvids)
     logging.debug(collection_lids)
-
     # check whitelist here
-
     logdir = os.path.join(opts.location_opts.destdir, "validation")
     os.makedirs(logdir, exist_ok=True)
-
     successes, failures = validate_products(products, loc, opts.preprocessing_opts, opts.validation_opts, logdir)
     # assume all products succeeded if we are skipping validation
     if opts.validation_opts.skip_validation:
         successful_files = set((x.inst, x.year, x.date, x.labelfilename) for x in products)
     else:
         successful_files = set([validation.extract_label_info(x.label) for x in successes])
-    
     failed_files = set([validation.extract_label_info(x.label) for x in failures])
     logging.info(failed_files)
+
+    if opts.postprocessing_opts.skip_collection_update or opts.postprocessing_opts.validate_only:
+        logging.info("Skipping collection update")
+    else:
+        update_collections(collection_lids, loc, opts, products, successful_files)
 
     if opts.postprocessing_opts.skip_move:
         logging.info("Skipping move")
@@ -144,26 +150,29 @@ def process_upload_dir(opts: options.Opts) -> None:
             is_failed = (product.inst, product.year, product.date, product.labelfilename)
             move_product(product, loc, opts.postprocessing_opts, is_failed not in successful_files)
 
-    if opts.postprocessing_opts.skip_collection_update or opts.postprocessing_opts.validate_only:
-        logging.info("Skipping collection update")
-    else:
-        for collection_id in collection_lids:
-            collection_products = [x for x in products
-                                   if x.collection_id() == collection_id
-                                   and (x.inst, x.year, x.date, x.labelfilename) in successful_files]
-            if collection_products:
-                update_data_collection(loc,
-                                       collection_products,
-                                       collection_id,
-                                       opts.postprocessing_opts.preserve_collection_version)
-
     if opts.postprocessing_opts.validate_only:
         logging.info("Regnerating semaphores at destination")
         for (inst, year, date) in set((p.inst, p.year, p.date) for p in products):
             recreate_semaphore(loc.night_validation_data_dir(inst, year, date))
             recreate_semaphore(loc.night_validation_label_dir(inst, year, date))
-        
     logging.info("done")
+
+
+def update_collections(collection_lids, loc, opts, products, successful_files):
+    for collection_id in collection_lids:
+        collection_products = [x for x in products
+                               if x.collection_id() == collection_id
+                               and (x.inst, x.year, x.date, x.labelfilename) in successful_files]
+        if collection_products:
+            collection_path = update_data_collection(loc,
+                                                     collection_products,
+                                                     collection_id,
+                                                     opts.postprocessing_opts.preserve_collection_version)
+            collection_failures, _, collection_result = \
+                validation.run_validator(collection_path, loc.schemadir, False)
+            if len(collection_failures) > 0:
+                logging.warning(f"There were collection failures: {collection_result}")
+                raise Exception("Collection validation failed")
 
 
 def recreate_semaphore(dirname: str, filename: str = '.autoxfer') -> None:
@@ -541,7 +550,7 @@ def get_actual_file_name(data_dir: str, file_name: str) -> typing.Optional[str]:
 def update_data_collection(loc,
                            collection_products: list,
                            collection_id: str,
-                           preserve_collection_version: bool) -> None:
+                           preserve_collection_version: bool) -> str:
     """
     Create the collection inventory and label.
     """
@@ -567,19 +576,19 @@ def update_data_collection(loc,
         collection_path, collection_id, collection_products, old_lidvid, preserve_collection_version)
     previous_collection = collection_with_version(collection_labels, old_lidvid["major"], old_lidvid["minor"])
     modification_history = [x for x
-                            in previous_collection.modification_history()
-                            if x["version_id"] == "1.0"] if previous_collection else []
+                            in previous_collection.modification_history().modification_details
+                            if x.version_id == "1.0"] if previous_collection else None
     latest_modification = create_modification_detail(new_lidvid, f"routine delivery for: {','.join(obs_dates)}")
 
     template_filename = COLLECTION_FILES.get(collection_id, "other_collection_template.xml")
-    write_collection(template_filename,
-                     new_lidvid,
-                     collection_path,
-                     start_date,
-                     stop_date,
-                     record_count,
-                     modification_history,
-                     latest_modification)
+    return write_collection(template_filename,
+                            new_lidvid,
+                            collection_path,
+                            start_date,
+                            stop_date,
+                            record_count,
+                            modification_history,
+                            latest_modification)
 
 
 def is_pds_date(value: str) -> bool:
@@ -678,8 +687,8 @@ def write_collection(template_filename: str,
                      start_date: str,
                      stop_date: str,
                      record_count: int,
-                     modification_history: list[dict],
-                     latest_modification: dict) -> None:
+                     modification_history: list[ModificationDetail],
+                     latest_modification: dict) -> str:
     """
     Writes the collection label to a file.
     """
@@ -700,6 +709,7 @@ def write_collection(template_filename: str,
     logging.info(f"writing to: {collection_path}")
     logging.debug(contents)
     iotools.write_file(collection_path, contents)
+    return collection_path
 
 
 def is_label(candidate: os.DirEntry) -> bool:

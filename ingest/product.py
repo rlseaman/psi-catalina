@@ -9,8 +9,10 @@ from bs4 import BeautifulSoup
 import label
 import logging
 
+from pds4types import ProductLabel
 
-def extract_label(xmldoc: BeautifulSoup, filepath: str = '') -> dict:
+
+def extract_label(xmldoc: BeautifulSoup, filepath: str = '') -> ProductLabel:
     """
     Extracts keywords from a PDS4 label.
     """
@@ -24,7 +26,7 @@ def extract_label(xmldoc: BeautifulSoup, filepath: str = '') -> dict:
     raise RuntimeError(f"Unknown product type: {filepath}")
     
 
-def extract_keywords(infile: IO, filepath: str = '') -> dict:
+def extract_keywords(infile: IO, filepath: str = '') -> ProductLabel:
     """
     Wrapper for extract_label. This handles creation and destruction of
     the BeautifulSoup object.
@@ -59,25 +61,28 @@ class Product:
             self.datadir = datadir
 
     def lidvid(self) -> str:
-        return self.keywords['lidvid']
+        return self.keywords.identification_area.lidvid
 
     def filenames(self) -> list[str]:
-        return self.keywords['file_names'] if 'file_names' in self.keywords else [self.keywords['file_name']]
+        return self.keywords.document.filenames() \
+            if self.keywords.document \
+            else [self.keywords.file_area.file_name]
 
     def start_date(self) -> str:
-        return self.keywords.get('start_date')
+        return self.keywords.context_area.time_coordinates.start_date \
+            if self.keywords.context_area \
+            else None
 
     def stop_date(self) -> str:
-        return self.keywords.get('stop_date')
+        return self.keywords.context_area.time_coordinates.stop_date \
+            if self.keywords.context_area \
+            else None
 
     def majorversion(self) -> str:
-        return self.keywords.get('majorversion')
+        return str(self.keywords.identification_area.major)
 
     def minorversion(self) -> str:
-        return self.keywords.get('minorversion')
+        return str(self.keywords.identification_area.minor)
 
     def collection_id(self) -> str:
-        return self.keywords.get('collection_id')
-
-    def software(self) -> dict:
-        return self.keywords.get('software')
+        return self.keywords.identification_area.collection_id

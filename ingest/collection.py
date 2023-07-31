@@ -2,18 +2,22 @@
 This class represents a product, and contains the necessary
 attributes for running through the pipeline.
 """
+from typing import Optional
+
 from bs4 import BeautifulSoup
 import label
 import os
 
+from pds4types import CollectionLabel, ModificationHistory
 
-def extract_label(xmldoc: BeautifulSoup) -> dict:
+
+def extract_label(xmldoc: BeautifulSoup) -> Optional[CollectionLabel]:
     """
     Extracts keywords from a PDS4 label.
     """
     if xmldoc.Product_Collection:
         return label.extract_collection(xmldoc.Product_Collection)
-    return {}
+    return None
 
 
 class Collection:
@@ -34,25 +38,25 @@ class Collection:
         """
         Retrieves the start date of the collection
         """
-        return self.keywords.get('start_date')
+        return self.keywords.context_area.time_coordinates.start_date
 
     def stop_date(self) -> str:
         """
         Retrieves the stop date of the collection
         """
-        return self.keywords.get('stop_date')
+        return self.keywords.context_area.time_coordinates.stop_date
 
     def majorversion(self) -> int:
         """
         Retrieves the major version of the collection
         """
-        return self.keywords.get('major')
+        return self.keywords.identification_area.major
 
     def minorversion(self) -> int:
         """
         Retrieves the minor of the collection
         """
-        return self.keywords.get('minor')
+        return self.keywords.identification_area.minor
 
-    def modification_history(self) -> list[dict]:
-        return self.keywords.get('modification_history')
+    def modification_history(self) -> ModificationHistory:
+        return self.keywords.identification_area.modification_history
