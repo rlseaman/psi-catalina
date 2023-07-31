@@ -140,29 +140,35 @@ def process_product_list(loc: paths.Paths, opts: options.Opts, products: list[Pr
         for product in products:
             is_failed = (product.inst, product.year, product.date, product.labelfilename)
             move_product(product, loc, opts.postprocessing_opts, is_failed not in successful_files)
+
     if opts.postprocessing_opts.skip_collection_update or opts.postprocessing_opts.validate_only:
         logging.info("Skipping collection update")
     else:
-        for collection_id in collection_lids:
-            collection_products = [x for x in products
-                                   if x.collection_id() == collection_id
-                                   and (x.inst, x.year, x.date, x.labelfilename) in successful_files]
-            if collection_products:
-                collection_path = update_data_collection(loc,
-                                                         collection_products,
-                                                         collection_id,
-                                                         opts.postprocessing_opts.preserve_collection_version)
-                collection_failures, _, collection_result = \
-                    validation.run_validator(collection_path, loc.schemadir, False)
-                if len(collection_failures) > 0:
-                    logging.warning(f"There were collection failures: {collection_result}")
-                    raise Exception("Collection validation failed")
+        update_collections(collection_lids, loc, opts, products, successful_files)
+
     if opts.postprocessing_opts.validate_only:
         logging.info("Regnerating semaphores at destination")
         for (inst, year, date) in set((p.inst, p.year, p.date) for p in products):
             recreate_semaphore(loc.night_validation_data_dir(inst, year, date))
             recreate_semaphore(loc.night_validation_label_dir(inst, year, date))
     logging.info("done")
+
+
+def update_collections(collection_lids, loc, opts, products, successful_files):
+    for collection_id in collection_lids:
+        collection_products = [x for x in products
+                               if x.collection_id() == collection_id
+                               and (x.inst, x.year, x.date, x.labelfilename) in successful_files]
+        if collection_products:
+            collection_path = update_data_collection(loc,
+                                                     collection_products,
+                                                     collection_id,
+                                                     opts.postprocessing_opts.preserve_collection_version)
+            collection_failures, _, collection_result = \
+                validation.run_validator(collection_path, loc.schemadir, False)
+            if len(collection_failures) > 0:
+                logging.warning(f"There were collection failures: {collection_result}")
+                raise Exception("Collection validation failed")
 
 
 def recreate_semaphore(dirname: str, filename: str = '.autoxfer') -> None:
