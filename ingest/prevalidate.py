@@ -18,7 +18,7 @@ def prevalidate_products(products: Iterable[product.Product]) -> Iterable[produc
 def prevalidate(candidate: product.Product) -> list[str]:
     result = []
     if not date_is_present(candidate):
-        result.extend("Product is missing a date.")
+        result.append("Product is missing a date.")
     return result
 
 
