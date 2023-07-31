@@ -1,6 +1,18 @@
+import logging
+
 import product
+from typing import Iterable
 
 IMAGE_EXTENSIONS = ['.fits', '.calb', '.pass1', '.csub', '.avgs', '.avgr', '.arch']
+
+
+def prevalidate_products(products: Iterable[product.Product]) -> Iterable[product.Product]:
+    for candidate in products:
+        errors = prevalidate(candidate)
+        if len(errors) > 0:
+            logging.warning(f'Product {candidate.labelfilename} failed prevalidation: {"; ".join(errors)}')
+        else:
+            yield candidate
 
 
 def prevalidate(candidate: product.Product) -> list[str]:
