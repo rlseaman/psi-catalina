@@ -155,8 +155,8 @@ def extract_process(process: bs4.Tag) -> dict:
     Extract from the process element
     """
     return {
-        'name': str(process.find("name").string) if process.find("name") else '',
-        'description': str(process.description.string) if process.description else '',
+        'name': elemstr(process.find("name")),
+        'description': elemstr(process.description, ''),
         'software': [extract_software(software) for software in process.find_all("Software")]
     }
 
@@ -166,9 +166,8 @@ def extract_software(software: bs4.Tag) -> dict:
     Extract from the software element
     """
     return {
-        "software_id": str(software.software_id.string) if software.software_id else '', 
-        "software_version_id":
-            str(software.software_version_id.string) if software.software_version_id is not None else '',
+        "software_id": elemstr(software.software_id, ''),
+        "software_version_id": elemstr(software.software_version_id, ''),
         'software_program': [extract_software_program(software_program)
                              for software_program in software.find_all("Software_Program")]
     }
@@ -179,9 +178,8 @@ def extract_software_program(software_program: bs4.Tag) -> dict:
     Extract from the software element
     """
     return {
-        "name": str(software_program.find("name").string) if software_program.find("name") else '',
-        "program_version":
-            str(software_program.program_version.string) if software_program.program_version is not None else ''
+        "name": elemstr(software_program.find("name"), ''),
+        "program_version": elemstr(software_program.program_version, '')
     }
 
 
@@ -215,5 +213,11 @@ def extract_document_file(document_file: bs4.Tag) -> dict:
     }
 
 
-def optstr(value: str) -> str:
-    return str(value) if value else None
+def optstr(value: str, default: str = None) -> str:
+    """Extracts a value from a tag that is required but nillable"""
+    return str(value) if value else default
+
+
+def elemstr(elem: bs4.Tag, default: str = None) -> str:
+    """Extracts a value from a tag that is optional"""
+    return optstr(elem.string, default) if elem else default
