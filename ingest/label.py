@@ -59,8 +59,8 @@ def extract_identification_area(identification_area: bs4.Tag) -> dict:
     """
     Extracts keywords from the Identification_Area element
     """
-    lid = str(identification_area.logical_identifier.string)
-    vid = str(identification_area.version_id.string)
+    lid = elemstr(identification_area.logical_identifier)
+    vid = elemstr(identification_area.version_id)
     modification_history = extract_modification_history(identification_area.Modification_History)
 
     major, minor = [int(x) for x in vid.split(".")]
@@ -84,9 +84,9 @@ def extract_modification_history(modification_history: bs4.Tag) -> list[dict]:
 
 def extract_modification_detail(modification_detail: bs4.Tag) -> dict:
     return {
-        "version_id": modification_detail.version_id.text,
-        "modification_date": modification_detail.modification_date.text,
-        "description": modification_detail.description.text
+        "version_id": elemstr(modification_detail.version_id),
+        "modification_date": elemstr(modification_detail.modification_date),
+        "description": elemstr(modification_detail.description)
     }
 
 
@@ -112,8 +112,8 @@ def extract_time_coordinates(time_coordinates: bs4.Tag) -> dict:
     gets the start and stop time from the time_coordinates element
     """
     return {
-        "start_date": optstr(time_coordinates.start_date_time.string),
-        "stop_date": optstr(time_coordinates.stop_date_time.string)
+        "start_date": elemstr(time_coordinates.start_date_time),
+        "stop_date": elemstr(time_coordinates.stop_date_time)
     }
 
 
@@ -122,7 +122,7 @@ def extract_file_area(file_area: bs4.Tag) -> dict:
     Extracts keywords from the File_Area element
     """
     return {
-        "file_name": os.path.basename(str(file_area.File.file_name.string))
+        "file_name": os.path.basename(elemstr(file_area.File.file_name))
     }
 
 
@@ -209,15 +209,15 @@ def extract_document_file(document_file: bs4.Tag) -> dict:
     Extracts keywords form the Document_File element
     """
     return {
-        'filename': str(document_file.file_name.string)
+        'filename': elemstr(document_file.file_name)
     }
 
 
 def optstr(value: str, default: str = None) -> str:
-    """Extracts a value from a tag that is required but nillable"""
+    """Extracts a value from a navigable string"""
     return str(value) if value else default
 
 
 def elemstr(elem: bs4.Tag, default: str = None) -> str:
-    """Extracts a value from a tag that is optional"""
+    """Extracts a value from a tag"""
     return optstr(elem.string, default) if elem else default
