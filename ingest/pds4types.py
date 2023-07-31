@@ -1,5 +1,6 @@
+import itertools
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Iterable
 
 
 @dataclass()
@@ -11,10 +12,16 @@ class DocumentFile:
 class DocumentEdition:
     files: list[DocumentFile]
 
+    def filenames(self) -> Iterable[str]:
+        return (f.filename for f in self.files)
+
 
 @dataclass()
 class Document:
     editions: list[DocumentEdition]
+
+    def filenames(self) -> Iterable[str]:
+        return itertools.chain.from_iterable(e.filenames() for e in self.editions)
 
 
 @dataclass()

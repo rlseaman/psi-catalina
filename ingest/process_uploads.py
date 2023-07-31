@@ -18,6 +18,8 @@ import typing
 from typing import Iterable
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
+
+from pds4types import ModificationDetail
 from product import Product
 from collection import Collection
 import iotools
@@ -559,8 +561,8 @@ def update_data_collection(loc,
         collection_path, collection_id, collection_products, old_lidvid, preserve_collection_version)
     previous_collection = collection_with_version(collection_labels, old_lidvid["major"], old_lidvid["minor"])
     modification_history = [x for x
-                            in previous_collection.modification_history()
-                            if x["version_id"] == "1.0"] if previous_collection else []
+                            in previous_collection.modification_history().modification_details
+                            if x.version_id == "1.0"] if previous_collection else None
     latest_modification = create_modification_detail(new_lidvid, f"routine delivery for: {','.join(obs_dates)}")
 
     template_filename = COLLECTION_FILES.get(collection_id, "other_collection_template.xml")
@@ -670,7 +672,7 @@ def write_collection(template_filename: str,
                      start_date: str,
                      stop_date: str,
                      record_count: int,
-                     modification_history: list[dict],
+                     modification_history: list[ModificationDetail],
                      latest_modification: dict) -> None:
     """
     Writes the collection label to a file.
