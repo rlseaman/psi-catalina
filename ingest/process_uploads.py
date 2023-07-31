@@ -148,10 +148,15 @@ def process_product_list(loc: paths.Paths, opts: options.Opts, products: list[Pr
                                    if x.collection_id() == collection_id
                                    and (x.inst, x.year, x.date, x.labelfilename) in successful_files]
             if collection_products:
-                update_data_collection(loc,
-                                       collection_products,
-                                       collection_id,
-                                       opts.postprocessing_opts.preserve_collection_version)
+                collection_path = update_data_collection(loc,
+                                                         collection_products,
+                                                         collection_id,
+                                                         opts.postprocessing_opts.preserve_collection_version)
+                collection_failures, _, collection_result = \
+                    validation.run_validator(collection_path, loc.schemadir, False)
+                if len(collection_failures) > 0:
+                    logging.warning(f"There were collection failures: {collection_result}")
+                    raise Exception("Collection validation failed")
     if opts.postprocessing_opts.validate_only:
         logging.info("Regnerating semaphores at destination")
         for (inst, year, date) in set((p.inst, p.year, p.date) for p in products):
@@ -535,7 +540,7 @@ def get_actual_file_name(data_dir: str, file_name: str) -> typing.Optional[str]:
 def update_data_collection(loc,
                            collection_products: list,
                            collection_id: str,
-                           preserve_collection_version: bool) -> None:
+                           preserve_collection_version: bool) -> str:
     """
     Create the collection inventory and label.
     """
@@ -566,14 +571,14 @@ def update_data_collection(loc,
     latest_modification = create_modification_detail(new_lidvid, f"routine delivery for: {','.join(obs_dates)}")
 
     template_filename = COLLECTION_FILES.get(collection_id, "other_collection_template.xml")
-    write_collection(template_filename,
-                     new_lidvid,
-                     collection_path,
-                     start_date,
-                     stop_date,
-                     record_count,
-                     modification_history,
-                     latest_modification)
+    return write_collection(template_filename,
+                            new_lidvid,
+                            collection_path,
+                            start_date,
+                            stop_date,
+                            record_count,
+                            modification_history,
+                            latest_modification)
 
 
 def is_pds_date(value: str) -> bool:
@@ -673,7 +678,7 @@ def write_collection(template_filename: str,
                      stop_date: str,
                      record_count: int,
                      modification_history: list[ModificationDetail],
-                     latest_modification: dict) -> None:
+                     latest_modification: dict) -> str:
     """
     Writes the collection label to a file.
     """
@@ -694,6 +699,7 @@ def write_collection(template_filename: str,
     logging.info(f"writing to: {collection_path}")
     logging.debug(contents)
     iotools.write_file(collection_path, contents)
+    return collection_path
 
 
 def is_label(candidate: os.DirEntry) -> bool:
