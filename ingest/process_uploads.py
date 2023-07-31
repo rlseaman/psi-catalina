@@ -113,34 +113,31 @@ def process_upload_dir(opts: options.Opts) -> None:
 
     logging.info(f"{len(products)} products discovered")
 
+    process_product_list(loc, opts, products)
+
+
+def process_product_list(loc: paths.Paths, opts: options.Opts, products: list[Product]):
     lidvids = (product.lidvid() for product in products)
     collection_lids = index(lidvids, extract_collection_id)
-
     logging.debug(lidvids)
     logging.debug(collection_lids)
-
     # check whitelist here
-
     logdir = os.path.join(opts.location_opts.destdir, "validation")
     os.makedirs(logdir, exist_ok=True)
-
     successes, failures = validate_products(products, loc, opts.preprocessing_opts, opts.validation_opts, logdir)
     # assume all products succeeded if we are skipping validation
     if opts.validation_opts.skip_validation:
         successful_files = set((x.inst, x.year, x.date, x.labelfilename) for x in products)
     else:
         successful_files = set([validation.extract_label_info(x.label) for x in successes])
-    
     failed_files = set([validation.extract_label_info(x.label) for x in failures])
     logging.info(failed_files)
-
     if opts.postprocessing_opts.skip_move:
         logging.info("Skipping move")
     else:
         for product in products:
             is_failed = (product.inst, product.year, product.date, product.labelfilename)
             move_product(product, loc, opts.postprocessing_opts, is_failed not in successful_files)
-
     if opts.postprocessing_opts.skip_collection_update or opts.postprocessing_opts.validate_only:
         logging.info("Skipping collection update")
     else:
@@ -153,13 +150,11 @@ def process_upload_dir(opts: options.Opts) -> None:
                                        collection_products,
                                        collection_id,
                                        opts.postprocessing_opts.preserve_collection_version)
-
     if opts.postprocessing_opts.validate_only:
         logging.info("Regnerating semaphores at destination")
         for (inst, year, date) in set((p.inst, p.year, p.date) for p in products):
             recreate_semaphore(loc.night_validation_data_dir(inst, year, date))
             recreate_semaphore(loc.night_validation_label_dir(inst, year, date))
-        
     logging.info("done")
 
 
