@@ -81,6 +81,6 @@ def match_collection_and_file_type(candidate: product.Product) -> Iterable[str]:
 
             if not (extension in COLLECTION_EXTENSIONS.get(collection_id, [])
                     or any(re.match(f'^{pattern}$', filename) for pattern in COLLECTION_REGEXES.get(collection_id, []))):
-                yield f'{filename} in {candidate.labelfilename} is not suitable for the {collection_id} collection'
+                yield f'{filename} is not suitable for the {collection_id} collection'
     else:
         yield f'collection {collection_id} not recognized'
