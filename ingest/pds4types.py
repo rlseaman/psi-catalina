@@ -66,8 +66,26 @@ class TimeCoordinates:
 
 
 @dataclass()
+class InternalReference:
+    lid_reference: str
+
+
+@dataclass()
+class ObservingSystemComponent:
+    name: str
+    type: str
+    internal_reference: InternalReference
+
+
+@dataclass()
+class ObservingSystem:
+    components: list[ObservingSystemComponent]
+
+
+@dataclass()
 class ContextArea:
     time_coordinates: TimeCoordinates
+    observing_system: Optional[ObservingSystem]
 
 
 @dataclass()

@@ -99,7 +99,8 @@ def extract_observation_area(context_area: bs4.Tag) -> ContextArea:
     Extract from the observation_area element
     """
     return ContextArea(
-        time_coordinates=extract(context_area.Time_Coordinates, extract_time_coordinates)
+        time_coordinates=extract(context_area.Time_Coordinates, extract_time_coordinates),
+        observing_system=None
     )
 
 
@@ -108,7 +109,8 @@ def extract_context_area(context_area: bs4.Tag) -> ContextArea:
     Extract from the observation_area element
     """
     return ContextArea(
-        time_coordinates=extract(context_area.Time_Coordinates, extract_time_coordinates)
+        time_coordinates=extract(context_area.Time_Coordinates, extract_time_coordinates),
+        observing_system=None
     )
 
 
