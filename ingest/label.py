@@ -8,7 +8,8 @@ import bs4
 
 from pds4types import DocumentFile, DocumentEdition, Document, SoftwareProgram, Software, Process, \
     ProcessingInformation, DisciplineArea, FileArea, TimeCoordinates, ContextArea, ModificationDetail, \
-    ModificationHistory, IdentificationArea, ProductLabel, CollectionLabel
+    ModificationHistory, IdentificationArea, ProductLabel, CollectionLabel, ObservingSystem, ObservingSystemComponent, \
+    InternalReference
 
 
 def extract_collection(collection: bs4.Tag) -> CollectionLabel:
@@ -100,7 +101,37 @@ def extract_observation_area(context_area: bs4.Tag) -> ContextArea:
     """
     return ContextArea(
         time_coordinates=extract(context_area.Time_Coordinates, extract_time_coordinates),
-        observing_system=None
+        observing_system=extract(context_area.Observing_System, extract_observing_system)
+    )
+
+
+def extract_observing_system(observing_system: bs4.Tag) -> ObservingSystem:
+    """
+    Extract from the Observing_System element
+    """
+    return ObservingSystem(
+        components=[extract_observing_system_component(component)
+                    for component in observing_system.find_all("Observing_System_Component")]
+    )
+
+
+def extract_observing_system_component(observing_system_component: bs4.Tag) -> ObservingSystemComponent:
+    """
+    Extract from the Observing_System_Component element
+    """
+    return ObservingSystemComponent(
+        name=elemstr(observing_system_component.find("name")),
+        type=elemstr(observing_system_component.type),
+        internal_reference=extract(observing_system_component.Internal_Reference, extract_internal_reference)
+    )
+
+
+def extract_internal_reference(internal_reference: bs4.Tag) -> InternalReference:
+    """
+    Extract from the Internal_Reference element
+    """
+    return InternalReference(
+        lid_reference=elemstr(internal_reference.lid_reference)
     )
 
 
@@ -110,7 +141,7 @@ def extract_context_area(context_area: bs4.Tag) -> ContextArea:
     """
     return ContextArea(
         time_coordinates=extract(context_area.Time_Coordinates, extract_time_coordinates),
-        observing_system=None
+        observing_system=extract(context_area.Observing_System, extract_observing_system)
     )
 
 
