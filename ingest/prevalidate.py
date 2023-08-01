@@ -33,7 +33,8 @@ def prevalidate_products(products: Iterable[product.Product]) -> Iterable[produc
     for candidate in products:
         errors = prevalidate(candidate)
         if len(errors) > 0:
-            logging.warning(f'Product {candidate.labelfilename} failed prevalidation: {"; ".join(errors)}')
+            message = "\n\t" + "\n\t".join(errors)
+            logging.warning(f'Product {candidate.labelfilename} failed prevalidation: {message}')
         else:
             yield candidate
 
