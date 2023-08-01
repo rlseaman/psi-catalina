@@ -74,7 +74,7 @@ class InternalReference:
 class ObservingSystemComponent:
     name: str
     type: str
-    internal_reference: InternalReference
+    internal_reference: Optional[InternalReference]
 
 
 @dataclass()
