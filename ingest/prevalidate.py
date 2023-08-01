@@ -5,6 +5,27 @@ from typing import Iterable
 
 IMAGE_EXTENSIONS = ['.fits', '.calb', '.pass1', '.csub', '.avgs', '.avgr', '.arch']
 
+COLLECTION_EXTENSIONS = {
+    'calibration': [],
+    'data_raw': ['.fits'],
+    'data_partially_processed': ['.calb', '.pass1', '.csub', '.avgs', '.avgr'],
+    'data_calibrated': ['.arch'],
+    'data_derived': ['.sext', '.sexb', '.sexs', '.mtds', '.mtdf', '.dets', '.rjct', '.mpcd', '.neos', '.fail',
+                     '.tssexb', '.avgrsexb', '.detf'],
+    'miscellaneous': ['.detl', '.detb', '.iext', '.strp', '.strm', '.scmp', '.ephm', '.achk', '.hits', '.arch_h',
+                      '.ast', '.mrpt', '.ades', '.focheck', '.param', '.params', '.outparams', '.json',
+                      '.log', '.point', '.pt', '.xmls', '.cov', '.txt']
+}
+
+COLLECTION_REGEXES = {
+    'calibration': [r'.*flat.*\.fits'],
+    'data_raw': [r'.*\.fits_.*'],
+    'data_partially_processed': [],
+    'data_calibrated': [],
+    'data_derived': [],
+    'miscellaneous': [r'MPCORB\.DAT', r'mpcorb\.sof', r'ELEMENTS\.COMET', r'ObsCodes\.html', r'signature\.md5']
+}
+
 
 def prevalidate_products(products: Iterable[product.Product]) -> Iterable[product.Product]:
     for candidate in products:
