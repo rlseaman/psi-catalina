@@ -79,8 +79,16 @@ def match_collection_and_file_type(candidate: product.Product) -> Iterable[str]:
         for filename in candidate.filenames():
             _, extension = os.path.splitext(filename)
 
-            if not (extension in COLLECTION_EXTENSIONS.get(collection_id, [])
-                    or any(re.match(f'^{pattern}$', filename) for pattern in COLLECTION_REGEXES.get(collection_id, []))):
+            if not (extension_matches_collection(collection_id, extension)
+                    or filename_matches_collection(collection_id, filename)):
                 yield f'{filename} is not suitable for the {collection_id} collection'
     else:
         yield f'collection {collection_id} not recognized'
+
+
+def filename_matches_collection(collection_id: str, filename: str) -> bool:
+    return any(re.match(f'^{pattern}$', filename) for pattern in COLLECTION_REGEXES.get(collection_id, []))
+
+
+def extension_matches_collection(collection_id: str, extension: str) -> bool:
+    return extension in COLLECTION_EXTENSIONS.get(collection_id, [])
