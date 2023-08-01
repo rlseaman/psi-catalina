@@ -1,4 +1,6 @@
 import logging
+import os.path
+import re
 
 import product
 from typing import Iterable
@@ -41,6 +43,7 @@ def prevalidate(candidate: product.Product) -> list[str]:
     if not date_is_present(candidate):
         result.append("Product is missing a date.")
     result.extend(check_observation_area(candidate))
+    result.extend(match_collection_and_file_type(candidate))
     return result
 
 
@@ -66,3 +69,13 @@ def check_observation_area(candidate: product.Product) -> Iterable[str]:
             yield f'{component.type} observing system component has no name'
         if component.internal_reference and component.internal_reference.lid_reference is None:
             yield f'{component.type} observing system component has an empty lid'
+
+
+def match_collection_and_file_type(candidate: product.Product) -> Iterable[str]:
+    collection_id = candidate.collection_id()
+    for filename in candidate.filenames():
+        _, extension = os.path.splitext(filename)
+
+        if not (extension in COLLECTION_EXTENSIONS.get(collection_id, [])
+                or any(re.match(f'^{pattern}$', filename) for pattern in COLLECTION_REGEXES.get(collection_id, []))):
+            yield f'{filename} in {candidate.labelfilename} is not suitable for the {collection_id} collection'
