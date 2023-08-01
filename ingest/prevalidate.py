@@ -60,8 +60,9 @@ def date_required(candidate: product.Product) -> bool:
     return any(is_image(datafile) for datafile in candidate.filenames())
 
 
-def is_image(datafile):
-    return any(datafile.endswith(extension) for extension in IMAGE_EXTENSIONS)
+def is_image(datafile: str) -> bool:
+    _, extension = os.path.splitext(datafile)
+    return extension in IMAGE_EXTENSIONS
 
 
 def check_observation_area(candidate: product.Product) -> Iterable[str]:
