@@ -73,6 +73,10 @@ def check_observation_area(candidate: product.Product) -> Iterable[str]:
 
 def match_collection_and_file_type(candidate: product.Product) -> Iterable[str]:
     collection_id = candidate.collection_id()
+
+    if collection_id not in COLLECTION_EXTENSIONS.keys():
+        yield f'collection {collection_id} not recognized'
+
     for filename in candidate.filenames():
         _, extension = os.path.splitext(filename)
 
