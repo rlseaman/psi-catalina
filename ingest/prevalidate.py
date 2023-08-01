@@ -40,17 +40,18 @@ def prevalidate_products(products: Iterable[product.Product]) -> Iterable[produc
 
 def prevalidate(candidate: product.Product) -> list[str]:
     result = []
-    if not date_is_present(candidate):
-        result.append("Product is missing a date.")
+    result.extend(check_dates(candidate))
     result.extend(check_observation_area(candidate))
     result.extend(match_collection_and_file_type(candidate))
     return result
 
 
-def date_is_present(candidate: product.Product) -> bool:
+def check_dates(candidate: product.Product) -> Iterable[str]:
     if date_required(candidate):
-        return not (candidate.start_date() is None or candidate.stop_date() is None)
-    return True
+        if candidate.start_date() is None:
+            yield 'Product is missing a start date'
+        if candidate.stop_date() is None:
+            yield 'Product is missing an end date'
 
 
 def date_required(candidate: product.Product) -> bool:
