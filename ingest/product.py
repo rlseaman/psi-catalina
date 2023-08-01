@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 import label
 import logging
 
-from pds4types import ProductLabel
+from pds4types import ProductLabel, ObservingSystemComponent
 
 
 def extract_label(xmldoc: BeautifulSoup, filepath: str = '') -> ProductLabel:
@@ -83,6 +83,11 @@ class Product:
 
     def minorversion(self) -> str:
         return str(self.keywords.identification_area.minor)
+
+    def observing_system_components(self) -> list[ObservingSystemComponent]:
+        return self.keywords.context_area.observing_system.components \
+            if self.keywords.context_area.observing_system \
+            else []
 
     def collection_id(self) -> str:
         return self.keywords.identification_area.collection_id

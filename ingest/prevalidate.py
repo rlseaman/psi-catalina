@@ -19,6 +19,7 @@ def prevalidate(candidate: product.Product) -> list[str]:
     result = []
     if not date_is_present(candidate):
         result.append("Product is missing a date.")
+    result.extend(check_observation_area(candidate))
     return result
 
 
@@ -36,3 +37,11 @@ def date_required(candidate: product.Product) -> bool:
 
 def is_image(datafile):
     return any(datafile.endswith(extension) for extension in IMAGE_EXTENSIONS)
+
+
+def check_observation_area(candidate: product.Product) -> Iterable[str]:
+    for component in candidate.observing_system_components():
+        if component.name is None:
+            yield f'{component.type} observing system component has no name'
+        if component.internal_reference and component.internal_reference.lid_reference is None:
+            yield f'{component.type} observing system component has an empty lid'
