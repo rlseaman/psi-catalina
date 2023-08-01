@@ -30,6 +30,10 @@ COLLECTION_REGEXES = {
 
 
 def prevalidate_products(products: Iterable[product.Product]) -> Iterable[product.Product]:
+    """
+    Filters out products that are either technically valid, or would produce a disproportionate number of errors
+    in the validator. These errors are written to the log instead.
+    """
     for candidate in products:
         errors = prevalidate(candidate)
         if len(errors) > 0:
@@ -40,6 +44,9 @@ def prevalidate_products(products: Iterable[product.Product]) -> Iterable[produc
 
 
 def prevalidate(candidate: product.Product) -> list[str]:
+    """
+    Performs a series of checks against each product.
+    """
     result = []
     result.extend(check_dates(candidate))
     result.extend(check_observation_area(candidate))
@@ -48,6 +55,9 @@ def prevalidate(candidate: product.Product) -> list[str]:
 
 
 def check_dates(candidate: product.Product) -> Iterable[str]:
+    """
+    Ensures that start date and stop date are not nil for certain observations
+    """
     if date_required(candidate):
         if candidate.start_date() is None:
             yield 'Product is missing a start date'
@@ -56,17 +66,26 @@ def check_dates(candidate: product.Product) -> Iterable[str]:
 
 
 def date_required(candidate: product.Product) -> bool:
+    """
+    Determines if a product is of a type that requires a date. Those would be non-calibration image products for now
+    """
     if candidate.collection_id() == 'calibration':
         return False
     return any(is_image(datafile) for datafile in candidate.filenames())
 
 
 def is_image(datafile: str) -> bool:
+    """
+    Determines if a product is an image
+    """
     _, extension = os.path.splitext(datafile)
     return extension in IMAGE_EXTENSIONS
 
 
 def check_observation_area(candidate: product.Product) -> Iterable[str]:
+    """
+    Checks the observation areas for nil component names and lids
+    """
     for component in candidate.observing_system_components():
         if component.name is None:
             yield f'{component.type} observing system component has no name'
@@ -75,6 +94,9 @@ def check_observation_area(candidate: product.Product) -> Iterable[str]:
 
 
 def match_collection_and_file_type(candidate: product.Product) -> Iterable[str]:
+    """
+    Ensures that the product is in the right collection
+    """
     collection_id = candidate.collection_id()
 
     if collection_id in COLLECTION_EXTENSIONS.keys():
@@ -89,8 +111,14 @@ def match_collection_and_file_type(candidate: product.Product) -> Iterable[str]:
 
 
 def filename_matches_collection(collection_id: str, filename: str) -> bool:
+    """
+    Checks the filename against the mapping of collections to regexes
+    """
     return any(re.match(f'^{pattern}$', filename) for pattern in COLLECTION_REGEXES.get(collection_id, []))
 
 
 def extension_matches_collection(collection_id: str, extension: str) -> bool:
+    """
+    Checks the filename against the mapping of collections to extensions
+    """
     return extension in COLLECTION_EXTENSIONS.get(collection_id, [])
