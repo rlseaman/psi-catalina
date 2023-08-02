@@ -37,7 +37,7 @@ FUNPACK_CMD = 'funpack'
 class ValidationResult:
     def __init__(self, vresult: dict) -> None:
         self.status = vresult.get("status", "")
-        self.label = vresult.get("label", "")
+        self.labelpath = vresult.get("label", "")
         self.messages = [ValidationMessage(x) for x in vresult.get("messages")]
         self.dataContents = [ValidationData(x) for x in vresult.get("dataContents")]
         self.src = vresult
@@ -167,7 +167,7 @@ def run_validator(file_name: str, schema_path: str, skip_data: bool) -> tuple[li
                  if x['status'] == "PASS"]
 
     if failures:
-        filenames = [os.path.basename(x.label) for x in failures]
+        filenames = [os.path.basename(x.labelpath) for x in failures]
         logging.warning(f"{len(failures)} Failures encountered: {','.join(filenames)}")
     else:
         logging.info("Validation passed")

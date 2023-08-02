@@ -134,8 +134,8 @@ def process_product_list(loc: paths.Paths, opts: options.Opts, products: list[Pr
     if opts.validation_opts.skip_validation:
         successful_files = set((x.inst, x.year, x.date, x.labelfilename) for x in products)
     else:
-        successful_files = set([validation.extract_label_info(x.label) for x in successes])
-    failed_files = set([validation.extract_label_info(x.label) for x in failures])
+        successful_files = set([validation.extract_label_info(x.labelpath) for x in successes])
+    failed_files = set([validation.extract_label_info(x.labelpath) for x in failures])
     logging.info(failed_files)
 
     if opts.postprocessing_opts.skip_collection_update or opts.postprocessing_opts.validate_only:
@@ -382,6 +382,10 @@ def validate_products(products: list[Product],
                                    preprocessing_opts.skip_data_preprocessing,
                                    preprocessing_opts.skip_label_preprocessing)
         if not validation_opts.skip_validation:
+
+            preflighted = list(preflight.preflight_products(batch))
+            preflight_failures = [x for x in batch if x not in preflighted]
+
             validation_failures, successes, unfiltered = \
                 validation.validate_products(batch, loc.schemadir, validation_opts.skip_data_validation)
             log_validation_run(unfiltered, logdir)
@@ -412,7 +416,7 @@ def write_failure(batch: Iterable[Product],
     Writes information about a failure to the disk. If possible, it will write it next to the file that
     failed.
     """
-    label_info = validation.extract_label_info(failure.label)
+    label_info = validation.extract_label_info(failure.labelpath)
     inst, year, dateval, failfile = label_info
     src_products = [x for x in batch if (x.inst, x.year, x.date, x.labelfilename) == label_info]
 
