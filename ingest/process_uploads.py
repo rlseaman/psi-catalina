@@ -404,16 +404,14 @@ def log_validation_run(output: str, logdir: str) -> None:
         logfile.write(output)
 
 
-"""
-Writes information about a failure to the disk. If possible, it will write it next to the file that
-failed.
-"""
-
-
 def write_failure(batch: Iterable[Product],
                   logdir: str,
                   loc: paths.Paths,
                   failure: validation.ValidationResult) -> None:
+    """
+    Writes information about a failure to the disk. If possible, it will write it next to the file that
+    failed.
+    """
     label_info = validation.extract_label_info(failure.label)
     inst, year, dateval, failfile = label_info
     src_products = [x for x in batch if (x.inst, x.year, x.date, x.labelfilename) == label_info]
