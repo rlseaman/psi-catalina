@@ -21,10 +21,10 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 import preflight
 from discovery import discover_product_dirs, build_ignore_dates, date_has_semaphore, date_has_products, \
-    discover_date_products, ObsNight
+    discover_date_products
 
 from pds4types import ModificationDetail
-from product import Product
+from product import Product, ObsNight
 from collection import Collection
 import iotools
 import validation
@@ -158,11 +158,15 @@ def process_product_list(loc: paths.Paths, opts: options.Opts, products: list[Pr
     logging.info("done")
 
 
-def update_collections(collection_lids, loc, opts, products, successful_files):
+def update_collections(collection_lids: Iterable[str],
+                       loc: paths.Paths,
+                       opts: options.Opts,
+                       products: Iterable[Product],
+                       successful_files: Iterable[tuple[ObsNight, str]]):
     for collection_id in collection_lids:
         collection_products = [x for x in products
                                if x.collection_id() == collection_id
-                               and (x.inst, x.year, x.date, x.labelfilename) in successful_files]
+                               and (x.night, x.labelfilename) in successful_files]
         if collection_products:
             collection_path = update_data_collection(loc,
                                                      collection_products,
@@ -410,8 +414,8 @@ def get_actual_file_name(data_dir: str, file_name: str) -> typing.Optional[str]:
     return None
 
 
-def update_data_collection(loc,
-                           collection_products: list,
+def update_data_collection(loc: paths.Paths,
+                           collection_products: list[Product],
                            collection_id: str,
                            preserve_collection_version: bool) -> str:
     """
@@ -425,14 +429,22 @@ def update_data_collection(loc,
     logging.debug(f"{len(collection_labels)} labels found")
 
     start_dates = [x.start_date() for x
-                   in collection_products + collection_labels
+                   in collection_products
+                   if x.start_date() and is_pds_date(x.start_date())] + \
+                  [x.start_date() for x
+                   in collection_labels
                    if x.start_date() and is_pds_date(x.start_date())]
+
     stop_dates = [x.stop_date() for x
-                  in collection_products + collection_labels
+                  in collection_products
+                  if x.stop_date() and is_pds_date(x.stop_date())] + \
+                 [x.stop_date() for x
+                  in collection_labels
                   if x.stop_date() and is_pds_date(x.stop_date())]
+
     start_date = min(start_dates) if start_dates else None
     stop_date = max(stop_dates) if stop_dates else None
-    obs_dates = sorted(set(x.date for x in collection_products if x.date), key=parse_dir_date)
+    obs_dates = sorted(set(x.night.date for x in collection_products if x.night.date), key=parse_dir_date)
     
     old_lidvid = get_last_version_number(collection_id, collection_labels)
     new_lidvid, record_count = merge_inventories(
