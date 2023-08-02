@@ -112,9 +112,9 @@ def process_upload_dir(opts: options.Opts) -> None:
     directories = limit_directories(loc, list(discover_product_dirs(loc, opts.filter_opts)), opts.filter_opts)
     logging.info(f"Discovery complete, consolidating: {opts.location_opts.basedir}")
     logging.info(f'Discovered directories: {directories}')
-    products = list(preflight.preflight_products(
+    products = list(
         itertools.chain.from_iterable(
-            discover_date_products(loc, inst, year, d) for inst, year, d in directories)))
+            discover_date_products(loc, inst, year, d) for inst, year, d in directories))
 
     logging.info(f"{len(products)} products discovered")
 
@@ -376,22 +376,19 @@ def validate_products(products: list[Product],
 
     for (batch_num, batch) in enumerate(chunk(products, BATCH_SIZE)):
         logging.info(f"Validating a batch of {len(batch)} ({batch_num + 1}/{batch_count})...")
+        preflighted = list(preflight.preflight_products(batch))
         if not preprocessing_opts.skip_preprocessing:
-            for product in batch:
+            for product in preflighted:
                 preprocess_product(product, loc,
                                    preprocessing_opts.skip_data_preprocessing,
                                    preprocessing_opts.skip_label_preprocessing)
         if not validation_opts.skip_validation:
-
-            preflighted = list(preflight.preflight_products(batch))
-            preflight_failures = [x for x in batch if x not in preflighted]
-
             validation_failures, successes, unfiltered = \
-                validation.validate_products(batch, loc.schemadir, validation_opts.skip_data_validation)
+                validation.validate_products(preflighted, loc.schemadir, validation_opts.skip_data_validation)
             log_validation_run(unfiltered, logdir)
             if validation_failures:
                 for failure in validation_failures:
-                    write_failure(batch, logdir, loc, failure)
+                    write_failure(preflighted, logdir, loc, failure)
                 all_validation_failures.extend(validation_failures)
             all_successes.extend(successes)
     if all_validation_failures and not validation_opts.permissive_validation:
