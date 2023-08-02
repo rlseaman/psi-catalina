@@ -43,11 +43,11 @@ class Paths:
         subdir = "other/pds4" if night else None
         return self._buildpath((self.basedir, night.inst, night.year, subdir, night.date, filename))
 
-    def destdir(self,
-                collection_id: Optional[str],
-                night: product.ObsNight = None,
-                sub_dir: str = None,
-                failed: bool = False) -> str:
+    def _destdir(self,
+                 collection_id: Optional[str],
+                 night: product.ObsNight = None,
+                 sub_dir: str = None,
+                 failed: bool = False) -> str:
         """
         Returns the destination directory
         """
@@ -67,14 +67,17 @@ class Paths:
                                     night.date if night else None] if x is not None]
             return self._buildpath(elements)
 
+    def collection_dir(self, collection_id: str) -> str:
+        return self._destdir(collection_id, None, None, False)
+
     def product_dest_dir(self, p: product.Product, failed: bool) -> str:
-        return self.destdir(p.collection_id(), p.night, None, failed)
+        return self._destdir(p.collection_id(), p.night, None, failed)
 
     def validation_data_dir(self, night: product.ObsNight, failed=False) -> str:
-        return self.destdir(None, night, None, failed)
+        return self._destdir(None, night, None, failed)
 
     def validation_label_dir(self, night: product.ObsNight, failed: bool = False) -> str:
-        return self.destdir(None, night, "other/pds4", failed)
+        return self._destdir(None, night, "other/pds4", failed)
 
     def _buildpath(self, elements: Iterable[str]) -> str:
         return os.path.join(*self._filled_elements(elements))

@@ -422,7 +422,7 @@ def update_data_collection(loc: paths.Paths,
     Create the collection inventory and label.
     """
     logging.info(f"Processing collection: {collection_id}")
-    collection_path = loc.destdir(collection_id)
+    collection_path = loc.collection_dir(collection_id)
     os.makedirs(collection_path, exist_ok=True)
 
     collection_labels = get_collection_labels(collection_path)
