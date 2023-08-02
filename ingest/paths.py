@@ -24,7 +24,7 @@ class Paths:
             if location_opts.validated_dir \
             else self._buildpath((self.dest, self.bundle_id))
 
-    def partialdir(self, inst: str = None, year: str = None) -> str:
+    def partialdir(self, inst: str, year: str = None) -> str:
         """
         Returns the data directory
         """
@@ -36,7 +36,7 @@ class Paths:
         """
         return self._buildpath((self.basedir, night.inst, night.year, night.date, filename))
 
-    def labeldir(self, night: product.ObsNight = None, filename: str = None) -> str:
+    def labeldir(self, night: product.ObsNight, filename: str = None) -> str:
         """
         Returns the label file directory
         """
@@ -67,16 +67,16 @@ class Paths:
                                     night.date if night else None] if x is not None]
             return self._buildpath(elements)
 
-    def product_dest_dir(self, p: product.Product, failed: bool = False) -> str:
+    def product_dest_dir(self, p: product.Product, failed: bool) -> str:
         return self.destdir(p.collection_id(), p.night, None, failed)
 
-    def validation_data_dir(self, p: product.Product, failed: bool = False) -> str:
+    def validation_data_dir(self, p: product.Product, failed: bool) -> str:
         return self.destdir(None, p.night, None, failed)
 
     def night_validation_data_dir(self, night: product.ObsNight, failed=False) -> str:
         return self.destdir(None, night, None, failed)
 
-    def validation_label_dir(self, p: product.Product, failed: bool = False) -> str:
+    def validation_label_dir(self, p: product.Product, failed: bool) -> str:
         return self.destdir(None, p.night, "other/pds4", failed)
 
     def night_validation_label_dir(self, night: product.ObsNight, failed: bool = False) -> str:
