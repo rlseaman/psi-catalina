@@ -1,3 +1,4 @@
+import itertools
 import logging
 import os.path
 import re
@@ -47,12 +48,12 @@ def preflight(candidate: product.Product) -> list[str]:
     """
     Performs a series of checks against each product.
     """
-    result = []
-    result.extend(check_dates(candidate))
-    result.extend(check_observation_area(candidate))
-    result.extend(match_collection_and_file_type(candidate))
-    return result
-
+    return list(
+        itertools.chain(
+            check_dates(candidate),
+            check_observation_area(candidate),
+            match_collection_and_file_type(candidate))
+    )
 
 def check_dates(candidate: product.Product) -> Iterable[str]:
     """
