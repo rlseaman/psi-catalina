@@ -35,7 +35,7 @@ def _process_inst_directory(loc: paths.Paths,
     """
     logging.info(f"Processing instrument directory: {instrument}")
 
-    instdir = loc.datadir(instrument)
+    instdir = loc.partialdir(instrument)
     logging.info(f"processing {instdir}...")
     years = (x.name for x in os.scandir(instdir) if x.is_dir())
 
@@ -57,7 +57,7 @@ def _process_year_directory(loc: paths.Paths,
     year: the year being processed
     """
     logging.info(f"processing year directory {instrument}/{year}")
-    yeardir = loc.datadir(instrument, year)
+    yeardir = loc.partialdir(instrument, year)
     days_to_ignore = IGNORE_DATES + build_ignore_dates(filter_opts.ignore_past_days)
     discovered_dates = [x.name for x in os.scandir(yeardir)
                         if x.is_dir() and os.access(x, os.W_OK) and x.name not in days_to_ignore]
@@ -77,13 +77,13 @@ def build_ignore_dates(num_days: int) -> list[str]:
 
 
 def date_has_semaphore(loc: paths.Paths, night: ObsNight) -> bool:
-    datadir = loc.datadir(night.inst, night.year, night.date)
-    labeldir = loc.labeldir(night.inst, night.year, night.date)
+    datadir = loc.datadir(night)
+    labeldir = loc.labeldir(night)
     return _semaphore_exists(datadir) and _semaphore_exists(labeldir)
 
 
 def date_has_products(loc: paths.Paths, night: ObsNight) -> bool:
-    return _label_dir_has_products(loc.labeldir(night.inst, night.year, night.date))
+    return _label_dir_has_products(loc.labeldir(night))
 
 
 def _label_dir_has_products(labeldir: str) -> bool:
@@ -129,8 +129,8 @@ def discover_date_products(loc: paths.Paths, night: ObsNight) -> Iterable[Produc
     """
     logging.info(f"processing data directory {night.inst}/{night.year}/{night.date}")
 
-    datadir = loc.datadir(night.inst, night.year, night.date)
-    labeldir = loc.labeldir(night.inst, night.year, night.date)
+    datadir = loc.datadir(night)
+    labeldir = loc.labeldir(night)
     if _semaphore_exists(datadir) and _semaphore_exists(labeldir):
         return _labels_to_products(datadir, labeldir, night)
 

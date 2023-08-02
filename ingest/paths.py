@@ -24,50 +24,63 @@ class Paths:
             if location_opts.validated_dir \
             else self._buildpath((self.dest, self.bundle_id))
 
-    def datadir(self, inst: str = None, year: str = None, date: str = None, filename: str = None) -> str:
+    def partialdir(self, inst: str = None, year: str = None) -> str:
         """
         Returns the data directory
         """
-        return self._buildpath((self.basedir, inst, year, date, filename))
+        return self._buildpath((self.basedir, inst, year))
 
-    def labeldir(self, inst: str = None, year: str = None, date: str = None, filename: str = None) -> str:
+    def datadir(self, night: product.ObsNight, filename: str = None) -> str:
+        """
+        Returns the data directory
+        """
+        return self._buildpath((self.basedir, night.inst, night.year, night.date, filename))
+
+    def labeldir(self, night: product.ObsNight = None, filename: str = None) -> str:
         """
         Returns the label file directory
         """
-        subdir = "other/pds4" if date else None
-        return self._buildpath((self.basedir, inst, year, subdir, date, filename))
+        subdir = "other/pds4" if night else None
+        return self._buildpath((self.basedir, night.inst, night.year, subdir, night.date, filename))
 
     def destdir(self,
                 collection_id: Optional[str],
-                inst: str = None,
-                year: str = None,
+                night: product.ObsNight = None,
                 sub_dir: str = None,
-                date: str = None,
                 failed: bool = False) -> str:
         """
         Returns the destination directory
         """
         if failed:
-            elements = [x for x in [self.failure_dir, collection_id, inst, year, date] if x is not None]
+            elements = [x for x in [self.failure_dir,
+                                    collection_id,
+                                    night.inst if night else None,
+                                    night.year if night else None,
+                                    night.date if night else None] if x is not None]
             return self._buildpath(elements)
         else:
-            elements = [x for x in [self.validated_dir, collection_id, inst, year, sub_dir, date] if x is not None]
+            elements = [x for x in [self.validated_dir,
+                                    collection_id,
+                                    night.inst if night else None,
+                                    night.year if night else None,
+                                    sub_dir,
+                                    night.date if night else None] if x is not None]
             return self._buildpath(elements)
 
     def product_dest_dir(self, p: product.Product, failed: bool = False) -> str:
-        return self.destdir(p.collection_id(), p.night.inst, p.night.year, None, p.night.date, failed)
+        return self.destdir(p.collection_id(), p.night, None, failed)
 
     def validation_data_dir(self, p: product.Product, failed: bool = False) -> str:
-        return self.destdir(None, p.night.inst, p.night.year, None, p.night.date, failed)
+        return self.destdir(None, p.night, None, failed)
 
-    def night_validation_data_dir(self, inst: str, year: str, date: str, failed=False) -> str:
-        return self.destdir(None, inst, year, None, date, failed)        
+    def night_validation_data_dir(self, night: product.ObsNight, failed=False) -> str:
+        return self.destdir(None, night, None, failed)
 
     def validation_label_dir(self, p: product.Product, failed: bool = False) -> str:
-        return self.destdir(None, p.night.inst, p.night.year, "other/pds4", p.night.date, failed)
+        return self.destdir(None, p.night, "other/pds4", failed)
 
-    def night_validation_label_dir(self, inst: str, year: str, date: str, failed: bool = False) -> str:
-        return self.destdir(None, inst, year, "other/pds4", date, failed)        
+    def night_validation_label_dir(self, night: product.ObsNight, failed: bool = False) -> str:
+        return self.destdir(None, night, "other/pds4", failed)
 
     def _buildpath(self, elements: Iterable[str]) -> str:
         return os.path.join(*self._filled_elements(elements))
