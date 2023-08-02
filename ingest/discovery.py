@@ -6,6 +6,7 @@ from typing import Iterable
 
 import options
 import paths
+from product import Product
 
 
 def discover_product_dirs(loc: paths.Paths, filter_opts: options.FilterOpts) -> Iterable[tuple[str, str, str]]:
@@ -117,3 +118,47 @@ def check_writable(candidate: os.DirEntry) -> bool:
     if os.access(candidate, os.W_OK):
         return True
     return False
+
+
+def discover_date_products(loc: paths.Paths, instrument: str, year: str, date: str) -> Iterable[Product]:
+    """
+    Processes the data in a given data directory and label directory pair.
+
+    This checks for a semaphore file before actually doing the processing.
+
+    datadir: the absolute path to the actual data files
+    labeldir: the absolute path to the label files
+    """
+    logging.info(f"processing data directory {instrument}/{year}/{date}")
+
+    datadir = loc.datadir(instrument, year, date)
+    labeldir = loc.labeldir(instrument, year, date)
+    if semaphore_exists(datadir) and semaphore_exists(labeldir):
+        return labels_to_products(datadir, labeldir, instrument, year, date)
+
+    logging.warning(f"no semaphore: {labeldir} and {datadir}")
+    return []
+
+
+def labels_to_products(datadir: str, labeldir: str, instrument: str, year: str, date: str) -> Iterable[Product]:
+    """
+    Processes the data in a given data directory and label directory pair.
+
+    datadir: the absolute path to the actual data files
+    labeldir: the absolute path to the label files
+    """
+    logging.info(f"Processing searching for labels in {instrument}/{year}/{date}")
+    files = get_labels(labeldir)
+    empty_labels = [x for x in files if os.path.getsize(os.path.join(labeldir, x)) == 0]
+    if empty_labels:
+        logging.warning(f"Empty labels in {labeldir}: {empty_labels}")
+
+    unwritable_labels = [x for x in files if not os.access(os.path.join(labeldir, x), os.W_OK)]
+    if unwritable_labels:
+        logging.warning(f"Unwritable labels in {labeldir}: {unwritable_labels}")
+
+    usable_labels = [x for x in files if x not in empty_labels and x not in unwritable_labels]
+
+    products = (Product(datadir, os.path.join(labeldir, infile), instrument, year, date) for infile in usable_labels)
+    logging.info(f"discovery complete in {instrument}/{year}/{date}")
+    return products
