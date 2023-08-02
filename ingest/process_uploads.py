@@ -567,7 +567,7 @@ def update_data_collection(loc,
                   if x.stop_date() and is_pds_date(x.stop_date())]
     start_date = min(start_dates) if start_dates else None
     stop_date = max(stop_dates) if stop_dates else None
-    obs_dates = sorted(set([x.date for x in collection_products if x.date]), key=parse_dir_date)
+    obs_dates = sorted(set(x.date for x in collection_products if x.date), key=parse_dir_date)
     
     old_lidvid = get_last_version_number(collection_id, collection_labels)
     new_lidvid, record_count = merge_inventories(
