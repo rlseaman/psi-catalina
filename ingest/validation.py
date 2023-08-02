@@ -13,7 +13,7 @@ import gzip
 import logging
 import re
 
-from discovery import ObsNight
+from product import ObsNight
 
 DICTIONARIES_1A = ['PDS4_IMG_1900',
                    'PDS4_DISP_1900',

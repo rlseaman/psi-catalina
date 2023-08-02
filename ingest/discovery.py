@@ -2,22 +2,14 @@ import datetime
 import itertools
 import logging
 import os
-from dataclasses import dataclass
 from typing import Iterable
 
 import options
 import paths
-from product import Product
-
+from product import Product, ObsNight
 
 IGNORE_DATES = ['pds4', 'other']
 INSTRUMENTS = ['703', 'G96', 'I52', 'V06']
-
-@dataclass
-class ObsNight:
-    inst: str
-    year: str
-    date: str
 
 
 def discover_product_dirs(loc: paths.Paths, filter_opts: options.FilterOpts) -> Iterable[ObsNight]:

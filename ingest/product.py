@@ -3,13 +3,13 @@ This class represents a product, and contains the necessary
 attributes for running through the pipeline.
 """
 import os
+from dataclasses import dataclass
 from typing import IO
 
 from bs4 import BeautifulSoup
 import label
 import logging
 
-from discovery import ObsNight
 from pds4types import ProductLabel, ObservingSystemComponent
 
 
@@ -39,6 +39,13 @@ def extract_keywords(infile: IO, filepath: str = '') -> ProductLabel:
         return keywords
     else:
         raise RuntimeError(f"Not a valid xml document: {filepath}")
+
+
+@dataclass(frozen=True)
+class ObsNight:
+    inst: str
+    year: str
+    date: str
 
 
 class Product:
@@ -90,3 +97,6 @@ class Product:
 
     def collection_id(self) -> str:
         return self.keywords.identification_area.collection_id
+
+
+
