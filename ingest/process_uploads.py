@@ -147,8 +147,8 @@ def process_product_list(loc: paths.Paths, opts: options.Opts, products: list[Pr
         logging.info("Skipping move")
     else:
         for product in products:
-            is_failed = (product.inst, product.year, product.date, product.labelfilename)
-            move_product(product, loc, opts.postprocessing_opts, is_failed not in successful_files)
+            labelinfo = (product.inst, product.year, product.date, product.labelfilename)
+            move_product(product, loc, opts.postprocessing_opts, labelinfo not in successful_files)
 
     if opts.postprocessing_opts.validate_only:
         logging.info("Regnerating semaphores at destination")
