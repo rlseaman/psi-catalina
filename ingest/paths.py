@@ -70,16 +70,10 @@ class Paths:
     def product_dest_dir(self, p: product.Product, failed: bool) -> str:
         return self.destdir(p.collection_id(), p.night, None, failed)
 
-    def validation_data_dir(self, p: product.Product, failed: bool) -> str:
-        return self.destdir(None, p.night, None, failed)
-
-    def night_validation_data_dir(self, night: product.ObsNight, failed=False) -> str:
+    def validation_data_dir(self, night: product.ObsNight, failed=False) -> str:
         return self.destdir(None, night, None, failed)
 
-    def validation_label_dir(self, p: product.Product, failed: bool) -> str:
-        return self.destdir(None, p.night, "other/pds4", failed)
-
-    def night_validation_label_dir(self, night: product.ObsNight, failed: bool = False) -> str:
+    def validation_label_dir(self, night: product.ObsNight, failed: bool = False) -> str:
         return self.destdir(None, night, "other/pds4", failed)
 
     def _buildpath(self, elements: Iterable[str]) -> str:

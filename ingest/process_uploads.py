@@ -153,8 +153,8 @@ def process_product_list(loc: paths.Paths, opts: options.Opts, products: list[Pr
     if opts.postprocessing_opts.validate_only:
         logging.info("Regnerating semaphores at destination")
         for night in set(p.night for p in products):
-            recreate_semaphore(loc.night_validation_data_dir(night))
-            recreate_semaphore(loc.night_validation_label_dir(night))
+            recreate_semaphore(loc.validation_data_dir(night))
+            recreate_semaphore(loc.validation_label_dir(night))
     logging.info("done")
 
 
@@ -345,8 +345,8 @@ def move_product_to_prevaldiated(product: Product,
     """
     logging.info(f"Moving files for: {product.labelfilename}")
     datadir = loc.datadir(product.night)
-    label_dest_directory = loc.validation_label_dir(product, failed)
-    data_dest_directory = loc.validation_data_dir(product, failed)
+    label_dest_directory = loc.validation_label_dir(product.night, failed)
+    data_dest_directory = loc.validation_data_dir(product.night, failed)
     os.makedirs(label_dest_directory, exist_ok=True)
     os.makedirs(data_dest_directory, exist_ok=True)
 
