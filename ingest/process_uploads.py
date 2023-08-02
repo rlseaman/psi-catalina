@@ -21,7 +21,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 import preflight
 from discovery import discover_product_dirs, build_ignore_dates, date_has_semaphore, date_has_products, \
-    discover_date_products
+    discover_date_products, ObsNight
 
 from pds4types import ModificationDetail
 from product import Product
@@ -182,9 +182,9 @@ def recreate_semaphore(dirname: str, filename: str = '.autoxfer') -> None:
 
 
 def limit_directories(loc: paths.Paths,
-                      directories: list[tuple[str, str, str]],
-                      filter_opts: options.FilterOpts) -> list[tuple[str, str, str]]:
-    dates = set([d for inst, year, d in directories])
+                      directories: list[ObsNight],
+                      filter_opts: options.FilterOpts) -> list[ObsNight]:
+    dates = set([night.date for night in directories])
     if filter_opts.specific_date is not None:
         dates = [d for d in dates if d == filter_opts.specific_date]
     if filter_opts.ignore_past_days is not None:
@@ -192,12 +192,12 @@ def limit_directories(loc: paths.Paths,
     if filter_opts.max_nights is not None:
         candidates = sorted(dates, key=parse_dir_date, reverse=True)
         candidates_with_products = (d2 for d2 in candidates
-                                    if any(date_has_semaphore(loc, inst, year, d)
-                                           and date_has_products(loc, inst, year, d)
-                                           for inst, year, d in directories if d == d2))
+                                    if any(date_has_semaphore(loc, night)
+                                           and date_has_products(loc, night)
+                                           for night in directories if night.date == d2))
         dates = [x for x in itertools.islice(candidates_with_products, filter_opts.max_nights)]
     logging.info(f'Processing dates: {dates}')
-    return [(inst, year, d) for inst, year, d in directories if d in dates]
+    return [night for night in directories if night.date in dates]
 
 
 def index(items: Iterable[str], indexfunc: typing.Callable[[str], str]) -> dict:

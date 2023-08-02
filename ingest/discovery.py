@@ -2,6 +2,7 @@ import datetime
 import itertools
 import logging
 import os
+from dataclasses import dataclass
 from typing import Iterable
 
 import options
@@ -12,8 +13,14 @@ from product import Product
 IGNORE_DATES = ['pds4', 'other']
 INSTRUMENTS = ['703', 'G96', 'I52', 'V06']
 
+@dataclass
+class ObsNight:
+    inst: str
+    year: str
+    date: str
 
-def discover_product_dirs(loc: paths.Paths, filter_opts: options.FilterOpts) -> Iterable[tuple[str, str, str]]:
+
+def discover_product_dirs(loc: paths.Paths, filter_opts: options.FilterOpts) -> Iterable[ObsNight]:
     """
     Find all of the product labels in the directory and convert them
     to product objects
@@ -25,7 +32,7 @@ def discover_product_dirs(loc: paths.Paths, filter_opts: options.FilterOpts) -> 
 
 def _process_inst_directory(loc: paths.Paths,
                             instrument: str,
-                            filter_opts: options.FilterOpts) -> Iterable[tuple[str, str, str]]:
+                            filter_opts: options.FilterOpts) -> Iterable[ObsNight]:
     """
     Processes the given instrument directory
 
@@ -47,7 +54,7 @@ def _process_inst_directory(loc: paths.Paths,
 def _process_year_directory(loc: paths.Paths,
                             instrument: str,
                             year: str,
-                            filter_opts: options.FilterOpts) -> Iterable[tuple[str, str, str]]:
+                            filter_opts: options.FilterOpts) -> Iterable[ObsNight]:
     """
     Processes the given year directory.
 
@@ -62,8 +69,9 @@ def _process_year_directory(loc: paths.Paths,
     days_to_ignore = IGNORE_DATES + build_ignore_dates(filter_opts.ignore_past_days)
     discovered_dates = [x.name for x in os.scandir(yeardir)
                         if x.is_dir() and os.access(x, os.W_OK) and x.name not in days_to_ignore]
-    return [(instrument, year, d) for d in discovered_dates
-            if date_has_semaphore(loc, instrument, year, d) and date_has_products(loc, instrument, year, d)]
+    discovered_obsnights = (ObsNight(inst=instrument, year=year, date=d) for d in discovered_dates)
+    return [x for x in discovered_obsnights
+            if date_has_semaphore(loc, x) and date_has_products(loc, x)]
 
 
 def build_ignore_dates(num_days: int) -> list[str]:
@@ -76,14 +84,14 @@ def build_ignore_dates(num_days: int) -> list[str]:
     return datestrs
 
 
-def date_has_semaphore(loc: paths.Paths, instrument: str, year: str, date: str) -> bool:
-    datadir = loc.datadir(instrument, year, date)
-    labeldir = loc.labeldir(instrument, year, date)
+def date_has_semaphore(loc: paths.Paths, night: ObsNight) -> bool:
+    datadir = loc.datadir(night.inst, night.year, night.date)
+    labeldir = loc.labeldir(night.inst, night.year, night.date)
     return _semaphore_exists(datadir) and _semaphore_exists(labeldir)
 
 
-def date_has_products(loc: paths.Paths, instrument: str, year: str, date: str) -> bool:
-    return _label_dir_has_products(loc.labeldir(instrument, year, date))
+def date_has_products(loc: paths.Paths, night: ObsNight) -> bool:
+    return _label_dir_has_products(loc.labeldir(night.inst, night.year, night.date))
 
 
 def _label_dir_has_products(labeldir: str) -> bool:
