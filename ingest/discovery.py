@@ -9,6 +9,10 @@ import paths
 from product import Product
 
 
+IGNORE_DATES = ['pds4', 'other']
+INSTRUMENTS = ['703', 'G96', 'I52', 'V06']
+
+
 def discover_product_dirs(loc: paths.Paths, filter_opts: options.FilterOpts) -> Iterable[tuple[str, str, str]]:
     """
     Find all of the product labels in the directory and convert them
@@ -19,7 +23,6 @@ def discover_product_dirs(loc: paths.Paths, filter_opts: options.FilterOpts) -> 
         process_inst_directory(loc, instrument, filter_opts) for instrument in instruments)
 
 
-INSTRUMENTS = ['703', 'G96', 'I52', 'V06']
 
 
 def process_inst_directory(loc: paths.Paths,
@@ -64,8 +67,6 @@ def process_year_directory(loc: paths.Paths,
     return [(instrument, year, d) for d in discovered_dates
             if date_has_semaphore(loc, instrument, year, d) and date_has_products(loc, instrument, year, d)]
 
-
-IGNORE_DATES = ['pds4', 'other']
 
 
 def build_ignore_dates(num_days: int) -> list[str]:
