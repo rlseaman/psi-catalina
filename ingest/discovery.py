@@ -20,12 +20,12 @@ def discover_product_dirs(loc: paths.Paths, filter_opts: options.FilterOpts) -> 
     """
     instruments = [filter_opts.specific_instrument] if filter_opts.specific_instrument else INSTRUMENTS
     return itertools.chain.from_iterable(
-        process_inst_directory(loc, instrument, filter_opts) for instrument in instruments)
+        _process_inst_directory(loc, instrument, filter_opts) for instrument in instruments)
 
 
-def process_inst_directory(loc: paths.Paths,
-                           instrument: str,
-                           filter_opts: options.FilterOpts) -> Iterable[tuple[str, str, str]]:
+def _process_inst_directory(loc: paths.Paths,
+                            instrument: str,
+                            filter_opts: options.FilterOpts) -> Iterable[tuple[str, str, str]]:
     """
     Processes the given instrument directory
 
@@ -41,13 +41,13 @@ def process_inst_directory(loc: paths.Paths,
     years = (x.name for x in os.scandir(instdir) if x.is_dir())
 
     return itertools.chain.from_iterable(
-        process_year_directory(loc, instrument, year, filter_opts) for year in years)
+        _process_year_directory(loc, instrument, year, filter_opts) for year in years)
 
 
-def process_year_directory(loc: paths.Paths,
-                           instrument: str,
-                           year: str,
-                           filter_opts: options.FilterOpts) -> Iterable[tuple[str, str, str]]:
+def _process_year_directory(loc: paths.Paths,
+                            instrument: str,
+                            year: str,
+                            filter_opts: options.FilterOpts) -> Iterable[tuple[str, str, str]]:
     """
     Processes the given year directory.
 
@@ -79,18 +79,18 @@ def build_ignore_dates(num_days: int) -> list[str]:
 def date_has_semaphore(loc: paths.Paths, instrument: str, year: str, date: str) -> bool:
     datadir = loc.datadir(instrument, year, date)
     labeldir = loc.labeldir(instrument, year, date)
-    return semaphore_exists(datadir) and semaphore_exists(labeldir)
+    return _semaphore_exists(datadir) and _semaphore_exists(labeldir)
 
 
 def date_has_products(loc: paths.Paths, instrument: str, year: str, date: str) -> bool:
-    return label_dir_has_products(loc.labeldir(instrument, year, date))
+    return _label_dir_has_products(loc.labeldir(instrument, year, date))
 
 
-def label_dir_has_products(labeldir: str) -> bool:
-    return len(get_labels(labeldir)) > 0
+def _label_dir_has_products(labeldir: str) -> bool:
+    return len(_get_labels(labeldir)) > 0
 
 
-def semaphore_exists(dirname: str) -> bool:
+def _semaphore_exists(dirname: str) -> bool:
     """
     Verifies that a semaphore file exists in the given directory.
 
@@ -101,18 +101,18 @@ def semaphore_exists(dirname: str) -> bool:
     return os.path.exists(semaphore_file)
 
 
-def get_labels(labeldir: str) -> list[str]:
-    return [x.name for x in os.scandir(labeldir) if is_label(x)]
+def _get_labels(labeldir: str) -> list[str]:
+    return [x.name for x in os.scandir(labeldir) if _is_label(x)]
 
 
-def is_label(candidate: os.DirEntry) -> bool:
+def _is_label(candidate: os.DirEntry) -> bool:
     """
     Determines if the given file is a label file.
     """
-    return candidate.name.endswith('.xml') and check_writable(candidate)
+    return candidate.name.endswith('.xml') and _check_writable(candidate)
 
 
-def check_writable(candidate: os.DirEntry) -> bool:
+def _check_writable(candidate: os.DirEntry) -> bool:
     if os.access(candidate, os.W_OK):
         return True
     return False
@@ -131,14 +131,14 @@ def discover_date_products(loc: paths.Paths, instrument: str, year: str, date: s
 
     datadir = loc.datadir(instrument, year, date)
     labeldir = loc.labeldir(instrument, year, date)
-    if semaphore_exists(datadir) and semaphore_exists(labeldir):
-        return labels_to_products(datadir, labeldir, instrument, year, date)
+    if _semaphore_exists(datadir) and _semaphore_exists(labeldir):
+        return _labels_to_products(datadir, labeldir, instrument, year, date)
 
     logging.warning(f"no semaphore: {labeldir} and {datadir}")
     return []
 
 
-def labels_to_products(datadir: str, labeldir: str, instrument: str, year: str, date: str) -> Iterable[Product]:
+def _labels_to_products(datadir: str, labeldir: str, instrument: str, year: str, date: str) -> Iterable[Product]:
     """
     Processes the data in a given data directory and label directory pair.
 
@@ -146,7 +146,7 @@ def labels_to_products(datadir: str, labeldir: str, instrument: str, year: str, 
     labeldir: the absolute path to the label files
     """
     logging.info(f"Processing searching for labels in {instrument}/{year}/{date}")
-    files = get_labels(labeldir)
+    files = _get_labels(labeldir)
     empty_labels = [x for x in files if os.path.getsize(os.path.join(labeldir, x)) == 0]
     if empty_labels:
         logging.warning(f"Empty labels in {labeldir}: {empty_labels}")
