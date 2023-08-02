@@ -19,7 +19,7 @@ from typing import Iterable
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-import prevalidate
+import preflight
 
 from pds4types import ModificationDetail
 from product import Product
@@ -112,7 +112,7 @@ def process_upload_dir(opts: options.Opts) -> None:
     directories = limit_directories(loc, list(discover_product_dirs(loc, opts.filter_opts)), opts.filter_opts)
     logging.info(f"Discovery complete, consolidating: {opts.location_opts.basedir}")
     logging.info(f'Discovered directories: {directories}')
-    products = list(prevalidate.prevalidate_products(
+    products = list(preflight.preflight_products(
         itertools.chain.from_iterable(
             discover_date_products(loc, inst, year, d) for inst, year, d in directories)))
 
