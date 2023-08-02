@@ -55,16 +55,16 @@ class Paths:
             return self._buildpath(elements)
 
     def product_dest_dir(self, p: product.Product, failed: bool = False) -> str:
-        return self.destdir(p.collection_id(), p.inst, p.year, None, p.date, failed)
+        return self.destdir(p.collection_id(), p.night.inst, p.night.year, None, p.night.date, failed)
 
     def validation_data_dir(self, p: product.Product, failed: bool = False) -> str:
-        return self.destdir(None, p.inst, p.year, None, p.date, failed)        
+        return self.destdir(None, p.night.inst, p.night.year, None, p.night.date, failed)
 
     def night_validation_data_dir(self, inst: str, year: str, date: str, failed=False) -> str:
         return self.destdir(None, inst, year, None, date, failed)        
 
     def validation_label_dir(self, p: product.Product, failed: bool = False) -> str:
-        return self.destdir(None, p.inst, p.year, "other/pds4", p.date, failed)        
+        return self.destdir(None, p.night.inst, p.night.year, "other/pds4", p.night.date, failed)
 
     def night_validation_label_dir(self, inst: str, year: str, date: str, failed: bool = False) -> str:
         return self.destdir(None, inst, year, "other/pds4", date, failed)        

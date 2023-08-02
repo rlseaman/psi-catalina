@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 import label
 import logging
 
+from discovery import ObsNight
 from pds4types import ProductLabel, ObservingSystemComponent
 
 
@@ -45,16 +46,14 @@ class Product:
     Represents the product itself.
     """
 
-    def __init__(self, datadir: str, filepath: str, inst: str = None, year: str = None, date: str = None) -> None:
+    def __init__(self, datadir: str, filepath: str, night: ObsNight) -> None:
         """
         Parses a label file into a Product
         """
         logging.debug(f"Creating product for: {filepath}")
         with open(filepath) as infile:
             self.keywords = extract_keywords(infile, filepath)
-            self.inst = inst
-            self.year = year
-            self.date = date
+            self.night = night
             self.labelfilename = os.path.basename(filepath)
             self.labeldir = os.path.dirname(filepath)
             self.labelpath = filepath

@@ -13,6 +13,7 @@ import gzip
 import logging
 import re
 
+from discovery import ObsNight
 
 DICTIONARIES_1A = ['PDS4_IMG_1900',
                    'PDS4_DISP_1900',
@@ -100,7 +101,10 @@ def create_temp_copy(temp_dir: str, product_to_copy: product.Product, skip_data:
     label_path = product_to_copy.labelpath
     data_dir = product_to_copy.datadir
 
-    temp_product_dir = os.path.join(temp_dir, product_to_copy.inst, product_to_copy.year, product_to_copy.date)
+    temp_product_dir = os.path.join(temp_dir,
+                                    product_to_copy.night.inst,
+                                    product_to_copy.night.year,
+                                    product_to_copy.night.date)
 
     logging.info(f"Creating temporary copies of {label_file_name}")
 
@@ -174,7 +178,7 @@ def run_validator(file_name: str, schema_path: str, skip_data: bool) -> tuple[li
     return failures, successes, unfiltered
 
 
-def extract_label_info(labelpath: str) -> tuple[str, str, str, str]:
+def extract_label_info(labelpath: str) -> tuple[ObsNight, str]:
     datepath = os.path.dirname(labelpath)
     yearpath = os.path.dirname(datepath)
     instpath = os.path.dirname(yearpath)
@@ -184,7 +188,7 @@ def extract_label_info(labelpath: str) -> tuple[str, str, str, str]:
     yearval = os.path.basename(yearpath)
     instval = os.path.basename(instpath)
 
-    return instval, yearval, dateval, label
+    return ObsNight(instval, yearval, dateval), label
 
 
 def get_schemas(base_path: str, extension: str) -> list[str]:
