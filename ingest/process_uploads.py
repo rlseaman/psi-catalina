@@ -19,7 +19,7 @@ from typing import Iterable
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-import prevalidate
+import preflight
 
 from pds4types import ModificationDetail
 from product import Product
@@ -112,9 +112,9 @@ def process_upload_dir(opts: options.Opts) -> None:
     directories = limit_directories(loc, list(discover_product_dirs(loc, opts.filter_opts)), opts.filter_opts)
     logging.info(f"Discovery complete, consolidating: {opts.location_opts.basedir}")
     logging.info(f'Discovered directories: {directories}')
-    products = list(prevalidate.prevalidate_products(
+    products = list(
         itertools.chain.from_iterable(
-            discover_date_products(loc, inst, year, d) for inst, year, d in directories)))
+            discover_date_products(loc, inst, year, d) for inst, year, d in directories))
 
     logging.info(f"{len(products)} products discovered")
 
@@ -134,8 +134,8 @@ def process_product_list(loc: paths.Paths, opts: options.Opts, products: list[Pr
     if opts.validation_opts.skip_validation:
         successful_files = set((x.inst, x.year, x.date, x.labelfilename) for x in products)
     else:
-        successful_files = set([validation.extract_label_info(x.label) for x in successes])
-    failed_files = set([validation.extract_label_info(x.label) for x in failures])
+        successful_files = set([validation.extract_label_info(x.labelpath) for x in successes])
+    failed_files = set([validation.extract_label_info(x.labelpath) for x in failures])
     logging.info(failed_files)
 
     if opts.postprocessing_opts.skip_collection_update or opts.postprocessing_opts.validate_only:
@@ -147,8 +147,8 @@ def process_product_list(loc: paths.Paths, opts: options.Opts, products: list[Pr
         logging.info("Skipping move")
     else:
         for product in products:
-            is_failed = (product.inst, product.year, product.date, product.labelfilename)
-            move_product(product, loc, opts.postprocessing_opts, is_failed not in successful_files)
+            labelinfo = (product.inst, product.year, product.date, product.labelfilename)
+            move_product(product, loc, opts.postprocessing_opts, labelinfo not in successful_files)
 
     if opts.postprocessing_opts.validate_only:
         logging.info("Regnerating semaphores at destination")
@@ -376,18 +376,19 @@ def validate_products(products: list[Product],
 
     for (batch_num, batch) in enumerate(chunk(products, BATCH_SIZE)):
         logging.info(f"Validating a batch of {len(batch)} ({batch_num + 1}/{batch_count})...")
+        preflighted = list(preflight.preflight_products(batch))
         if not preprocessing_opts.skip_preprocessing:
-            for product in batch:
+            for product in preflighted:
                 preprocess_product(product, loc,
                                    preprocessing_opts.skip_data_preprocessing,
                                    preprocessing_opts.skip_label_preprocessing)
         if not validation_opts.skip_validation:
             validation_failures, successes, unfiltered = \
-                validation.validate_products(batch, loc.schemadir, validation_opts.skip_data_validation)
+                validation.validate_products(preflighted, loc.schemadir, validation_opts.skip_data_validation)
             log_validation_run(unfiltered, logdir)
             if validation_failures:
                 for failure in validation_failures:
-                    write_failure(batch, logdir, loc, failure)
+                    write_failure(preflighted, logdir, loc, failure)
                 all_validation_failures.extend(validation_failures)
             all_successes.extend(successes)
     if all_validation_failures and not validation_opts.permissive_validation:
@@ -404,17 +405,15 @@ def log_validation_run(output: str, logdir: str) -> None:
         logfile.write(output)
 
 
-"""
-Writes information about a failure to the disk. If possible, it will write it next to the file that
-failed.
-"""
-
-
 def write_failure(batch: Iterable[Product],
                   logdir: str,
                   loc: paths.Paths,
                   failure: validation.ValidationResult) -> None:
-    label_info = validation.extract_label_info(failure.label)
+    """
+    Writes information about a failure to the disk. If possible, it will write it next to the file that
+    failed.
+    """
+    label_info = validation.extract_label_info(failure.labelpath)
     inst, year, dateval, failfile = label_info
     src_products = [x for x in batch if (x.inst, x.year, x.date, x.labelfilename) == label_info]
 
@@ -569,7 +568,7 @@ def update_data_collection(loc,
                   if x.stop_date() and is_pds_date(x.stop_date())]
     start_date = min(start_dates) if start_dates else None
     stop_date = max(stop_dates) if stop_dates else None
-    obs_dates = sorted(set([x.date for x in collection_products if x.date]), key=parse_dir_date)
+    obs_dates = sorted(set(x.date for x in collection_products if x.date), key=parse_dir_date)
     
     old_lidvid = get_last_version_number(collection_id, collection_labels)
     new_lidvid, record_count = merge_inventories(

@@ -1,3 +1,4 @@
+import itertools
 import logging
 import os.path
 import re
@@ -29,30 +30,30 @@ COLLECTION_REGEXES = {
 }
 
 
-def prevalidate_products(products: Iterable[product.Product]) -> Iterable[product.Product]:
+def preflight_products(products: Iterable[product.Product]) -> Iterable[product.Product]:
     """
     Filters out products that are either technically valid, or would produce a disproportionate number of errors
     in the validator. These errors are written to the log instead.
     """
     for candidate in products:
-        errors = prevalidate(candidate)
+        errors = preflight(candidate)
         if len(errors) > 0:
             message = "\n\t" + "\n\t".join(errors)
-            logging.warning(f'Product {candidate.labelfilename} failed prevalidation: {message}')
+            logging.warning(f'Product {candidate.labelfilename} failed preflight: {message}')
         else:
             yield candidate
 
 
-def prevalidate(candidate: product.Product) -> list[str]:
+def preflight(candidate: product.Product) -> list[str]:
     """
     Performs a series of checks against each product.
     """
-    result = []
-    result.extend(check_dates(candidate))
-    result.extend(check_observation_area(candidate))
-    result.extend(match_collection_and_file_type(candidate))
-    return result
-
+    return list(
+        itertools.chain(
+            check_dates(candidate),
+            check_observation_area(candidate),
+            match_collection_and_file_type(candidate))
+    )
 
 def check_dates(candidate: product.Product) -> Iterable[str]:
     """
