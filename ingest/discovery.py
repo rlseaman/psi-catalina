@@ -23,8 +23,6 @@ def discover_product_dirs(loc: paths.Paths, filter_opts: options.FilterOpts) -> 
         process_inst_directory(loc, instrument, filter_opts) for instrument in instruments)
 
 
-
-
 def process_inst_directory(loc: paths.Paths,
                            instrument: str,
                            filter_opts: options.FilterOpts) -> Iterable[tuple[str, str, str]]:
@@ -66,7 +64,6 @@ def process_year_directory(loc: paths.Paths,
                         if x.is_dir() and os.access(x, os.W_OK) and x.name not in days_to_ignore]
     return [(instrument, year, d) for d in discovered_dates
             if date_has_semaphore(loc, instrument, year, d) and date_has_products(loc, instrument, year, d)]
-
 
 
 def build_ignore_dates(num_days: int) -> list[str]:
