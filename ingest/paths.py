@@ -44,7 +44,7 @@ class Paths:
         return self._buildpath((self.basedir, night.inst, night.year, subdir, night.date, filename))
 
     def _destdir(self,
-                 collection_id: Optional[str],
+                 collection_id: Optional[str] = None,
                  night: product.ObsNight = None,
                  sub_dir: str = None,
                  failed: bool = False) -> str:
@@ -68,16 +68,16 @@ class Paths:
             return self._buildpath(elements)
 
     def collection_dir(self, collection_id: str) -> str:
-        return self._destdir(collection_id, None, None, False)
+        return self._destdir(collection_id=collection_id, failed=False)
 
     def product_dest_dir(self, p: product.Product, failed: bool) -> str:
-        return self._destdir(p.collection_id(), p.night, None, failed)
+        return self._destdir(collection_id=p.collection_id(), night=p.night, failed=failed)
 
     def validation_data_dir(self, night: product.ObsNight, failed=False) -> str:
-        return self._destdir(None, night, None, failed)
+        return self._destdir(night=night, failed=failed)
 
     def validation_label_dir(self, night: product.ObsNight, failed: bool = False) -> str:
-        return self._destdir(None, night, "other/pds4", failed)
+        return self._destdir(night=night, sub_dir="other/pds4", failed=failed)
 
     def _buildpath(self, elements: Iterable[str]) -> str:
         return os.path.join(*self._filled_elements(elements))
