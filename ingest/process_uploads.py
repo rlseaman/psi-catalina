@@ -318,13 +318,13 @@ def preprocess_product(product: Product,
         logging.info("Skipping preprocessing")
     else:
         for file_name in file_names:
-            src_data = night_loc.datadir(file_name)
+            src_data = os.path.join(night_loc.datadir(), file_name)
             preprocess.preprocess_datafile(src_data)
 
     if skip_label_preprocessing:
         logging.info("Skipping label preprocessing")
     else:
-        src_label = night_loc.labeldir(product.labelfilename)
+        src_label = os.path.join(night_loc.labeldir(), product.labelfilename)
         preprocess.preprocess_labelfile(src_label, file_names)
 
 

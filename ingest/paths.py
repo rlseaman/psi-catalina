@@ -27,16 +27,16 @@ class ObsNightLoc:
         """
         return self._destdir(sub_dir="other/pds4", failed=failed)
 
-    def datadir(self, filename: str = None) -> str:
+    def datadir(self) -> str:
         """
         Returns the data directory for an observation night. It can also return the location of an individual
         file in this directory, if a filename is provided.
 
         This will be in the form: BASE/INST/YEAR/DATE/FILE
         """
-        return _buildpath((self.basedir, self.night.inst, self.night.year, self.night.date, filename))
+        return os.path.join(self.basedir, self.night.inst, self.night.year, self.night.date)
 
-    def labeldir(self, filename: str = None) -> str:
+    def labeldir(self) -> str:
         """
         Returns the label directory for an observation night. This is different from the data directory, and it is
         in a nearby directory, instead of directly underneath the data directory.  It can also return the location of
@@ -45,7 +45,7 @@ class ObsNightLoc:
         This will be in the form: BASE/INST/YEAR/other/pds4/DATE/FILE
         """
         subdir = "other/pds4"
-        return _buildpath((self.basedir, self.night.inst, self.night.year, subdir, self.night.date, filename))
+        return os.path.join(self.basedir, self.night.inst, self.night.year, subdir, self.night.date)
 
     def dest_dir(self, collection_id: str, failed: bool) -> str:
         """ Returns the destination directory for fully processed products """
