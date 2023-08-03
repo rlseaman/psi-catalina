@@ -67,8 +67,9 @@ class Discovery:
                 if self.date_has_semaphore(x) and self.date_has_products(x)]
 
     def date_has_semaphore(self, night: ObsNight) -> bool:
-        datadir = self.loc.datadir(night)
-        labeldir = self.loc.labeldir(night)
+        night_loc = self.loc.fornight(night)
+        datadir = night_loc.datadir()
+        labeldir = night_loc.labeldir()
         return self._semaphore_exists(datadir) and self._semaphore_exists(labeldir)
 
     def date_has_products(self, night: ObsNight) -> bool:
@@ -77,7 +78,7 @@ class Discovery:
         @param night:
         @return:
         """
-        return self._label_dir_has_products(self.loc.labeldir(night))
+        return self._label_dir_has_products(self.loc.fornight(night).labeldir())
 
     def _label_dir_has_products(self, labeldir: str) -> bool:
         """
@@ -130,9 +131,9 @@ class Discovery:
         @return: A list of products for the observation night.
         """
         logging.info(f"processing data directory {night.inst}/{night.year}/{night.date}")
-
-        datadir = self.loc.datadir(night)
-        labeldir = self.loc.labeldir(night)
+        night_loc = self.loc.fornight(night)
+        datadir = night_loc.datadir()
+        labeldir = night_loc.labeldir()
         if self._semaphore_exists(datadir) and self._semaphore_exists(labeldir):
             return self._labels_to_products(datadir, labeldir, night)
 

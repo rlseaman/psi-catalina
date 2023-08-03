@@ -153,8 +153,9 @@ def process_product_list(loc: paths.Paths, opts: options.Opts, products: list[Pr
     if opts.postprocessing_opts.validate_only:
         logging.info("Regnerating semaphores at destination")
         for night in set(p.night for p in products):
-            recreate_semaphore(loc.validation_data_dir(night))
-            recreate_semaphore(loc.validation_label_dir(night))
+            night_loc = loc.fornight(night)
+            recreate_semaphore(night_loc.validation_data_dir())
+            recreate_semaphore(night_loc.validation_label_dir())
     logging.info("done")
 
 
@@ -311,17 +312,19 @@ def preprocess_product(product: Product,
     if not file_names:
         raise Exception("No filenames in label:", product.labelfilename)
 
+    night_loc = loc.fornight(product.night)
+
     if skip_data_preprocessing:
         logging.info("Skipping preprocessing")
     else:
         for file_name in file_names:
-            src_data = loc.datadir(product.night, file_name)
+            src_data = night_loc.datadir(file_name)
             preprocess.preprocess_datafile(src_data)
 
     if skip_label_preprocessing:
         logging.info("Skipping label preprocessing")
     else:
-        src_label = loc.labeldir(product.night, product.labelfilename)
+        src_label = night_loc.labeldir(product.labelfilename)
         preprocess.preprocess_labelfile(src_label, file_names)
 
 
@@ -344,9 +347,10 @@ def move_product_to_prevaldiated(product: Product,
     move a product to the pre-validated directory. Future runs of this script can now skip the validation.
     """
     logging.info(f"Moving files for: {product.labelfilename}")
-    datadir = loc.datadir(product.night)
-    label_dest_directory = loc.validation_label_dir(product.night, failed)
-    data_dest_directory = loc.validation_data_dir(product.night, failed)
+    night_loc = loc.fornight(product.night)
+    datadir = night_loc.datadir()
+    label_dest_directory = night_loc.validation_label_dir(failed)
+    data_dest_directory = night_loc.validation_data_dir(failed)
     os.makedirs(label_dest_directory, exist_ok=True)
     os.makedirs(data_dest_directory, exist_ok=True)
 
@@ -364,7 +368,7 @@ def move_product_to_collections(product: Product,
     """
     logging.info(f"Moving files for: {product.labelfilename}")
 
-    datadir = loc.datadir(product.night)
+    datadir = loc.fornight(product.night).datadir()
     dest_directory = loc.product_dest_dir(product, failed)
     os.makedirs(dest_directory, exist_ok=True)
 
