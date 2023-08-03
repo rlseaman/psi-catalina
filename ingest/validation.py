@@ -141,7 +141,9 @@ def create_temp_copy(temp_dir: str, product_to_copy: product.Product, skip_data:
     return temp_label_path
 
 
-def run_validator(file_name: str, schema_path: str, skip_data: bool) -> tuple[list[ValidationResult], list[ValidationResult], str]:
+def run_validator(file_name: str,
+                  schema_path: str,
+                  skip_data: bool) -> tuple[list[ValidationResult], list[ValidationResult], str]:
     """
     Runs the label validatior on the given file or directory
     """
