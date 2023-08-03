@@ -110,7 +110,7 @@ class Paths:
 
     def collection_dir(self, collection_id: str) -> str:
         """ Returns the destination directory for generated collection files. """
-        return self._destdir(collection_id=collection_id)
+        return os.path.join(self.validated_dir, collection_id)
 
     def product_dest_dir(self, p: product.Product, failed: bool) -> str:
         """ Returns the destination directory for fully processed products """
@@ -121,12 +121,6 @@ class Paths:
                            validated_dir=self.validated_dir,
                            failure_dir=self.failure_dir,
                            night=night)
-
-    def _destdir(self, collection_id: str) -> str:
-        """
-        """
-        elements = [x for x in [self.validated_dir, collection_id] if x is not None]
-        return _buildpath(elements)
 
 
 def _buildpath(elements: Iterable[str]) -> str:
