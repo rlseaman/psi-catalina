@@ -20,8 +20,7 @@ from typing import Iterable
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 import preflight
-from discovery import discover_product_dirs, build_ignore_dates, date_has_semaphore, date_has_products, \
-    discover_date_products
+from discovery import Discovery
 
 from pds4types import ModificationDetail
 from product import Product, ObsNight
@@ -109,12 +108,13 @@ def process_upload_dir(opts: options.Opts) -> None:
     """
     logging.info(f"Discovering products at: {opts.location_opts.basedir}")
     loc = paths.Paths(opts.location_opts, BUNDLE_ID)
-    directories = limit_directories(loc, list(discover_product_dirs(loc, opts.filter_opts)), opts.filter_opts)
+    discovery = Discovery(loc, opts.filter_opts)
+    directories = limit_directories(discovery, list(discovery.discover_product_dirs()), opts.filter_opts)
     logging.info(f"Discovery complete, consolidating: {opts.location_opts.basedir}")
     logging.info(f'Discovered directories: {directories}')
     products = list(
         itertools.chain.from_iterable(
-            discover_date_products(loc, night) for night in directories))
+            discovery.discover_date_products(night) for night in directories))
 
     logging.info(f"{len(products)} products discovered")
 
@@ -185,19 +185,19 @@ def recreate_semaphore(dirname: str, filename: str = '.autoxfer') -> None:
         pass
 
 
-def limit_directories(loc: paths.Paths,
+def limit_directories(discovery: Discovery,
                       directories: list[ObsNight],
                       filter_opts: options.FilterOpts) -> list[ObsNight]:
     dates = set([night.date for night in directories])
     if filter_opts.specific_date is not None:
         dates = [d for d in dates if d == filter_opts.specific_date]
     if filter_opts.ignore_past_days is not None:
-        dates = [d for d in dates if d not in build_ignore_dates(filter_opts.ignore_past_days)]
+        dates = [d for d in dates if d not in discovery.build_ignore_dates(filter_opts.ignore_past_days)]
     if filter_opts.max_nights is not None:
         candidates = sorted(dates, key=parse_dir_date, reverse=True)
         candidates_with_products = (d2 for d2 in candidates
-                                    if any(date_has_semaphore(loc, night)
-                                           and date_has_products(loc, night)
+                                    if any(discovery.date_has_semaphore(night)
+                                           and discovery.date_has_products(night)
                                            for night in directories if night.date == d2))
         dates = [x for x in itertools.islice(candidates_with_products, filter_opts.max_nights)]
     logging.info(f'Processing dates: {dates}')
