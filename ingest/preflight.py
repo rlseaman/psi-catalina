@@ -55,6 +55,7 @@ def preflight(candidate: product.Product) -> list[str]:
             match_collection_and_file_type(candidate))
     )
 
+
 def check_dates(candidate: product.Product) -> Iterable[str]:
     """
     Ensures that start date and stop date are not nil for certain observations

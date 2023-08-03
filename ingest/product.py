@@ -97,6 +97,3 @@ class Product:
 
     def collection_id(self) -> str:
         return self.keywords.identification_area.collection_id
-
-
-
