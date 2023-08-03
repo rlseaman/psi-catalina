@@ -110,7 +110,7 @@ class Paths:
 
     def collection_dir(self, collection_id: str) -> str:
         """ Returns the destination directory for generated collection files. """
-        return self._destdir(collection_id=collection_id, failed=False)
+        return self._destdir(collection_id=collection_id)
 
     def product_dest_dir(self, p: product.Product, failed: bool) -> str:
         """ Returns the destination directory for fully processed products """
@@ -122,24 +122,11 @@ class Paths:
                            failure_dir=self.failure_dir,
                            night=night)
 
-    def _destdir(self,
-                 collection_id: Optional[str] = None,
-                 sub_dir: str = None,
-                 failed: bool = False) -> str:
+    def _destdir(self, collection_id: str) -> str:
         """
-        Returns the destination directory. This can produce a variety of results, based on the options. It can locate
-        the destination directory for failed validations, the destination directory for successful files, the
-        directory for prevalidated files, and the directory for incoming files.
         """
-        if failed:
-            elements = [x for x in [self.failure_dir,
-                                    collection_id] if x is not None]
-            return _buildpath(elements)
-        else:
-            elements = [x for x in [self.validated_dir,
-                                    collection_id,
-                                    sub_dir] if x is not None]
-            return _buildpath(elements)
+        elements = [x for x in [self.validated_dir, collection_id] if x is not None]
+        return _buildpath(elements)
 
 
 def _buildpath(elements: Iterable[str]) -> str:
