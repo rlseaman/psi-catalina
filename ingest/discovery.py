@@ -83,10 +83,21 @@ def date_has_semaphore(loc: paths.Paths, night: ObsNight) -> bool:
 
 
 def date_has_products(loc: paths.Paths, night: ObsNight) -> bool:
+    """
+    Determines if there are products available for an observation night
+    @param loc:
+    @param night:
+    @return:
+    """
     return _label_dir_has_products(loc.labeldir(night))
 
 
 def _label_dir_has_products(labeldir: str) -> bool:
+    """
+    Determines if there are any labels in a directory.
+    @param labeldir: The directory to search
+    @return: True if there are any label files in the directory, false otherwise
+    """
     return len(_get_labels(labeldir)) > 0
 
 
@@ -94,20 +105,27 @@ def _semaphore_exists(dirname: str) -> bool:
     """
     Verifies that a semaphore file exists in the given directory.
 
-    dirname: the absolute path of the directory to check
+    @param dirname: the absolute path of the directory to check
+    @return: True if the semaphore file exists, false otherwise
     """
     logging.info(f"checking for semaphore in {dirname}")
     semaphore_file = os.path.join(dirname, '.autoxfer')
     return os.path.exists(semaphore_file)
 
 
-def _get_labels(labeldir: str) -> list[str]:
-    return [x.name for x in os.scandir(labeldir) if _is_label(x)]
+def _get_labels(label_dir: str) -> list[str]:
+    """
+    Finds the labels in a directory
+    @param label_dir: The directory to search
+    @return: A list of label filenames
+    """
+    return [x.name for x in os.scandir(label_dir) if _is_label(x)]
 
 
 def _is_label(candidate: os.DirEntry) -> bool:
     """
-    Determines if the given file is a label file.
+    Determines if the given file is a label file. This is kind of a loose test, just making sure that the files are
+    xml files. Any actual parsing would be way slower.
     """
     return candidate.name.endswith('.xml') and _check_writable(candidate)
 
@@ -124,8 +142,9 @@ def discover_date_products(loc: paths.Paths, night: ObsNight) -> Iterable[Produc
 
     This checks for a semaphore file before actually doing the processing.
 
-    datadir: the absolute path to the actual data files
-    labeldir: the absolute path to the label files
+    @param loc: The locator service that will help find directories
+    @param night: The observation night to search for
+    @return: A list of products for the observation night.
     """
     logging.info(f"processing data directory {night.inst}/{night.year}/{night.date}")
 
@@ -142,8 +161,10 @@ def _labels_to_products(datadir: str, labeldir: str, night: ObsNight) -> Iterabl
     """
     Processes the data in a given data directory and label directory pair.
 
-    datadir: the absolute path to the actual data files
-    labeldir: the absolute path to the label files
+    @param datadir: The directory containing the data files
+    @param labeldir: The directory containing the label files
+    @param night: The observation night to search for
+    @return: A list of products for the observation night
     """
     logging.info(f"Processing searching for labels in {night.inst}/{night.year}/{night.date}")
     files = _get_labels(labeldir)
