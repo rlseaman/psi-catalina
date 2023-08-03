@@ -18,14 +18,14 @@ class ObsNightLoc:
         Returns the destination data directory for products that have completed prevalidation, but are not fully
         processed.
         """
-        return self._destdir(failed=failed)
+        return self._build_dir(failed=failed)
 
     def validation_label_dir(self, failed: bool = False) -> str:
         """
         Returns the destination label directory for products that have completed prevalidation, but are not fully
         processed. This mimics the directory structure for incoming files.
         """
-        return self._destdir(sub_dir="other/pds4", failed=failed)
+        return self._build_dir(sub_dir="other/pds4", failed=failed)
 
     def datadir(self) -> str:
         """
@@ -49,12 +49,12 @@ class ObsNightLoc:
 
     def dest_dir(self, collection_id: str, failed: bool) -> str:
         """ Returns the destination directory for fully processed products """
-        return self._destdir(collection_id=collection_id, failed=failed)
+        return self._build_dir(collection_id=collection_id, failed=failed)
 
-    def _destdir(self,
-                 collection_id: Optional[str] = None,
-                 sub_dir: str = None,
-                 failed: bool = False) -> str:
+    def _build_dir(self,
+                   collection_id: Optional[str] = None,
+                   sub_dir: str = None,
+                   failed: bool = False) -> str:
         """
         Returns the destination directory. This can produce a variety of results, based on the options. It can locate
         the destination directory for failed validations, the destination directory for successful files, the
