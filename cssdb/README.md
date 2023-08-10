@@ -1,0 +1,1 @@
+CSSDB has been split into its [own project](https://github.com/sbn-psi/cssdb)
