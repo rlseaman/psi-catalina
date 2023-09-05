@@ -406,7 +406,7 @@ def transfer_file(src: str, dest: str, postprocessing_opts: options.Postprocessi
             shutil.copy(src, dest)
         else:
             logging.debug(f'Moving from {src} to {dest}, size: {os.path.getsize(src)}')
-            os.rename(src, dest)        
+            shutil.move(src, dest)
 
 
 def get_actual_file_name(data_dir: str, file_name: str) -> typing.Optional[str]:
