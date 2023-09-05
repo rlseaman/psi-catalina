@@ -1,0 +1,11 @@
+.vscode
+.idea
+cssdb
+doc
+gbo.ast.catalina.survey
+out
+placeholders
+samples
+scripts
+/templates
+testdata

@@ -1,79 +1,134 @@
 import os
 import itertools
+from typing import Iterable, Optional
+
 import options
+import product
+
+
+class ObsNightLoc:
+    def __init__(self, basedir: str, validated_dir: str, failure_dir: str, night: product.ObsNight) -> None:
+        self.basedir = basedir
+        self.failure_dir = failure_dir
+        self.validated_dir = validated_dir
+        self.night = night
+
+    def validation_data_dir(self, failed=False) -> str:
+        """
+        Returns the destination data directory for products that have completed prevalidation, but are not fully
+        processed.
+        """
+        return self._build_dir(failed=failed)
+
+    def validation_label_dir(self, failed: bool = False) -> str:
+        """
+        Returns the destination label directory for products that have completed prevalidation, but are not fully
+        processed. This mimics the directory structure for incoming files.
+        """
+        return self._build_dir(sub_dir="other/pds4", failed=failed)
+
+    def datadir(self) -> str:
+        """
+        Returns the data directory for an observation night. It can also return the location of an individual
+        file in this directory, if a filename is provided.
+
+        This will be in the form: BASE/INST/YEAR/DATE/FILE
+        """
+        return os.path.join(self.basedir, self.night.inst, self.night.year, self.night.date)
+
+    def labeldir(self) -> str:
+        """
+        Returns the label directory for an observation night. This is different from the data directory, and it is
+        in a nearby directory, instead of directly underneath the data directory.  It can also return the location of
+        an individual file in this directory, if a filename is provided.
+
+        This will be in the form: BASE/INST/YEAR/other/pds4/DATE/FILE
+        """
+        subdir = "other/pds4"
+        return os.path.join(self.basedir, self.night.inst, self.night.year, subdir, self.night.date)
+
+    def dest_dir(self, collection_id: str, failed: bool) -> str:
+        """ Returns the destination directory for fully processed products """
+        return self._build_dir(collection_id=collection_id, failed=failed)
+
+    def _build_dir(self,
+                   collection_id: Optional[str] = None,
+                   sub_dir: str = None,
+                   failed: bool = False) -> str:
+        """
+        Returns the destination directory. This can produce a variety of results, based on the options. It can locate
+        the destination directory for failed validations, the destination directory for successful files, the
+        directory for prevalidated files, and the directory for incoming files.
+        """
+        if failed:
+            elements = [x for x in [self.failure_dir,
+                                    collection_id,
+                                    self.night.inst,
+                                    self.night.year,
+                                    self.night.date] if x is not None]
+            return _buildpath(elements)
+        else:
+            elements = [x for x in [self.validated_dir,
+                                    collection_id,
+                                    self.night.inst,
+                                    self.night.year,
+                                    sub_dir,
+                                    self.night.date] if x is not None]
+            return _buildpath(elements)
+
 
 class Paths:
-    '''
+    """
     A helper class that determines where data files and labels are stored. This
     provides multiple ways to get at each data file and label file, and
     accounts for the fact that the data and labels are delivered in separate locations.
-    '''
-    def __init__(self, location_opts:options.LocationOpts, bundle_id):
+    """
+    def __init__(self, location_opts: options.LocationOpts, bundle_id: str) -> None:
         self.basedir = location_opts.basedir
         self.dest = location_opts.destdir
         self.bundle_id = bundle_id
         self.schemadir = location_opts.schemadir
-        self.failure_dir = location_opts.failure_dir if location_opts.failure_dir else self._buildpath((self.dest, "failed"))
-        self.validated_dir = location_opts.validated_dir if location_opts.validated_dir else self._buildpath((self.dest, self.bundle_id))
+        self.failure_dir = location_opts.failure_dir \
+            if location_opts.failure_dir \
+            else os.path.join(self.dest, "failed")
+        self.validated_dir = location_opts.validated_dir \
+            if location_opts.validated_dir \
+            else os.path.join(self.dest, self.bundle_id)
 
-    def datadir(self, inst=None, year=None, date=None, filename=None):
-        '''
-        Returns the data directory
-        '''
-        return self._buildpath((self.basedir, inst, year, date, filename))
+    def partialdir(self, inst: str, year: str = None) -> str:
+        """
+        Used during initial discovery before a complete observation night is constructed. This will return
+        either the directory for an instrument, or the directory for the year underneath the instrument, if a year is
+        provided.
 
-    def labeldir(self, inst=None, year=None, date=None, filename=None):
-        '''
-        Returns the label file directory
-        '''
-        subdir = "other/pds4" if date else None
-        return self._buildpath((self.basedir, inst, year, subdir, date, filename))
-
-    def destdir(self, collection_id, inst=None, year=None, subDir=None, date=None, failed=False):
-        '''
-        Returns the destination directory
-        '''
-        if failed:
-            elements = [x for x in [self.failure_dir, collection_id, inst, year, date] if x is not None]
-            return self._buildpath(elements)
+        This will be in the form: BASE/INST/YEAR
+        """
+        if year:
+            return os.path.join(self.basedir, inst, year)
         else:
-            elements = [x for x in [self.validated_dir, collection_id, inst, year, subDir, date] if x is not None]
-            return self._buildpath(elements)
+            return os.path.join(self.basedir, inst)
 
-    def productDestDir(self, p, failed=False):
-        return self.destdir(p.collection_id(), p.inst, p.year, None, p.date, failed)        
+    def collection_dir(self, collection_id: str) -> str:
+        """ Returns the destination directory for generated collection files. """
+        return os.path.join(self.validated_dir, collection_id)
 
-    def validationDataDir(self, p, failed=False):
-        return self.destdir(None, p.inst, p.year, None, p.date, failed)        
+    def product_dest_dir(self, p: product.Product, failed: bool) -> str:
+        """ Returns the destination directory for fully processed products """
+        return self.fornight(p.night).dest_dir(collection_id=p.collection_id(), failed=failed)
 
-    def nightValidationDataDir(self, inst, year, date, failed=False):
-        return self.destdir(None, inst, year, None, date, failed)        
+    def fornight(self, night: product.ObsNight) -> ObsNightLoc:
+        return ObsNightLoc(basedir=self.basedir,
+                           validated_dir=self.validated_dir,
+                           failure_dir=self.failure_dir,
+                           night=night)
 
-    def validationLabelDir(self, p, failed=False):
-        return self.destdir(None, p.inst, p.year, "other/pds4", p.date, failed)        
 
-    def nightValidationLabelDir(self, inst, year, date, failed=False):
-        return self.destdir(None, inst, year, "other/pds4", date, failed)        
+def _buildpath(elements: Iterable[str]) -> str:
+    return os.path.join(*_filled_elements(elements))
 
-    def _buildpath(self, elements):
-        return os.path.join(*self._filledElements(elements))
 
-    def _filledElements(self, elements):
-        elementList = list(elements)
-        if any(itertools.dropwhile(lambda x: x, elementList)):
-            raise Exception("Gaps detected in path:", elementList)
-        return list(itertools.takewhile(lambda x: x, elementList))
-
-if __name__ == '__main__':
-    p = Paths("base", "dest")
-    print(p.datadir("I52"))
-    print(p.datadir("I52", "2020"))
-    print(p.datadir("I52", "2020", "20Aug01"))
-    print(p.datadir("I52", "2020", "20Aug01", "test.fit"))
-
-    print(p.labeldir("I52"))
-    print(p.labeldir("I52", "2020"))
-    print(p.labeldir("I52", "2020", "20Aug01"))
-    print(p.labeldir("I52", "2020", "20Aug01", "test.fit"))
-
-    print(p.destdir("data","I52", "2020", "20Aug01"))
+def _filled_elements(elements: Iterable[str]) -> list[str]:
+    element_list = list(elements)
+    if any(itertools.dropwhile(lambda x: x, element_list)):
+        raise Exception("Gaps detected in path:", element_list)
+    return list(itertools.takewhile(lambda x: x, element_list))
