@@ -14,7 +14,7 @@ COLLECTION_EXTENSIONS = {
     'data_partially_processed': ['.calb', '.pass1', '.csub', '.avgs', '.avgr'],
     'data_calibrated': ['.arch'],
     'data_derived': ['.sext', '.sexb', '.sexs', '.mtds', '.mtdf', '.dets', '.rjct', '.mpcd', '.neos', '.fail',
-                     '.tssexb', '.avgrsexb', '.detf'],
+                     '.tssexb', '.avgrsexb', '.detf', '.tran'],
     'miscellaneous': ['.detl', '.detb', '.iext', '.strp', '.strm', '.scmp', '.ephm', '.achk', '.hits', '.arch_h',
                       '.ast', '.mrpt', '.ades', '.focheck', '.param', '.params', '.outparams', '.json',
                       '.log', '.point', '.pt', '.xmls', '.cov', '.txt']
