@@ -92,7 +92,7 @@ class Product:
 
     def observing_system_components(self) -> list[ObservingSystemComponent]:
         return self.keywords.context_area.observing_system.components \
-            if self.keywords.context_area.observing_system \
+            if self.keywords.context_area and self.keywords.context_area.observing_system \
             else []
 
     def collection_id(self) -> str:
