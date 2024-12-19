@@ -194,7 +194,7 @@ def limit_directories(discovery: Discovery,
     if filter_opts.ignore_past_days is not None:
         dates = [d for d in dates if d not in discovery.build_ignore_dates(filter_opts.ignore_past_days)]
     if filter_opts.max_nights is not None:
-        candidates = sorted(dates, key=parse_dir_date, reverse=True)
+        candidates = sorted(dates, key=parse_dir_date, reverse=False)
         candidates_with_products = (d2 for d2 in candidates
                                     if any(discovery.date_has_semaphore(night)
                                            and discovery.date_has_products(night)
@@ -240,7 +240,7 @@ def validate_products(products: list[Product],
     if validation_opts.skip_validation:
         logging.info("Skipping validation")
 
-    batch_size = options.ValidationOpts.batch_size
+    batch_size = validation_opts.batch_size
     batch_count = math.ceil(len(products)/batch_size)
 
     for (batch_num, batch) in enumerate(chunk(products, batch_size)):
