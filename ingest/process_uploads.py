@@ -38,7 +38,6 @@ BUNDLE_ID = "gbo.ast.catalina.survey"
 LABEL_FILENAME_TEMPLATE = 'collection_{collection_id}_v{major}.{minor}.xml'
 IGNORE_FILES = ['signature.md5', '.autoxfer']
 DELETION_BASE = '/sbn/to_delete/'
-BATCH_SIZE = 100
 
 COLLECTION_FILES = {
     "data_derived": "collection_data_derived.xml",
@@ -241,9 +240,10 @@ def validate_products(products: list[Product],
     if validation_opts.skip_validation:
         logging.info("Skipping validation")
 
-    batch_count = math.ceil(len(products)/BATCH_SIZE)
+    batch_size = options.ValidationOpts.batch_size
+    batch_count = math.ceil(len(products)/batch_size)
 
-    for (batch_num, batch) in enumerate(chunk(products, BATCH_SIZE)):
+    for (batch_num, batch) in enumerate(chunk(products, batch_size)):
         logging.info(f"Validating a batch of {len(batch)} ({batch_num + 1}/{batch_count})...")
         preflighted = list(preflight.preflight_products(batch))
         if not preprocessing_opts.skip_preprocessing:

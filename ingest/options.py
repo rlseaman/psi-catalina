@@ -17,6 +17,7 @@ class ValidationOpts:
         self.skip_validation = args.skip_validation
         self.skip_data_validation = args.skip_data_validation
         self.permissive_validation = args.permissive_validation
+        self.batch_size = args.batch_size
 
 
 class PreprocessingOpts:
@@ -140,7 +141,13 @@ def get_args() -> Opts:
                         dest='ignore_past_days', 
                         help='Ignores products dated in the past x number of days. '
                              'This will give products time to accumulate before processing')
-    parser.add_argument('--validate-only', 
+    parser.add_argument('--batch-size',
+                        type=int,
+                        default=100,
+                        dest='batch_size',
+                        help='Limits the number of products that are validated in a single batch. '
+                             'This can help in disk-constrained environments')
+    parser.add_argument('--validate-only',
                         action='store_true', 
                         dest='validate_only', 
                         help='Only perform validation. Passing products will be moved to the destination directory, '
