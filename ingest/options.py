@@ -44,6 +44,7 @@ class FilterOpts:
         self.max_products = args.max_products
         self.max_nights = args.max_nights
         self.ignore_past_days = args.ignore_past_days
+        self.newest_first = args.newest_first
 
 
 class LocationOpts:
@@ -152,5 +153,11 @@ def get_args() -> Opts:
                         dest='validate_only', 
                         help='Only perform validation. Passing products will be moved to the destination directory, '
                              'but they will not be organized in collections.')
+
+    parser.add_argument('--newest-first',
+                        action='store_true',
+                        dest='newest_first',
+                        help='Filter the dates in reverse order. This means that the most recent directories will be '
+                             'selected instead of the least recent.')
 
     return Opts(parser.parse_args())
