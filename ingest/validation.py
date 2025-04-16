@@ -143,6 +143,8 @@ def run_validator(file_name: str,
 
     output = re.sub(r'}\.+', '}', unfiltered)
     output = re.sub(r'\.+\{', '{', output)
+    output = re.sub(r'}Completed execution in.+', '}',  output)
+
     try:
         result = json.loads(output)
     except JSONDecodeError:
