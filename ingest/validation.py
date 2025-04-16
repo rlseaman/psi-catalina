@@ -15,22 +15,6 @@ import re
 
 from product import ObsNight
 
-DICTIONARIES_1A = ['PDS4_IMG_1900',
-                   'PDS4_DISP_1900',
-                   'PDS4_GEOM_1900_1510',
-                   'PDS4_SURVEY_1A00_1000',
-                   'PDS4_PROC_1900',
-                   'PDS4_PDS_1A00']
-
-DICTIONARIES_1G = ['PDS4_IMG_1G00_1850',
-                   'PDS4_DISP_1G00_1500',
-                   'PDS4_GEOM_1G00_1920',
-                   'PDS4_PDS_1G00',
-                   'PDS4_PROC_1G00_1210',
-                   'PDS4_SURVEY_1G00_1010']
-
-DICTIONARIES = DICTIONARIES_1G
-
 VALIDATE_CMD = 'validate'
 FUNPACK_CMD = 'funpack'
 
@@ -150,7 +134,7 @@ def run_validator(file_name: str,
 
     logging.info("Running the validator...")
     params = [VALIDATE_CMD, '-s', 'json', '-E', '2147483647'] + (['-D'] if skip_data else []) + \
-             ['-x', *get_schemas(schema_path, ".xsd"), '-S', *get_schemas(schema_path, ".sch"), '-t', file_name]
+             ['-C', os.path.join(schema_path, 'catalog_all.xml'), '-t', file_name]
     process = subprocess.run(params, stdout=subprocess.PIPE, encoding="utf-8")
 
     logging.info("Validation complete, processing results...")
@@ -159,7 +143,8 @@ def run_validator(file_name: str,
 
     output = re.sub(r'}\.+', '}', unfiltered)
     output = re.sub(r'\.+\{', '{', output)
-    
+    output = re.sub(r'}Completed execution in.+', '}',  output)
+
     try:
         result = json.loads(output)
     except JSONDecodeError:
@@ -193,5 +178,3 @@ def extract_label_info(labelpath: str) -> tuple[ObsNight, str]:
     return ObsNight(instval, yearval, dateval), label
 
 
-def get_schemas(base_path: str, extension: str) -> list[str]:
-    return [os.path.join(base_path, x + extension) for x in DICTIONARIES]
