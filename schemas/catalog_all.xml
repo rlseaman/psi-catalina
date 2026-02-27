@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE catalog PUBLIC "-//OASIS//DTD XML Catalogs V1.1//EN"
+  "http://www.oasis-open.org/committees/entity/release/1.1/catalog.dtd">
+
+<!--
+  OASIS XML catalog mapping PDS4 schema URLs to local copies.
+  Covers all namespaces used by CSS labels (IM 1G00 and 1N00).
+
+  All rewritePrefix values use "./" — a relative URI resolved against
+  this catalog file's own location by the XML resolver (OASIS XML
+  Catalogs 1.1 §7.1.2).  Pass the absolute path to this file via
+    validate -C /absolute/path/to/schemas/catalog_all.xml
+  and schema lookups will resolve correctly on any machine.
+-->
+
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
+
+  <!-- https:// variants (current PDS4 standard) -->
+  <rewriteSystem systemIdStartString="https://pds.nasa.gov/pds4/pds/v1/"    rewritePrefix="./"/>
+  <rewriteSystem systemIdStartString="https://pds.nasa.gov/pds4/img/v1/"    rewritePrefix="./"/>
+  <rewriteSystem systemIdStartString="https://pds.nasa.gov/pds4/disp/v1/"   rewritePrefix="./"/>
+  <rewriteSystem systemIdStartString="https://pds.nasa.gov/pds4/geom/v1/"   rewritePrefix="./"/>
+  <rewriteSystem systemIdStartString="https://pds.nasa.gov/pds4/proc/v1/"   rewritePrefix="./"/>
+  <rewriteSystem systemIdStartString="https://pds.nasa.gov/pds4/survey/v1/" rewritePrefix="./"/>
+  <rewriteSystem systemIdStartString="https://pds.nasa.gov/pds4/ml/v1/"     rewritePrefix="./"/>
+
+  <rewriteURI uriStartString="https://pds.nasa.gov/pds4/pds/v1/"    rewritePrefix="./"/>
+  <rewriteURI uriStartString="https://pds.nasa.gov/pds4/img/v1/"    rewritePrefix="./"/>
+  <rewriteURI uriStartString="https://pds.nasa.gov/pds4/disp/v1/"   rewritePrefix="./"/>
+  <rewriteURI uriStartString="https://pds.nasa.gov/pds4/geom/v1/"   rewritePrefix="./"/>
+  <rewriteURI uriStartString="https://pds.nasa.gov/pds4/proc/v1/"   rewritePrefix="./"/>
+  <rewriteURI uriStartString="https://pds.nasa.gov/pds4/survey/v1/" rewritePrefix="./"/>
+  <rewriteURI uriStartString="https://pds.nasa.gov/pds4/ml/v1/"     rewritePrefix="./"/>
+
+  <!-- http:// variants (some older labels use non-https) -->
+  <rewriteSystem systemIdStartString="http://pds.nasa.gov/pds4/pds/v1/"    rewritePrefix="./"/>
+  <rewriteSystem systemIdStartString="http://pds.nasa.gov/pds4/img/v1/"    rewritePrefix="./"/>
+  <rewriteSystem systemIdStartString="http://pds.nasa.gov/pds4/disp/v1/"   rewritePrefix="./"/>
+  <rewriteSystem systemIdStartString="http://pds.nasa.gov/pds4/geom/v1/"   rewritePrefix="./"/>
+  <rewriteSystem systemIdStartString="http://pds.nasa.gov/pds4/proc/v1/"   rewritePrefix="./"/>
+  <rewriteSystem systemIdStartString="http://pds.nasa.gov/pds4/survey/v1/" rewritePrefix="./"/>
+  <rewriteSystem systemIdStartString="http://pds.nasa.gov/pds4/ml/v1/"     rewritePrefix="./"/>
+
+  <rewriteURI uriStartString="http://pds.nasa.gov/pds4/pds/v1/"    rewritePrefix="./"/>
+  <rewriteURI uriStartString="http://pds.nasa.gov/pds4/img/v1/"    rewritePrefix="./"/>
+  <rewriteURI uriStartString="http://pds.nasa.gov/pds4/disp/v1/"   rewritePrefix="./"/>
+  <rewriteURI uriStartString="http://pds.nasa.gov/pds4/geom/v1/"   rewritePrefix="./"/>
+  <rewriteURI uriStartString="http://pds.nasa.gov/pds4/proc/v1/"   rewritePrefix="./"/>
+  <rewriteURI uriStartString="http://pds.nasa.gov/pds4/survey/v1/" rewritePrefix="./"/>
+  <rewriteURI uriStartString="http://pds.nasa.gov/pds4/ml/v1/"     rewritePrefix="./"/>
+
+</catalog>
