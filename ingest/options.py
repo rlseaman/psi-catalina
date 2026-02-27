@@ -18,6 +18,8 @@ class ValidationOpts:
         self.skip_data_validation = args.skip_data_validation
         self.permissive_validation = args.permissive_validation
         self.batch_size = args.batch_size
+        self.parallel_batches = args.parallel_batches
+        self.funpack_workers = args.funpack_workers
 
 
 class PreprocessingOpts:
@@ -148,6 +150,22 @@ def get_args() -> Opts:
                         dest='batch_size',
                         help='Limits the number of products that are validated in a single batch. '
                              'This can help in disk-constrained environments')
+    parser.add_argument('--parallel-batches',
+                        type=int,
+                        default=1,
+                        dest='parallel_batches',
+                        help='Number of validation batches to run concurrently. '
+                             'Each parallel batch runs a separate validate JVM (up to ~4 GB heap each). '
+                             'Default 1 (sequential). Set to number of available CPU cores for maximum '
+                             'throughput, subject to available RAM and scratch disk space.')
+    parser.add_argument('--funpack-workers',
+                        type=int,
+                        default=1,
+                        dest='funpack_workers',
+                        help='Number of products to decompress concurrently within each batch. '
+                             'Each worker runs an independent funpack or gzip subprocess. '
+                             'Default 1 (sequential). Values of 4-8 are effective for spinning-disk '
+                             'archives; higher values may saturate I/O without further gain.')
     parser.add_argument('--validate-only',
                         action='store_true', 
                         dest='validate_only', 
