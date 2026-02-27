@@ -1,6 +1,8 @@
 """
 Performs validation on a PDS4 label
 """
+from __future__ import annotations
+from concurrent.futures import ThreadPoolExecutor
 from json.decoder import JSONDecodeError
 import subprocess
 import os.path
@@ -55,16 +57,30 @@ def validate_product(candidate: product.Product,
 
 def validate_products(products: list[product.Product],
                       schema_path: str,
-                      skip_data: bool) -> tuple[list[ValidationResult], list[ValidationResult], str]:
+                      skip_data: bool,
+                      funpack_workers: int = 1) -> tuple[list[ValidationResult], list[ValidationResult], str]:
     """
     Moves the entirety of the product to a temporary location,
-    decompressed the data files if needed, and validates the product.
+    decompresses the data files if needed, and validates the product.
+
+    funpack_workers controls how many products are decompressed concurrently
+    within this batch before validate is invoked.  Each worker runs an
+    independent funpack (or gzip) subprocess so threads are not GIL-bound.
+    Default 1 preserves the original sequential behaviour.
+    Set TMPDIR to a large filesystem before running if /tmp is constrained.
     """
     with tempfile.TemporaryDirectory() as temp:
         logging.info(f"Validating products at: {temp}")
         temp_dir = temp
-        for product_to_copy in products:
-            create_temp_copy(temp_dir, product_to_copy, skip_data)
+
+        if funpack_workers > 1:
+            with ThreadPoolExecutor(max_workers=funpack_workers) as executor:
+                list(executor.map(
+                    lambda p: create_temp_copy(temp_dir, p, skip_data),
+                    products))
+        else:
+            for product_to_copy in products:
+                create_temp_copy(temp_dir, product_to_copy, skip_data)
 
         return run_validator(temp_dir, schema_path, skip_data)
 

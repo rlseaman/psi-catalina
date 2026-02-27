@@ -3,6 +3,7 @@
 Handles processing inventory files. This includes reading, writing,
 and merging inventories.
 """
+from __future__ import annotations
 import os
 import iotools
 import logging

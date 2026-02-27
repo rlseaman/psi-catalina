@@ -3,6 +3,7 @@
 Python script to process submissions from Catalina Sky Survey and convert them
 to PDS4 format.
 """
+from __future__ import annotations
 
 import sys
 
@@ -15,6 +16,7 @@ import json
 import datetime
 import shutil
 import typing
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Iterable
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
@@ -228,9 +230,14 @@ def validate_products(products: list[Product],
                       validation_opts: options.ValidationOpts,
                       logdir: str) -> tuple[list[validation.ValidationResult], list[validation.ValidationResult]]:
     """
-    Preprocess and validates the products. 
-    The files will be preprocessed in the same manner as after validation. This prevents the original 
+    Preprocess and validates the products.
+    The files will be preprocessed in the same manner as after validation. This prevents the original
     files from being altered if there are validation errors.
+
+    When validation_opts.parallel_batches > 1, batches are run concurrently using a thread pool.
+    Each batch runs its own validate subprocess, so the GIL is not a bottleneck. Each parallel
+    batch requires up to ~4 GB JVM heap and ~batch_size * image_size bytes of scratch disk.
+    Set TMPDIR to a large filesystem before running if scratch space on /tmp is limited.
     """
     all_validation_failures = []
     all_successes = []
@@ -241,9 +248,12 @@ def validate_products(products: list[Product],
         logging.info("Skipping validation")
 
     batch_size = validation_opts.batch_size
-    batch_count = math.ceil(len(products)/batch_size)
+    parallel_batches = validation_opts.parallel_batches
+    batches = list(enumerate(chunk(products, batch_size)))
+    batch_count = len(batches)
 
-    for (batch_num, batch) in enumerate(chunk(products, batch_size)):
+    def run_batch(batch_num_and_batch):
+        batch_num, batch = batch_num_and_batch
         logging.info(f"Validating a batch of {len(batch)} ({batch_num + 1}/{batch_count})...")
         preflighted = list(preflight.preflight_products(batch))
         if not preprocessing_opts.skip_preprocessing:
@@ -251,24 +261,38 @@ def validate_products(products: list[Product],
                 preprocess_product(product, loc,
                                    preprocessing_opts.skip_data_preprocessing,
                                    preprocessing_opts.skip_label_preprocessing)
+        batch_failures = []
+        batch_successes = []
         if not validation_opts.skip_validation:
-            validation_failures, successes, unfiltered = \
-                validation.validate_products(preflighted, loc.schemadir, validation_opts.skip_data_validation)
-            log_validation_run(unfiltered, logdir)
-            if validation_failures:
-                for failure in validation_failures:
-                    write_failure(preflighted, logdir, loc, failure)
-                all_validation_failures.extend(validation_failures)
-            all_successes.extend(successes)
+            batch_failures, batch_successes, unfiltered = \
+                validation.validate_products(preflighted, loc.schemadir, validation_opts.skip_data_validation,
+                                             funpack_workers=validation_opts.funpack_workers)
+            log_validation_run(unfiltered, logdir, batch_num)
+            for failure in batch_failures:
+                write_failure(preflighted, logdir, loc, failure)
+        return batch_failures, batch_successes
+
+    if parallel_batches > 1:
+        logging.info(f"Running {batch_count} batches with up to {parallel_batches} in parallel")
+        with ThreadPoolExecutor(max_workers=parallel_batches) as executor:
+            for batch_failures, batch_successes in executor.map(run_batch, batches):
+                all_validation_failures.extend(batch_failures)
+                all_successes.extend(batch_successes)
+    else:
+        for result in map(run_batch, batches):
+            batch_failures, batch_successes = result
+            all_validation_failures.extend(batch_failures)
+            all_successes.extend(batch_successes)
+
     if all_validation_failures and not validation_opts.permissive_validation:
         raise Exception('There were validation errors')
 
     return all_successes, all_validation_failures
 
 
-def log_validation_run(output: str, logdir: str) -> None:
+def log_validation_run(output: str, logdir: str, batch_num: int = 0) -> None:
     logdate = datetime.datetime.now().strftime("%Y%m%dT%H%M%S.%f")
-    logfilename = f"{logdate}.json"
+    logfilename = f"{logdate}_b{batch_num:04d}.json"
     logfilepath = os.path.join(logdir, logfilename)
     with open(logfilepath, "w") as logfile:
         logfile.write(output)

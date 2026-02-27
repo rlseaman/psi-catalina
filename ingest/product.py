@@ -2,6 +2,7 @@
 This class represents a product, and contains the necessary
 attributes for running through the pipeline.
 """
+from __future__ import annotations
 import os
 from dataclasses import dataclass
 from typing import IO
