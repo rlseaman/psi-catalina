@@ -164,8 +164,12 @@ Marked `# CSS-LOCAL:`.
 
 ---
 
-## Pending changes (not yet implemented)
+## Completed in CSS_PDS4_tools (not psi-catalina)
 
-- **Canary injection system:** `--canary-dir`, `--canaries-per-batch` flags to
-  inject known-good and known-bad test articles into production batches as
-  ongoing validation of the validator itself.
+- **Canary injection system:** implemented in
+  `CSS_PDS4_tools/validation/validate_night.py` rather than psi-catalina,
+  since it is an operational wrapper concern rather than a pipeline library
+  concern.  Known-good (`canary_pass_*.xml`) and known-bad
+  (`canary_fail_*.xml`) articles in `CSS_PDS4_tools/testdata/canaries/` are
+  injected into every batch; anomalies are flagged in the run summary.
+  See `rlseaman/CSS_PDS4_tools` commit `8d37763`.
