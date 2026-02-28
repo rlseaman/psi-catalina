@@ -103,15 +103,49 @@ Each parallel batch stages `batch_size × image_size` of decompressed data.
 
 ---
 
+## Filter ValidateLauncher phantom entries from product counts
+
+**File:** `ingest/validation.py`, `run_validator()`
+**Commit:** `8c194a0`
+
+### Root cause
+
+`validate` inserts a `gov.nasa.pds.validate.ValidateLauncher` status=PASS entry
+into `productLevelValidationResults` when a single batch contains products that
+reference different PDS4 IM versions.  The entry carries a WARNING about multiple
+IM versions detected in the run; it is not a real product result.
+
+This fires once per full (100-product) batch that contains at least one product
+using a non-dominant IM version.  For CSS data, `.tran_ai.xml` labels (G96 and
+703) reference IM 1N00 (PDS4 v1.23.0.0) while all other product types reference
+IM 1G00 (v1.16.0.0).  Because `.tran_ai` files are distributed uniformly through
+the sorted label list, the phantom fires in every full batch for G96 and 703,
+inflating their validated-product counts by 1 per full batch (e.g. +137 for G96
+on a 138-batch night, +182 for 703).  Instruments with no `tran_ai` labels (I52,
+V06, V00) are unaffected.
+
+### Fix
+
+Filter entries whose `label` field starts with `gov.nasa.pds.validate.` before
+building the `failures`/`successes` lists:
+
+```python
+real_results = [x for x in result['productLevelValidationResults']
+                if not x.get('label', '').startswith('gov.nasa.pds.validate.')]
+failures  = [ValidationResult(x) for x in real_results if x['status'] == "FAIL"]
+successes = [ValidationResult(x) for x in real_results if x['status'] == "PASS"]
+```
+
+File paths will never start with `gov.nasa.pds.validate.`, so no real product
+result is ever filtered.
+
+---
+
 ## Pending changes (not yet implemented)
 
 - **Canary injection system:** `--canary-dir`, `--canaries-per-batch` flags to
   inject known-good and known-bad test articles into production batches as
-  ongoing validation of the validator itself.  See
-  `css-validate-plan-2026-02-27.md` in the SBN-PSI notes directory.
+  ongoing validation of the validator itself.
 
-- **Reporting improvements:** `products_submitted` vs `products_validated`
-  discrepancy detection; per-batch JSON summary block.  The current code
-  counts `productLevelValidationResults` entries rather than submitted
-  products, which overcounts by 1 per batch when `.xmls` products are
-  present.
+- **Per-type product count reporting:** break down PASS/FAIL counts by product
+  type (arch, calb, sexb, tran_ai, etc.) in the validation summary log and report.
