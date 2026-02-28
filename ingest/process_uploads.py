@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import sys
 
+import collections
 import os
 import os.path
 import itertools
@@ -122,6 +123,13 @@ def process_upload_dir(opts: options.Opts) -> None:
     process_product_list(loc, opts, products)
 
 
+def _product_type(labelpath: str) -> str:
+    """Extract product type suffix from a label filename (e.g. 'arch' from '...arch.xml')."""
+    base = os.path.basename(labelpath)
+    stem = base[:-4] if base.endswith('.xml') else base
+    return stem.rsplit('.', 1)[-1] if '.' in stem else '(unknown)'
+
+
 def process_product_list(loc: paths.Paths, opts: options.Opts, products: list[Product]):
     lidvids = (product.lidvid() for product in products)
     collection_lids = index(lidvids, extract_collection_id)
@@ -138,6 +146,16 @@ def process_product_list(loc: paths.Paths, opts: options.Opts, products: list[Pr
         successful_files = set([validation.extract_label_info(x.labelpath) for x in successes])
     failed_files = set([validation.extract_label_info(x.labelpath) for x in failures])
     logging.info(failed_files)
+
+    # CSS-LOCAL: per-type PASS/FAIL summary
+    type_pass = collections.Counter(_product_type(x.labelpath) for x in successes)
+    type_fail = collections.Counter(_product_type(x.labelpath) for x in failures)
+    all_types = sorted(set(type_pass) | set(type_fail))
+    logging.info(f"Validation summary: {len(successes)} PASS, {len(failures)} FAIL")
+    for t in all_types:
+        p, f = type_pass.get(t, 0), type_fail.get(t, 0)
+        flag = "  <-- FAILURES" if f else ""
+        logging.info(f"  {t:<16}  PASS {p:>5}  FAIL {f:>4}{flag}")
 
     if opts.postprocessing_opts.skip_collection_update or opts.postprocessing_opts.validate_only:
         logging.info("Skipping collection update")
