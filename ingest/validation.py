@@ -168,10 +168,15 @@ def run_validator(file_name: str,
         print(output)
         raise
 
-    failures = [ValidationResult(x) for x in result['productLevelValidationResults']
-                if x['status'] == "FAIL"]
-    successes = [ValidationResult(x) for x in result['productLevelValidationResults']
-                 if x['status'] == "PASS"]
+    # CSS-LOCAL: Filter out the ValidateLauncher phantom entry that validate inserts
+    # when multiple PDS4 IM versions appear in the same run (e.g. 1G00 + 1N00 products
+    # in the same batch).  Its label field is "gov.nasa.pds.validate.ValidateLauncher"
+    # and its status is PASS with a WARNING; it is not a real product result.
+    real_results = [x for x in result['productLevelValidationResults']
+                    if not x.get('label', '').startswith('gov.nasa.pds.validate.')]
+
+    failures = [ValidationResult(x) for x in real_results if x['status'] == "FAIL"]
+    successes = [ValidationResult(x) for x in real_results if x['status'] == "PASS"]
 
     if failures:
         filenames = [os.path.basename(x.labelpath) for x in failures]
