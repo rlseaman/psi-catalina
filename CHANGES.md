@@ -141,11 +141,31 @@ result is ever filtered.
 
 ---
 
+## Per-type PASS/FAIL breakdown in process_product_list()
+
+**File:** `ingest/process_uploads.py`
+**Commit:** `49a47ee`
+
+After `validate_products()` returns, logs a summary table of PASS and FAIL
+counts by product type (extracted from the label filename suffix):
+
+```
+INFO Validation summary: 1000 PASS, 0 FAIL
+INFO   arch              PASS   836  FAIL    0
+INFO   calb              PASS   839  FAIL    0
+INFO   sexb              PASS   839  FAIL    0
+...
+```
+
+Types with any failures are flagged with `<-- FAILURES` for easy log scanning.
+
+New additions: `_product_type(labelpath)` helper (module-level), `import collections`.
+Marked `# CSS-LOCAL:`.
+
+---
+
 ## Pending changes (not yet implemented)
 
 - **Canary injection system:** `--canary-dir`, `--canaries-per-batch` flags to
   inject known-good and known-bad test articles into production batches as
   ongoing validation of the validator itself.
-
-- **Per-type product count reporting:** break down PASS/FAIL counts by product
-  type (arch, calb, sexb, tran_ai, etc.) in the validation summary log and report.
