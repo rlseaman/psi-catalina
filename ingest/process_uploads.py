@@ -290,17 +290,33 @@ def validate_products(products: list[Product],
                 write_failure(preflighted, logdir, loc, failure)
         return batch_failures, batch_successes
 
+    failed_batch_nums = []
     if parallel_batches > 1:
         logging.info(f"Running {batch_count} batches with up to {parallel_batches} in parallel")
         with ThreadPoolExecutor(max_workers=parallel_batches) as executor:
-            for batch_failures, batch_successes in executor.map(run_batch, batches):
+            futures = {executor.submit(run_batch, b): b[0] for b in batches}
+            for future in as_completed(futures):
+                batch_num = futures[future]
+                try:
+                    batch_failures, batch_successes = future.result()
+                    all_validation_failures.extend(batch_failures)
+                    all_successes.extend(batch_successes)
+                except Exception:
+                    failed_batch_nums.append(batch_num)
+                    logging.exception(f"Batch {batch_num + 1}/{batch_count} failed")
+    else:
+        for batch_num_and_batch in batches:
+            try:
+                batch_failures, batch_successes = run_batch(batch_num_and_batch)
                 all_validation_failures.extend(batch_failures)
                 all_successes.extend(batch_successes)
-    else:
-        for result in map(run_batch, batches):
-            batch_failures, batch_successes = result
-            all_validation_failures.extend(batch_failures)
-            all_successes.extend(batch_successes)
+            except Exception:
+                failed_batch_nums.append(batch_num_and_batch[0])
+                logging.exception(f"Batch {batch_num_and_batch[0] + 1}/{batch_count} failed")
+
+    if failed_batch_nums:
+        logging.error(f"{len(failed_batch_nums)} of {batch_count} batches failed: "
+                      f"{[n + 1 for n in sorted(failed_batch_nums)]}")
 
     if all_validation_failures and not validation_opts.permissive_validation:
         raise Exception('There were validation errors')
@@ -309,8 +325,8 @@ def validate_products(products: list[Product],
 
 
 def log_validation_run(output: str, logdir: str, batch_num: int = 0) -> None:
-    logdate = datetime.datetime.now().strftime("%Y%m%dT%H%M%S.%f")
-    logfilename = f"{logdate}_b{batch_num:04d}.json"
+    logdate = datetime.datetime.now().strftime("%Y%m%dT%H%M%S")
+    logfilename = f"b{batch_num:04d}_{logdate}.json"
     logfilepath = os.path.join(logdir, logfilename)
     with open(logfilepath, "w") as logfile:
         logfile.write(output)

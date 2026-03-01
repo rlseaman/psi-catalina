@@ -2,7 +2,7 @@
 Performs validation on a PDS4 label
 """
 from __future__ import annotations
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from json.decoder import JSONDecodeError
 import subprocess
 import os.path
@@ -73,14 +73,28 @@ def validate_products(products: list[product.Product],
         logging.info(f"Validating products at: {temp}")
         temp_dir = temp
 
+        failed_products = []
         if funpack_workers > 1:
             with ThreadPoolExecutor(max_workers=funpack_workers) as executor:
-                list(executor.map(
-                    lambda p: create_temp_copy(temp_dir, p, skip_data),
-                    products))
+                futures = {executor.submit(create_temp_copy, temp_dir, p, skip_data): p
+                           for p in products}
+                for future in as_completed(futures):
+                    prod = futures[future]
+                    try:
+                        future.result()
+                    except Exception:
+                        failed_products.append(prod.labelfilename)
+                        logging.exception(f"Failed to prepare {prod.labelfilename}")
         else:
             for product_to_copy in products:
-                create_temp_copy(temp_dir, product_to_copy, skip_data)
+                try:
+                    create_temp_copy(temp_dir, product_to_copy, skip_data)
+                except Exception:
+                    failed_products.append(product_to_copy.labelfilename)
+                    logging.exception(f"Failed to prepare {product_to_copy.labelfilename}")
+        if failed_products:
+            logging.error(f"{len(failed_products)} of {len(products)} products failed "
+                          f"preparation: {failed_products}")
 
         return run_validator(temp_dir, schema_path, skip_data)
 
