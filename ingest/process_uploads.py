@@ -16,6 +16,7 @@ import math
 import json
 import datetime
 import shutil
+import time
 import typing
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Iterable
@@ -272,7 +273,9 @@ def validate_products(products: list[Product],
 
     def run_batch(batch_num_and_batch):
         batch_num, batch = batch_num_and_batch
-        logging.info(f"Validating a batch of {len(batch)} ({batch_num + 1}/{batch_count})...")
+        n_submitted = len(batch)
+        logging.info(f"Validating a batch of {n_submitted} ({batch_num + 1}/{batch_count})...")
+        t_start = time.perf_counter()
         preflighted = list(preflight.preflight_products(batch))
         if not preprocessing_opts.skip_preprocessing:
             for product in preflighted:
@@ -288,6 +291,11 @@ def validate_products(products: list[Product],
             log_validation_run(unfiltered, logdir, batch_num)
             for failure in batch_failures:
                 write_failure(preflighted, logdir, loc, failure)
+        wall_ms = int((time.perf_counter() - t_start) * 1000)
+        n_validated = len(batch_failures) + len(batch_successes)
+        log_batch_summary(logdir, batch_num, n_submitted, n_validated,
+                          len(batch_successes), len(batch_failures),
+                          batch_failures, wall_ms)
         return batch_failures, batch_successes
 
     failed_batch_nums = []
@@ -330,6 +338,28 @@ def log_validation_run(output: str, logdir: str, batch_num: int = 0) -> None:
     logfilepath = os.path.join(logdir, logfilename)
     with open(logfilepath, "w") as logfile:
         logfile.write(output)
+
+
+def log_batch_summary(logdir: str, batch_num: int, n_submitted: int,
+                      n_validated: int, n_pass: int, n_fail: int,
+                      failures: list, wall_ms: int) -> None:
+    """Write a per-batch summary JSON for monitoring and anomaly detection."""
+    summary = {
+        "batch_num": batch_num,
+        "products_submitted": n_submitted,
+        "products_validated": n_validated,
+        "discrepancy": n_submitted != n_validated,
+        "pass": n_pass,
+        "fail": n_fail,
+        "wall_time_ms": wall_ms,
+        "ms_per_product": wall_ms // n_validated if n_validated else 0,
+        "failed_products": [os.path.basename(f.labelpath) for f in failures],
+    }
+    if summary["discrepancy"]:
+        logging.warning(f"Batch {batch_num}: submitted {n_submitted} but validated {n_validated}")
+    logpath = os.path.join(logdir, f"b{batch_num:04d}_summary.json")
+    with open(logpath, "w") as f:
+        json.dump(summary, f, indent=2)
 
 
 def write_failure(batch: Iterable[Product],
