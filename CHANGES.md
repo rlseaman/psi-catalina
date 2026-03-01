@@ -164,6 +164,67 @@ Marked `# CSS-LOCAL:`.
 
 ---
 
+## Pipeline hardening for bulk reprocessing
+
+**Files:** `ingest/validation.py`, `ingest/process_uploads.py`
+**Commits:** `7d6c464`, `7a4fd73`, `5b6ed10`
+
+Hardening changes to make unattended multi-night runs (10,000+ nights) robust
+against individual product or batch failures.  All changes are backwards
+compatible; default behaviour is unchanged.
+
+### Subprocess error handling (commit `7d6c464`)
+
+- **funpack:** Added `check=True` and `capture_output=True` to
+  `subprocess.run()`.  `CalledProcessError` is caught, logged with exit code
+  and stderr, then re-raised.  Previously, funpack failures were silent —
+  the product would fail validation later with a cryptic error.
+- **validate:** Added `stderr=subprocess.PIPE`.  Non-zero exit codes are now
+  logged with stderr content.  Does not raise — validate exits non-zero on
+  expected validation failures (e.g. injected canary_fail products).
+- **gzip:** `IOError`/`OSError` now logged at ERROR with exception detail and
+  re-raised.  Previously caught and swallowed with a WARNING.
+- **Missing data files:** Now raises `FileNotFoundError` listing all three
+  paths tried (plain, `.gz`, `.fz`).  Previously logged and silently continued.
+
+### Parallel error isolation (commit `7a4fd73`)
+
+- **Batch level:** `executor.map()` replaced with `executor.submit()` /
+  `as_completed()` with per-batch `try/except`.  A crashed batch is logged
+  and skipped; remaining batches run to completion with results preserved.
+  Failed batch numbers are summarized at the end.  The sequential code path
+  gets the same treatment.
+- **Product level:** Same pattern applied to funpack/gzip workers within a
+  batch.  A single bad `.fz` or `.gz` file no longer kills preparation for
+  the entire batch.
+- **Log filenames:** Changed from `{timestamp}_b{num}.json` to
+  `b{num}_{timestamp}.json`.  Batch number is now the primary key (guaranteed
+  unique per run), eliminating any theoretical timestamp collision between
+  parallel batches.
+
+### Per-batch summary JSON (commit `5b6ed10`)
+
+Each batch writes a `b{NNNN}_summary.json` alongside the raw validate output:
+
+```json
+{
+  "batch_num": 0,
+  "products_submitted": 100,
+  "products_validated": 100,
+  "discrepancy": false,
+  "pass": 100,
+  "fail": 0,
+  "wall_time_ms": 49100,
+  "ms_per_product": 491,
+  "failed_products": []
+}
+```
+
+A discrepancy (`products_submitted != products_validated`) is logged as a
+WARNING.  Enables automated SLA monitoring during bulk reprocessing.
+
+---
+
 ## Completed in CSS_PDS4_tools (not psi-catalina)
 
 - **Canary injection system:** implemented in
