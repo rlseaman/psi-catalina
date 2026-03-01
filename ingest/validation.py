@@ -130,13 +130,22 @@ def create_temp_copy(temp_dir: str, product_to_copy: product.Product, skip_data:
             try:
                 with open(temp_data_path, "wb") as uncompressed, gzip.open(f"{data_path}.gz", "rb") as compressed:
                     shutil.copyfileobj(compressed, uncompressed)
-            except (IOError, OSError):
-                logging.warning(f"Could not decompress {data_path}.gz to {temp_data_path}")
+            except (IOError, OSError) as exc:
+                logging.error(f"Could not decompress {data_path}.gz to {temp_data_path}: {exc}")
+                raise
         elif os.path.exists(f"{data_path}.fz"):
             logging.debug(f"Funpacking temporary {data_path} to {temp_data_path}")
-            subprocess.run([FUNPACK_CMD, '-C', '-O', temp_data_path, f"{data_path}.fz"])
+            try:
+                subprocess.run([FUNPACK_CMD, '-C', '-O', temp_data_path, f"{data_path}.fz"],
+                               check=True, capture_output=True)
+            except subprocess.CalledProcessError as exc:
+                logging.error(f"funpack failed (exit {exc.returncode}) for {data_path}.fz: "
+                              f"{exc.stderr.decode().strip() if exc.stderr else 'no stderr'}")
+                raise
         else:
-            logging.error(f"could not find data file: {temp_data_path}")
+            raise FileNotFoundError(
+                f"No data file found for {label_file_name}: tried {data_path}, "
+                f"{data_path}.gz, {data_path}.fz")
 
     return temp_label_path
 
@@ -151,7 +160,13 @@ def run_validator(file_name: str,
     logging.info("Running the validator...")
     params = [VALIDATE_CMD, '-s', 'json', '-E', '2147483647'] + (['-D'] if skip_data else []) + \
              ['-C', os.path.join(schema_path, 'catalog_all.xml'), '-t', file_name]
-    process = subprocess.run(params, stdout=subprocess.PIPE, encoding="utf-8")
+    process = subprocess.run(params, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                             encoding="utf-8")
+
+    if process.returncode != 0:
+        logging.error(f"validate exited with code {process.returncode}")
+        if process.stderr:
+            logging.error(f"validate stderr: {process.stderr.strip()}")
 
     logging.info("Validation complete, processing results...")
 
